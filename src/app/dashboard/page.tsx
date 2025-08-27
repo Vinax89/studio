@@ -1,15 +1,43 @@
 import DashboardCharts from "@/app/dashboard/dashboard-charts";
 import OverviewCards from "@/app/dashboard/overview-cards";
+import { mockTransactions } from "@/lib/data";
+import type { Transaction } from "@/lib/types";
 
-export default function DashboardPage() {
+// Simulate slow data fetching
+const getTransactions = async (): Promise<Transaction[]> => {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return mockTransactions;
+}
+
+const getChartData = async () => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return [
+      { month: "Jan", income: 4000, expenses: 2400 },
+      { month: "Feb", income: 3000, expenses: 1398 },
+      { month: "Mar", income: 5000, expenses: 3800 },
+      { month: "Apr", income: 2780, expenses: 3908 },
+      { month: "May", income: 1890, expenses: 4800 },
+      { month: "Jun", income: 4390, expenses: 3800 },
+      { month: "Jul", income: 5100, expenses: 2550 },
+    ]
+}
+
+
+export default async function DashboardPage() {
+
+  const [transactions, chartData] = await Promise.all([
+    getTransactions(),
+    getChartData()
+  ]);
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
-      <OverviewCards />
-      <DashboardCharts />
+      <OverviewCards transactions={transactions} />
+      <DashboardCharts transactions={transactions} chartData={chartData} />
     </div>
   )
 }

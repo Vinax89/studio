@@ -1,11 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { mockTransactions } from "@/lib/data"
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import type { Transaction } from "@/lib/types";
 
-export default function RecentTransactions() {
-  const recentTransactions = mockTransactions.slice(0, 5)
+interface RecentTransactionsProps {
+  transactions: Transaction[];
+}
+
+export default function RecentTransactions({ transactions }: RecentTransactionsProps) {
+  const recentTransactions = transactions.slice(0, 5)
 
   return (
     <Card className="h-full">
