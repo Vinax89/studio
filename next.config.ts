@@ -8,12 +8,14 @@ const nextConfig = {
   },
 
   // Keep your CORS whitelist
-  allowedDevOrigins: [
-    // explicit hosts you've seen + a broad pattern
-    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-    '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-    '*-firebase-studio-*.cluster-*.cloudworkstations.dev',
-  ],
+  experimental: {
+    allowedDevOrigins: [
+      // explicit hosts you've seen + a broad pattern
+      '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+      '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+      '*-firebase-studio-*.cluster-*.cloudworkstations.dev',
+    ],
+  },
 
   // Dev-only watcher trims (Webpack dev server only; ignored by Turbopack)
   webpack: (config, { dev }) => {
