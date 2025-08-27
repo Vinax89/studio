@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest"
+    "lint": "next lint"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
