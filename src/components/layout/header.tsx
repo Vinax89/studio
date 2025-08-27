@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/sheet"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
+import { ThemeSwitcher } from "./theme-switcher"
 
 export default function AppHeader() {
   const router = useRouter()
@@ -114,6 +115,7 @@ export default function AppHeader() {
           className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
+      <ThemeSwitcher />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
