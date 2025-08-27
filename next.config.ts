@@ -7,8 +7,8 @@ const nextConfig = {
     ],
   },
 
-  // Keep your CORS whitelist
   experimental: {
+    // Keep your CORS whitelist
     allowedDevOrigins: [
       // explicit hosts you've seen + a broad pattern
       '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
