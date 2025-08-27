@@ -10,10 +10,8 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // ✅ top-level, not inside `experimental`
-  // Wildcards for Firebase Studio / Cloud Workstations preview host
-  // If TS complains about the field, you can keep it — your build ignores type errors.
-  // @ts-expect-error new in this Next version
+  // Allow Firebase Studio / Cloud Workstations preview host to fetch /_next/*
+  // @ts-expect-error field may not be in your TS type
   allowedDevOrigins: ['https://*.cloudworkstations.dev'],
 
   experimental: {},
