@@ -1,14 +1,10 @@
+
 import OverviewCards from "@/app/dashboard/overview-cards";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import dynamic from "next/dynamic";
-
-const DashboardCharts = dynamic(() => import('@/app/dashboard/dashboard-charts'), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[436px] w-full" />,
-});
+import DashboardCharts from '@/app/dashboard/dashboard-charts';
 
 
 // Simulate slow data fetching
