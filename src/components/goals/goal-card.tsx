@@ -13,18 +13,18 @@ export function GoalCard({ goal }: GoalCardProps) {
     <Card>
       <CardHeader>
         <CardTitle>{goal.name}</CardTitle>
-        <CardDescription>Deadline: {new Date(goal.deadline).toLocaleDateString()}</CardDescription>
+        <CardDescription>Deadline: {new Date(goal.deadline).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-2 flex justify-between text-sm text-muted-foreground">
+        <div className="mb-2 flex justify-between font-medium text-muted-foreground">
             <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
+            <span className="text-foreground">{Math.round(progress)}%</span>
         </div>
         <Progress value={progress} aria-label={`${goal.name} progress`} />
       </CardContent>
       <CardFooter>
-        <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">${goal.currentAmount.toLocaleString()}</span> of ${goal.targetAmount.toLocaleString()}
+        <p className="text-muted-foreground">
+            <span className="font-bold text-foreground">${goal.currentAmount.toLocaleString()}</span> of ${goal.targetAmount.toLocaleString()}
         </p>
       </CardFooter>
     </Card>

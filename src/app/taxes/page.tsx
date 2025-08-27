@@ -53,7 +53,7 @@ export default function TaxEstimatorPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Tax Estimation Tool</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Tax Estimation Tool</h1>
         <p className="text-muted-foreground">Get an AI-powered estimate of your annual tax burden.</p>
       </div>
 
@@ -63,7 +63,7 @@ export default function TaxEstimatorPage() {
           <CardDescription>Enter your income, deductions, and location to get a projection. This is not financial advice.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="income">Annual Income</Label>
@@ -78,7 +78,7 @@ export default function TaxEstimatorPage() {
                     <Input id="location" placeholder="e.g., Austin, TX" value={location} onChange={(e) => setLocation(e.target.value)} />
                 </div>
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Calculating...</>
               ) : (
@@ -91,7 +91,7 @@ export default function TaxEstimatorPage() {
       
       {taxResult && (
         <div className="mt-6">
-            <h2 className="text-2xl font-bold font-headline mb-4">Estimation Results</h2>
+            <h2 className="text-2xl font-bold tracking-tight mb-4">Estimation Results</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -120,7 +120,7 @@ export default function TaxEstimatorPage() {
                     <CardDescription>A detailed explanation of how the tax was estimated.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{taxResult.breakdown}</p>
+                    <p className="leading-relaxed whitespace-pre-wrap">{taxResult.breakdown}</p>
                 </CardContent>
             </Card>
         </div>

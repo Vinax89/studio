@@ -24,17 +24,18 @@ export default function IncomeExpenseChart() {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8}/>
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} />
             <Tooltip
-              cursor={{ fill: 'hsl(var(--muted))' }}
+              cursor={{ fill: 'hsl(var(--muted))', radius: 'var(--radius)' }}
               contentStyle={{
                 backgroundColor: 'hsl(var(--background))',
                 borderColor: 'hsl(var(--border))',
-                borderRadius: 'var(--radius)'
+                borderRadius: 'var(--radius)',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
               }}
             />
-            <Legend />
+            <Legend wrapperStyle={{paddingTop: '24px'}}/>
             <Bar dataKey="income" fill="hsl(var(--chart-1))" name="Income" radius={[4, 4, 0, 0]} />
             <Bar dataKey="expenses" fill="hsl(var(--chart-2))" name="Expenses" radius={[4, 4, 0, 0]} />
           </BarChart>

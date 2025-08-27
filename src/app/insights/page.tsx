@@ -65,7 +65,7 @@ export default function InsightsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">AI-Powered Financial Insights</h1>
+        <h1 className="text-3xl font-bold tracking-tight">AI-Powered Financial Insights</h1>
         <p className="text-muted-foreground">Upload your financial documents to get personalized advice.</p>
       </div>
 
@@ -96,7 +96,7 @@ export default function InsightsPage() {
               />
               <p className="text-sm text-muted-foreground">You can upload multiple files.</p>
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -117,38 +117,44 @@ export default function InsightsPage() {
         <div className="grid gap-6 mt-6">
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
-              <Lightbulb className="h-6 w-6 text-accent" />
+              <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                <Lightbulb className="h-6 w-6" />
+              </div>
               <div>
                 <CardTitle>Spending Analysis</CardTitle>
                 <CardDescription>A summary of your spending patterns.</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed">{analysisResult.spendingAnalysis}</p>
+              <p className="leading-relaxed">{analysisResult.spendingAnalysis}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
-                <TrendingUp className="h-6 w-6 text-accent" />
+                <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                    <TrendingUp className="h-6 w-6" />
+                </div>
                 <div>
                     <CardTitle>Savings Opportunities</CardTitle>
                     <CardDescription>Where you can potentially save money.</CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{analysisResult.savingsOpportunities}</p>
+              <p className="leading-relaxed whitespace-pre-wrap">{analysisResult.savingsOpportunities}</p>
             </CardContent>
           </Card>
           <Card>
              <CardHeader className="flex flex-row items-center gap-4">
-                <Sparkles className="h-6 w-6 text-accent" />
+                <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                    <Sparkles className="h-6 w-6" />
+                </div>
                 <div>
                     <CardTitle>Personalized Recommendations</CardTitle>
                     <CardDescription>Actionable advice based on your profile.</CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{analysisResult.recommendations}</p>
+              <p className="leading-relaxed whitespace-pre-wrap">{analysisResult.recommendations}</p>
             </CardContent>
           </Card>
         </div>

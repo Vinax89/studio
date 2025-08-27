@@ -69,13 +69,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm mx-auto">
+    <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+      <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <NurseFinAILogo className="h-12 w-12" />
+            <NurseFinAILogo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-headline">
+          <CardTitle className="text-3xl font-bold tracking-tight">
             {isLoginView ? "Welcome Back" : "Create an Account"}
           </CardTitle>
           <CardDescription>
@@ -95,6 +95,7 @@ export default function LoginPage() {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-12"
               />
             </div>
             <div className="space-y-2">
@@ -105,9 +106,10 @@ export default function LoginPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-12"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={isLoading}>
                 {isLoading ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -120,9 +122,9 @@ export default function LoginPage() {
                 )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-6 text-center text-sm">
             {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button onClick={() => setIsLoginView(!isLoginView)} className="underline">
+            <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
               {isLoginView ? "Sign up" : "Sign in"}
             </button>
           </div>
