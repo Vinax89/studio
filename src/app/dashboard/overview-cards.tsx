@@ -3,14 +3,17 @@ import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types";
 import { mockTransactions } from "@/lib/data";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 // Optional demo delay for development only
-const getTransactions = async (): Promise<Transaction[]> => {
+const getTransactions = unstable_cache(async (): Promise<Transaction[]> => {
   if (process.env.NODE_ENV === "development") {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return mockTransactions;
-}
+}, ["transactions"]);
+
+export const revalidateTransactions = () => revalidateTag("transactions");
 
 
 export default async function OverviewCards() {

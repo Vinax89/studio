@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RecentTransactions from "@/components/dashboard/recent-transactions";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 const IncomeExpenseChart = dynamic(
   () => import("@/components/dashboard/income-expense-chart"),
@@ -35,14 +36,14 @@ const IncomeExpenseChart = dynamic(
 // Optional demo delay; disable in production
 const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
 
-const getTransactions = async (): Promise<Transaction[]> => {
+const getTransactions = unstable_cache(async (): Promise<Transaction[]> => {
   if (enableMockDelay) {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return mockTransactions;
-};
+}, ["transactions"]);
 
-const getChartData = async () => {
+const getChartData = unstable_cache(async () => {
   if (enableMockDelay) {
     await new Promise(resolve => setTimeout(resolve, 1500));
   }
@@ -55,7 +56,10 @@ const getChartData = async () => {
     { month: "Jun", income: 4390, expenses: 3800 },
     { month: "Jul", income: 5100, expenses: 2550 },
   ];
-};
+}, ["chart-data"]);
+
+export const revalidateTransactions = () => revalidateTag("transactions");
+export const revalidateChartData = () => revalidateTag("chart-data");
 
 
 export default async function DashboardCharts() {
