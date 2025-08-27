@@ -313,9 +313,8 @@ export default function CashflowPage() {
                 <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
                 <CardDescription>Select a date to highlight a pay period and add shifts.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-center">
                 <Calendar
-                    className="w-full"
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
