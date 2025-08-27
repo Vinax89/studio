@@ -10,7 +10,7 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
       <OverviewCards />
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-2">
             <IncomeExpenseChart />
         </div>
