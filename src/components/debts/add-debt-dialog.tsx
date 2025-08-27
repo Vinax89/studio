@@ -13,8 +13,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Calendar as CalendarIcon } from "lucide-react"
 import type { Debt } from "@/lib/types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
 
 interface AddDebtDialogProps {
   onSave: (debt: Omit<Debt, 'id'>) => void;
@@ -25,7 +30,8 @@ export function AddDebtDialog({ onSave }: AddDebtDialogProps) {
     const [name, setName] = useState("")
     const [totalAmount, setTotalAmount] = useState("")
     const [minimumPayment, setMinimumPayment] = useState("")
-    const [dueDate, setDueDate] = useState("")
+    const [dueDate, setDueDate] = useState<Date>()
+    const [recurrence, setRecurrence] = useState<"once" | "monthly">("monthly")
 
     const handleSave = () => {
         if(name && totalAmount && minimumPayment && dueDate) {
@@ -33,14 +39,16 @@ export function AddDebtDialog({ onSave }: AddDebtDialogProps) {
                 name,
                 totalAmount: parseFloat(totalAmount),
                 minimumPayment: parseFloat(minimumPayment),
-                dueDate: parseInt(dueDate)
+                dueDate: dueDate.toISOString().split('T')[0],
+                recurrence
             })
             setOpen(false)
             // Reset form
             setName("")
             setTotalAmount("")
             setMinimumPayment("")
-            setDueDate("")
+            setDueDate(undefined)
+            setRecurrence("monthly")
         }
     }
 
@@ -73,8 +81,41 @@ export function AddDebtDialog({ onSave }: AddDebtDialogProps) {
             <Input id="min-payment" type="number" placeholder="350" value={minimumPayment} onChange={e => setMinimumPayment(e.target.value)} className="col-span-3" />
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="due-date" className="text-right">Due Day of Month</Label>
-            <Input id="due-date" type="number" min="1" max="31" placeholder="e.g. 15" value={dueDate} onChange={e => setDueDate(e.target.value)} className="col-span-3" />
+            <Label htmlFor="due-date" className="text-right">Due Date</Label>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                    variant={"outline"}
+                    className={cn(
+                        "col-span-3 justify-start text-left font-normal",
+                        !dueDate && "text-muted-foreground"
+                    )}
+                    >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                    <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                    />
+                </PopoverContent>
+            </Popover>
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="recurrence" className="text-right">Recurrence</Label>
+             <Select onValueChange={(value: "once" | "monthly") => setRecurrence(value)} defaultValue={recurrence}>
+                <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select recurrence" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="once">Once</SelectItem>
+                </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

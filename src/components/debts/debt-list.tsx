@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/table"
 import type { Debt } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card"
+import { Badge } from "../ui/badge";
+import { format } from "date-fns";
 
 interface DebtListProps {
   debts: Debt[];
@@ -28,7 +30,8 @@ export function DebtList({ debts }: DebtListProps) {
               <TableHead>Account</TableHead>
               <TableHead>Total Owed</TableHead>
               <TableHead>Min. Payment</TableHead>
-              <TableHead className="text-right">Due Day</TableHead>
+              <TableHead>Recurrence</TableHead>
+              <TableHead className="text-right">Next Due</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -37,7 +40,8 @@ export function DebtList({ debts }: DebtListProps) {
                 <TableCell className="font-medium">{debt.name}</TableCell>
                 <TableCell>${debt.totalAmount.toLocaleString()}</TableCell>
                 <TableCell>${debt.minimumPayment.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{debt.dueDate}</TableCell>
+                <TableCell><Badge variant="secondary" className="capitalize">{debt.recurrence}</Badge></TableCell>
+                <TableCell className="text-right">{format(new Date(debt.dueDate + 'T00:00:00'), "MMM do")}</TableCell>
               </TableRow>
             ))}
           </TableBody>

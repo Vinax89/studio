@@ -21,5 +21,6 @@ export type Debt = {
     name: string;
     totalAmount: number;
     minimumPayment: number;
-    dueDate: number; // Day of the month
+    dueDate: string; // ISO date string for the start date
+    recurrence: 'once' | 'monthly';
 }
