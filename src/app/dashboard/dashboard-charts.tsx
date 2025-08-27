@@ -1,8 +1,36 @@
 
-import IncomeExpenseChart from "@/components/dashboard/income-expense-chart";
+import dynamic from "next/dynamic";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import RecentTransactions from "@/components/dashboard/recent-transactions";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
+
+const IncomeExpenseChart = dynamic(
+  () => import("@/components/dashboard/income-expense-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <Card>
+        <CardHeader>
+          <CardTitle>Income vs. Expenses</CardTitle>
+          <CardDescription>
+            A look at your cash flow for the last 7 months.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[300px] w-full" />
+        </CardContent>
+      </Card>
+    ),
+  }
+);
 
 // Optional demo delay; disable in production
 const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
