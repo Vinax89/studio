@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
+import {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  startTransition,
+} from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
@@ -41,11 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const isAuthPage = pathname === "/";
-    if (!user && !isAuthPage) {
-      router.push("/");
-    } else if (user && isAuthPage) {
-      router.push("/dashboard");
-    }
+    startTransition(() => {
+      if (!user && !isAuthPage) {
+        router.push("/");
+      } else if (user && isAuthPage) {
+        router.push("/dashboard");
+      }
+    });
   }, [user, router, pathname]);
 
   return (
