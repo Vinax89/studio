@@ -7,14 +7,29 @@ const nextConfig = {
     ],
   },
 
-  // Allow your dev server to be requested from Firebase Studio’s origin(s)
-  // Hostnames only (no scheme/ports). Wildcards are supported.
-  // Keep explicit hosts you’ve seen + a broad pattern for the cluster shape.
+  // Keep your CORS whitelist
   allowedDevOrigins: [
+    // explicit hosts you've seen + a broad pattern
     '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
     '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-    '*-firebase-studio-*.cluster-*.cloudworkstations.dev'
+    '*-firebase-studio-*.cluster-*.cloudworkstations.dev',
   ],
+
+  // Dev-only watcher trims (Webpack dev server only; ignored by Turbopack)
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = config.watchOptions || {};
+      config.watchOptions.ignored = [
+        '**/.git/**',
+        '**/.next/**',
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/coverage/**',
+        '**/*.log',
+      ];
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;
