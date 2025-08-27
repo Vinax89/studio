@@ -1,3 +1,4 @@
+
 export type Transaction = {
   id: string;
   date: string;
@@ -16,13 +17,16 @@ export type Goal = {
   deadline: string;
 };
 
+export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
+
 export type Debt = {
-    id: string;
-    name: string;
-    initialAmount: number;
-    currentAmount: number;
-    interestRate: number;
-    minimumPayment: number;
-    dueDate: string; // ISO date string for the start date
-    recurrence: 'once' | 'monthly';
+  id: string;
+  name: string;
+  amount: number;
+  dueDate: string; // ISO anchor date (first due)
+  recurrence: Recurrence;
+  autopay: boolean;
+  notes?: string;
+  color?: string;
+  paidDates?: string[]; // ISO strings
 }
