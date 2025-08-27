@@ -5,12 +5,8 @@ import { useRouter } from "next/navigation"
 import { auth } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import {
-  Bell,
   CircleUser,
-  Home,
-  LogOut,
   Menu,
-  Package2,
   Search,
 } from "lucide-react"
 
@@ -54,7 +50,6 @@ export default function AppHeader() {
       })
     }
   }
-
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -119,11 +114,11 @@ export default function AppHeader() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             className="overflow-hidden rounded-full"
           >
-            <CircleUser className="h-5 w-5" />
+            <CircleUser className="h-6 w-6" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -133,7 +128,6 @@ export default function AppHeader() {
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
             Logout
           </DropdownMenuItem>
         </DropdownMenuContent>

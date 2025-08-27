@@ -32,7 +32,6 @@ export default function IncomeExpenseChart() {
                 backgroundColor: 'hsl(var(--background))',
                 borderColor: 'hsl(var(--border))',
                 borderRadius: 'var(--radius)',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
               }}
             />
             <Legend wrapperStyle={{paddingTop: '24px'}}/>
