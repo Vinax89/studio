@@ -8,6 +8,7 @@ import {
   CircleUser,
   Menu,
   Search,
+  CalendarDays,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -86,6 +87,12 @@ export default function AppHeader() {
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
               Goals
+            </Link>
+            <Link
+              href="/shifts"
+              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              Shifts
             </Link>
             <Link
               href="/insights"

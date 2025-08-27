@@ -1,4 +1,4 @@
-import type { Transaction, Goal } from './types';
+import type { Transaction, Goal, Shift, ShiftTemplate } from './types';
 
 export const mockTransactions: Transaction[] = [
   { id: '1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', isRecurring: true },
@@ -16,4 +16,30 @@ export const mockGoals: Goal[] = [
   { id: '2', name: 'Retirement Fund Boost', targetAmount: 10000, currentAmount: 4200, deadline: '2024-12-31' },
   { id: '3', name: 'Emergency Fund', targetAmount: 15000, currentAmount: 14800, deadline: '2024-09-30' },
   { id: '4', name: 'Vacation to Hawaii', targetAmount: 4000, currentAmount: 1250, deadline: '2025-06-01' },
+];
+
+export const mockShifts: Shift[] = [
+    { id: '1', date: '2024-07-20', type: 'Day', hours: 12 },
+    { id: '2', date: '2024-07-21', type: 'Day', hours: 12 },
+    { id: '3', date: '2024-07-24', type: 'Night', hours: 12 },
+    { id: '4', date: '2024-07-25', type: 'Night', hours: 12 },
+    { id: '5', date: '2024-07-28', type: 'Day', hours: 8 },
+];
+
+export const mockShiftTemplates: ShiftTemplate[] = [
+    {
+        id: 'template-1',
+        name: '3 on, 4 off (Days)',
+        shiftType: 'Day',
+        hours: 12,
+        days: [
+            { day: 'Monday', isWorking: true },
+            { day: 'Tuesday', isWorking: true },
+            { day: 'Wednesday', isWorking: true },
+            { day: 'Thursday', isWorking: false },
+            { day: 'Friday', isWorking: false },
+            { day: 'Saturday', isWorking: false },
+            { day: 'Sunday', isWorking: false },
+        ]
+    }
 ];
