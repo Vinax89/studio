@@ -11,41 +11,10 @@ import {
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const BarChart = dynamic(
-  () => import("recharts").then((mod) => mod.BarChart),
-  { ssr: false }
-);
-const Bar = dynamic(
-  () => import("recharts").then((mod) => mod.Bar),
-  { ssr: false }
-);
-const CartesianGrid = dynamic(
-  () => import("recharts").then((mod) => mod.CartesianGrid),
-  { ssr: false }
-);
-const XAxis = dynamic(
-  () => import("recharts").then((mod) => mod.XAxis),
-  { ssr: false }
-);
-const YAxis = dynamic(
-  () => import("recharts").then((mod) => mod.YAxis),
-  { ssr: false }
-);
-const Tooltip = dynamic(
-  () => import("recharts").then((mod) => mod.Tooltip),
-  { ssr: false }
-);
-const Legend = dynamic(
-  () => import("recharts").then((mod) => mod.Legend),
-  { ssr: false }
-);
-const ResponsiveContainer = dynamic(
-  () => import("recharts").then((mod) => mod.ResponsiveContainer),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[300px] w-full" />,
-  }
-);
+const Recharts = dynamic(() => import("recharts"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[300px] w-full" />,
+});
 
 interface IncomeExpenseChartProps {
   data: { month: string; income: number; expenses: number; }[];
@@ -55,6 +24,17 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
   const { resolvedTheme } = useTheme();
   const tickColor = resolvedTheme === 'dark' ? "#888888" : "#A1A1A9";
   const strokeColor = resolvedTheme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
+
+  const {
+    BarChart,
+    Bar,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+  } = Recharts as unknown as typeof import("recharts");
 
   return (
     <Card>
