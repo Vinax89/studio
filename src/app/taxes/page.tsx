@@ -51,7 +51,7 @@ export default function TaxEstimatorPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Tax Estimation Tool</h1>
         <p className="text-muted-foreground">Get an AI-powered estimate of your annual tax burden.</p>
