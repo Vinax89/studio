@@ -3,7 +3,6 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
-
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'placehold.co', port: '', pathname: '/**' },
@@ -11,16 +10,14 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // optional; remove if unused
-  experimental: {},
-
-  // ✅ Development cross-origin whitelist
-  // 1) wildcard for any Cloud Workstations subdomain
-  // 2) the exact host from your log (helps if wildcard matching is finicky)
+  // Dev cross-origin whitelist (multi-level host support)
   allowedDevOrigins: [
-    '*.cloudworkstations.dev',
+    // explicit rotating hosts (keeps you moving)
     '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
     '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+
+    // pattern that matches the Firebase Studio + cluster two-label shape
+    '*-firebase-studio-*.cluster-*.cloudworkstations.dev',
   ],
 };
 
