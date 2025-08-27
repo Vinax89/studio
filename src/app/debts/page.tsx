@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
-import DebtCalendar from "@/components/debts/DebtCalendar";
+import dynamic from "next/dynamic";
 import { mockDebts } from "@/lib/data";
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
+
+const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { ssr: false });
 
 export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>(mockDebts);
