@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useTheme } from "next-themes";
 
 const data = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -14,6 +15,9 @@ const data = [
 ]
 
 export default function IncomeExpenseChart() {
+  const { theme } = useTheme();
+  const tickColor = theme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
+
   return (
     <Card className="h-full">
       <CardHeader>
@@ -24,8 +28,8 @@ export default function IncomeExpenseChart() {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8}/>
-            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} stroke={tickColor}/>
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} stroke={tickColor} />
             <Tooltip
               cursor={{ fill: 'hsl(var(--muted))', radius: 'var(--radius)' }}
               contentStyle={{
