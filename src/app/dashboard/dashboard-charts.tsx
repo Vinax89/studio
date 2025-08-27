@@ -1,6 +1,4 @@
 
-"use client";
-
 import IncomeExpenseChart from "@/components/dashboard/income-expense-chart";
 import RecentTransactions from "@/components/dashboard/recent-transactions";
 import type { Transaction } from "@/lib/types";

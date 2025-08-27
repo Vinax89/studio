@@ -9,8 +9,9 @@ interface IncomeExpenseChartProps {
 }
 
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
-  const { theme } = useTheme();
-  const tickColor = theme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
+  const { resolvedTheme } = useTheme();
+  const tickColor = resolvedTheme === 'dark' ? "#888888" : "#A1A1A9";
+  const strokeColor = resolvedTheme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
 
   return (
     <Card>
@@ -22,8 +23,8 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} stroke={tickColor}/>
-            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} stroke={tickColor} />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} stroke={strokeColor}/>
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} stroke={strokeColor} />
             <Tooltip
               cursor={{ fill: 'hsl(var(--muted))', radius: 'var(--radius)' }}
               contentStyle={{
@@ -33,8 +34,8 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               }}
             />
             <Legend wrapperStyle={{paddingTop: '24px'}}/>
-            <Bar dataKey="income" fill="hsl(var(--chart-1))" name="Income" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expenses" fill="hsl(var(--chart-2))" name="Expenses" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="income" fill="var(--color-income)" name="Income" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="expenses" fill="var(--color-expenses)" name="Expenses" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
