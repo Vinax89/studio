@@ -94,6 +94,12 @@ export default function AppHeader() {
               Goals
             </Link>
             <Link
+              href="/cashflow"
+              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              Cashflow
+            </Link>
+            <Link
               href="/insights"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
