@@ -1,22 +1,24 @@
 
 "use client";
 
-import { useState, useMemo, useDeferredValue } from "react";
+import { useState, useMemo, useTransition, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File, ScanLine } from "lucide-react";
+import { File, ScanLine, Loader2 } from "lucide-react";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const router = useRouter();
+  const [isTransitionPending, startTransition] = useTransition();
 
   const [searchTerm, setSearchTerm] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+  const isPending = isTransitionPending || deferredSearchTerm !== searchTerm;
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
 
@@ -43,10 +45,8 @@ export default function TransactionsPage() {
   }, [transactions, deferredSearchTerm, filterType, filterCategory]);
 
   const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
+    startTransition(() => setSearchTerm(value));
   };
-
-  const isSearching = deferredSearchTerm !== searchTerm;
 
   return (
     <div className="space-y-6">
@@ -78,8 +78,11 @@ export default function TransactionsPage() {
         categories={categories}
       />
 
-      {isSearching && (
-        <p className="text-sm text-muted-foreground">Filtering…</p>
+      {isPending && (
+        <p className="flex items-center text-sm text-muted-foreground">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Filtering…
+        </p>
       )}
 
       <TransactionsTable transactions={filteredTransactions} />
