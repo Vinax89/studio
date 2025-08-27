@@ -33,15 +33,15 @@ export default function DebtsPage() {
         </div>
         <AddDebtDialog onSave={addDebt} />
       </div>
-        <div className="grid gap-8 lg:grid-cols-5">
-            <div className="lg:col-span-3">
+        <div className="grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2">
                 <DebtCalendar 
                     debts={debts} 
                     selectedDate={selectedDate}
                     onDateSelect={setSelectedDate}
                 />
             </div>
-            <div className="space-y-6 lg:col-span-2">
+            <div className="space-y-6 lg:col-span-1">
                 <DebtDetails date={selectedDate} debts={debtsForSelectedDay} />
                 <DebtList debts={debts} />
             </div>
