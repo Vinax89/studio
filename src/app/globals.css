@@ -70,3 +70,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+    .due-date-modifier:not([aria-selected="true"])::after {
+        content: '';
+        position: absolute;
+        bottom: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0.375rem;
+        height: 0.375rem;
+        border-radius: 9999px;
+        background-color: hsl(var(--primary));
+    }
+}

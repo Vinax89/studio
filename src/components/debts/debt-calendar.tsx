@@ -1,10 +1,10 @@
 "use client"
 
 import React from "react";
-import { DayPicker, DayProps } from "react-day-picker";
+import { DayPicker, type DateFormatter } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import type { Debt } from "@/lib/types";
-import { isSameDay, isAfter, startOfMonth } from 'date-fns';
+import { isSameDay, isAfter, startOfMonth, format } from 'date-fns';
 
 interface DebtCalendarProps {
     debts: Debt[];
@@ -12,50 +12,50 @@ interface DebtCalendarProps {
     onDateSelect: (date: Date | undefined) => void;
 }
 
-const Dot = () => <div className="h-1.5 w-1.5 bg-primary rounded-full" />;
-
-function DayWithDot(props: DayProps) {
-  const { date, displayMonth } = props;
-  const { debts } = useDayPickerWithDebts();
-  
-  if (date.getMonth() !== displayMonth.getMonth()) {
-    return <div />;
-  }
-
-  const debtsDueOnDay = debts.filter(debt => {
-       const startDate = new Date(debt.dueDate + 'T00:00:00');
-       if (debt.recurrence === 'monthly') {
-           return startDate.getDate() === date.getDate() && !isAfter(startOfMonth(startDate), date);
-       }
-       return isSameDay(startDate, date);
-  });
-
-  return (
-    <div className="relative flex flex-col items-center justify-center h-full w-full">
-      <span>{date.getDate()}</span>
-      {debtsDueOnDay.length > 0 && 
-          <div className="absolute bottom-1.5 flex space-x-1">
-              {debtsDueOnDay.slice(0, 3).map((_, i) => <Dot key={i} />)}
-          </div>
-      }
-    </div>
-  );
-}
-
-const DayPickerContext = React.createContext<{ debts: Debt[] } | undefined>(undefined);
-
-function useDayPickerWithDebts() {
-  const context = React.useContext(DayPickerContext);
-  if (!context) {
-    throw new Error('useDayPickerWithDebts must be used within a DayPickerWithDebtsProvider');
-  }
-  return context;
-}
+const formatCaption: DateFormatter = (month, options) => {
+    return <>{format(month, 'LLLL yyyy', { locale: options?.locale })}</>;
+};
 
 export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendarProps) {
 
+  const debtsDueModifier = debts.flatMap(debt => {
+    const dueDate = new Date(debt.dueDate + 'T00:00:00');
+    if (debt.recurrence === 'monthly') {
+      // This is a simplified logic. For a real app, you'd generate all occurrences.
+      // For this example, we'll just mark the day of the month.
+      // A more robust solution would be needed for multi-month views.
+      return { dayOfMonth: dueDate.getDate() };
+    }
+    return dueDate;
+  });
+
+  const modifiers = {
+    due: (date: Date) => {
+      return debts.some(debt => {
+        const startDate = new Date(debt.dueDate + 'T00:00:00');
+        if (debt.recurrence === 'monthly') {
+          return startDate.getDate() === date.getDate() && !isAfter(startOfMonth(startDate), date);
+        }
+        return isSameDay(startDate, date);
+      });
+    }
+  };
+  
+  const modifiersStyles = {
+    due: { 
+        position: 'relative',
+        overflow: 'visible',
+    }
+  };
+
+  const footer = (
+      <div className="text-center text-sm text-muted-foreground mt-4">
+        <span className="inline-block h-2 w-2 bg-primary rounded-full mr-2"></span>
+        Indicates a payment is due.
+      </div>
+  )
+
   return (
-    <DayPickerContext.Provider value={{ debts }}>
       <DayPicker
         showOutsideDays
         className="rounded-lg border w-full p-0"
@@ -72,20 +72,24 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
           head_row: "flex justify-around",
           head_cell: "text-muted-foreground rounded-md w-full font-bold text-sm",
           row: "flex w-full mt-2 justify-around",
-          cell: "h-16 w-full text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-          day: "h-16 w-full p-0 font-normal aria-selected:opacity-100 text-base",
-          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
-          day_today: "bg-accent text-accent-foreground rounded-md",
+          cell: "h-16 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+          day: "h-16 w-full p-0 font-normal aria-selected:opacity-100 text-base rounded-md focus:bg-accent",
+          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          day_today: "bg-accent text-accent-foreground",
           day_outside: "text-muted-foreground opacity-50",
           day_disabled: "text-muted-foreground opacity-50",
           day_hidden: "invisible",
+          modifier_due: "text-primary-foreground",
         }}
-        components={{
-            Day: DayWithDot
+        modifiers={modifiers}
+        modifiersClassNames={{
+            due: "due-date-modifier"
         }}
         selected={selectedDate}
         onSelect={onDateSelect}
+        formatters={{ formatCaption }}
+        footer={footer}
       />
-    </DayPickerContext.Provider>
   );
 }
+
