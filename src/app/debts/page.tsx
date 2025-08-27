@@ -21,7 +21,7 @@ export default function DebtsPage() {
     ]);
   };
 
-  const debtsForSelectedDay = selectedDate ? debts.filter(d => new Date(selectedDate).getDate() === d.dueDate) : [];
+  const debtsForSelectedDay = selectedDate ? debts.filter(d => new Date(selectedDate).getDate() === new Date(d.dueDate + 'T00:00:00').getDate()) : [];
 
 
   return (

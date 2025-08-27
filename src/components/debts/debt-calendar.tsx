@@ -78,15 +78,15 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
                 className="rounded-lg border w-full p-0"
                  classNames={{
                     month: 'w-full space-y-4 p-4',
-                    caption_label: 'text-lg font-medium',
+                    caption_label: 'text-lg font-bold',
                     caption: 'flex justify-center pt-1 relative items-center',
                     nav: 'space-x-1 flex items-center',
                     table: 'w-full border-collapse space-y-1',
                     head_row: "flex justify-around",
-                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-base",
+                    head_cell: "text-muted-foreground rounded-md w-full font-bold text-base",
                     row: "flex w-full mt-2 justify-around",
                     cell: "h-16 w-full text-center text-lg p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                    day: "h-16 w-full p-0 font-normal aria-selected:opacity-100",
+                    day: "h-16 w-full p-0 font-bold aria-selected:opacity-100",
                     day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                     day_today: "bg-accent text-accent-foreground",
                     day_outside: "text-muted-foreground opacity-50",
