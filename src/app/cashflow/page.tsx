@@ -315,6 +315,7 @@ export default function CashflowPage() {
             </CardHeader>
             <CardContent>
                 <Calendar
+                    className="w-full"
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
@@ -420,5 +421,7 @@ export default function CashflowPage() {
     </div>
   )
 }
+
+    
 
     
