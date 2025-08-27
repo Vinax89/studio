@@ -20,6 +20,9 @@ interface Shift {
   differentials?: string;
 }
 
+type ShiftDetails = Omit<Shift, 'date'>;
+
+
 export default function CashflowPage() {
   const [annualIncome, setAnnualIncome] = useState("")
   const [estimatedTaxes, setEstimatedTaxes] = useState("")
@@ -33,6 +36,8 @@ export default function CashflowPage() {
   const [hourlyRate, setHourlyRate] = useState("")
   const [premiumPay, setPremiumPay] = useState("")
   const [differentials, setDifferentials] = useState("")
+  const [lastEnteredShift, setLastEnteredShift] = useState<ShiftDetails | null>(null);
+
 
   const { toast } = useToast();
   
@@ -104,10 +109,8 @@ export default function CashflowPage() {
           setShifts([...shifts, newShift]);
       }
       
-      setShiftHours("");
-      setHourlyRate("");
-      setPremiumPay("");
-      setDifferentials("");
+      const { date, ...shiftDetails } = newShift;
+      setLastEnteredShift(shiftDetails);
   }
   
   const handleDateSelect = (date: Date | undefined) => {
@@ -119,7 +122,14 @@ export default function CashflowPage() {
             setHourlyRate(String(existingShift.rate));
             setPremiumPay(existingShift.premiumPay ? String(existingShift.premiumPay) : "");
             setDifferentials(existingShift.differentials || "");
+        } else if (lastEnteredShift) {
+            // Pre-fill with the last entered shift details
+            setShiftHours(String(lastEnteredShift.hours));
+            setHourlyRate(String(lastEnteredShift.rate));
+            setPremiumPay(lastEnteredShift.premiumPay ? String(lastEnteredShift.premiumPay) : "");
+            setDifferentials(lastEnteredShift.differentials || "");
         } else {
+            // Clear if no existing shift and no last shift memory
             setShiftHours("");
             setHourlyRate("");
             setPremiumPay("");
@@ -154,7 +164,7 @@ export default function CashflowPage() {
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="deductions">Total Monthly Deductions</Label>
-                      <Input id="deductions" type="number" placeholder="e.g., 3500" value={monthlyDeductions} onChange={(e) => setMonthlyDeductions(e.target.value)} />
+                      <Input id="deductions" type="number" placeholder="e.g., 3500" value={monthlyDductions} onChange={(e) => setMonthlyDeductions(e.target.value)} />
                   </div>
               </div>
               <Button type="submit" disabled={isLoading} size="lg">
@@ -210,7 +220,7 @@ export default function CashflowPage() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
-                <CardDescription>Select a date to add or edit a shift.</CardDescription>
+                <CardDescription>Select a date to add or edit a shift. New shifts will pre-fill from the last one entered.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Calendar
@@ -294,3 +304,5 @@ export default function CashflowPage() {
     </div>
   )
 }
+
+    
