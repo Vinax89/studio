@@ -1,22 +1,68 @@
 "use client"
 
-import Link from "next/link"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  type AuthError,
+} from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NurseFinAILogo } from "@/components/icons"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { toast } = useToast()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoginView, setIsLoginView] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you'd have authentication logic here.
-    // For this demo, we'll just redirect to the dashboard.
-    router.push("/dashboard")
+    setIsLoading(true)
+
+    try {
+      if (isLoginView) {
+        await signInWithEmailAndPassword(auth, email, password)
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password)
+      }
+      router.push("/dashboard")
+    } catch (error) {
+      const authError = error as AuthError
+      let errorMessage = "An unexpected error occurred. Please try again."
+      switch (authError.code) {
+          case "auth/user-not-found":
+              errorMessage = "No account found with this email. Please sign up."
+              break;
+          case "auth/wrong-password":
+              errorMessage = "Incorrect password. Please try again."
+              break;
+          case "auth/email-already-in-use":
+              errorMessage = "This email is already registered. Please sign in."
+              break;
+          case "auth/weak-password":
+              errorMessage = "The password is too weak. Please use at least 6 characters."
+              break;
+          default:
+              console.error(authError.code, authError.message)
+      }
+      toast({
+        title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   return (
@@ -26,33 +72,56 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <NurseFinAILogo className="h-12 w-12" />
           </div>
-          <CardTitle className="text-2xl font-headline">Welcome to NurseFinAI</CardTitle>
-          <CardDescription>Your personal finance companion for a successful nursing career.</CardDescription>
+          <CardTitle className="text-2xl font-headline">
+            {isLoginView ? "Welcome Back" : "Create an Account"}
+          </CardTitle>
+          <CardDescription>
+            {isLoginView 
+                ? "Sign in to access your financial dashboard."
+                : "Your personal finance companion for a successful nursing career."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="nurse@hospital.com" required />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="nurse@hospital.com" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link href="#" className="ml-auto inline-block text-sm underline">
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required />
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Please wait...
+                    </>
+                ) : isLoginView ? (
+                    "Sign In"
+                ) : (
+                    "Sign Up"
+                )}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
+            {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button onClick={() => setIsLoginView(!isLoginView)} className="underline">
+              {isLoginView ? "Sign up" : "Sign in"}
+            </button>
           </div>
         </CardContent>
       </Card>
