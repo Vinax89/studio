@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -8,10 +9,21 @@ import { AddTransactionDialog } from "@/components/transactions/add-transaction-
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { File, ScanLine } from "lucide-react";
+import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const router = useRouter();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+
+  const categories = useMemo(() => {
+    const allCategories = transactions.map(t => t.category);
+    return ['all', ...Array.from(new Set(allCategories))];
+  }, [transactions]);
+
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     setTransactions(prev => [
@@ -20,14 +32,23 @@ export default function TransactionsPage() {
     ]);
   };
 
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+        const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'all' || transaction.type === filterType;
+        const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
+        return matchesSearch && matchesType && matchesCategory;
+    });
+  }, [transactions, searchTerm, filterType, filterCategory]);
+
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between">
+       <div className="flex items-center justify-between gap-4">
         <div>
             <h1 className="text-3xl font-bold font-headline tracking-tight">Transactions</h1>
             <p className="text-muted-foreground">Track and manage your income and expenses.</p>
         </div>
-         <div className="flex gap-2">
+         <div className="flex gap-2 items-center flex-wrap">
             <Button variant="outline">
                 <File className="mr-2 h-4 w-4" />
                 Export
@@ -39,7 +60,18 @@ export default function TransactionsPage() {
             <AddTransactionDialog onSave={addTransaction} />
         </div>
       </div>
-      <TransactionsTable transactions={transactions} />
+
+      <TransactionsFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterType={filterType}
+        onTypeChange={setFilterType}
+        filterCategory={filterCategory}
+        onCategoryChange={setFilterCategory}
+        categories={categories}
+      />
+
+      <TransactionsTable transactions={filteredTransactions} />
     </div>
   );
 }
