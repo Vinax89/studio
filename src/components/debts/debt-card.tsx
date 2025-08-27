@@ -26,10 +26,8 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
   const progress = (debt.currentAmount / debt.initialAmount) * 100;
   const remainingAmount = debt.initialAmount - debt.currentAmount;
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     setIsDeleting(true);
-    // Simulate API call
-    await new Promise(res => setTimeout(res, 500));
     onDelete(debt.id);
     setIsDeleting(false);
   };
