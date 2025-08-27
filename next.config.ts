@@ -25,8 +25,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {},
-  
-  // ✅ Must be at the top level in this version of Next.js
   allowedDevOrigins: ["https://*.cloudworkstations.dev"],
 };
 
