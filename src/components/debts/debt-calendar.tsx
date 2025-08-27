@@ -41,7 +41,8 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
     const debtsDueOnDay = debts.filter(debt => {
          const startDate = new Date(debt.dueDate + 'T00:00:00');
          if (debt.recurrence === 'monthly') {
-             return startDate.getDate() === date.getDate() && !isAfter(date, startDate);
+             // Check if the day of the month matches and the selected date is on or after the start date's month and year
+             return startDate.getDate() === date.getDate() && !isAfter(startOfMonth(startDate), date);
          }
          return isSameDay(startDate, date);
     });
