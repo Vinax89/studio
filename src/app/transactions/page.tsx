@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File, ScanLine } from "lucide-react";
+import { File, ScanLine, Loader2 } from "lucide-react";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 
 export default function TransactionsPage() {
@@ -18,6 +18,9 @@ export default function TransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const isPending = deferredSearchTerm !== searchTerm;
 
   const categories = useMemo(() => {
     const allCategories = transactions.map(t => t.category);
@@ -34,12 +37,12 @@ export default function TransactionsPage() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
-        const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = transaction.description.toLowerCase().includes(deferredSearchTerm.toLowerCase());
         const matchesType = filterType === 'all' || transaction.type === filterType;
         const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
         return matchesSearch && matchesType && matchesCategory;
     });
-  }, [transactions, searchTerm, filterType, filterCategory]);
+  }, [transactions, deferredSearchTerm, filterType, filterCategory]);
 
   return (
     <div className="space-y-6">
@@ -70,6 +73,13 @@ export default function TransactionsPage() {
         onCategoryChange={setFilterCategory}
         categories={categories}
       />
+
+      {isPending && (
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Updating...
+        </div>
+      )}
 
       <TransactionsTable transactions={filteredTransactions} />
     </div>
