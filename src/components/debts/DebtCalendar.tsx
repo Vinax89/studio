@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Recurrence, Debt } from "@/lib/types";
+import { Recurrence, CalendarDebt as Debt } from "@/lib/types"; // Use the aliased CalendarDebt type
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -76,7 +76,7 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
 
 function useLocalStorage(key: string | undefined, value: Debt[] | undefined) {
   useEffect(() => {
-    if (!key || !value) return;
+    if (typeof window === 'undefined' || !key || value === undefined) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {}
@@ -102,7 +102,7 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export default function DebtCalendar({ storageKey = "debt.calendar", initialDebts = [], onChange, startOn = 0 }: DebtCalendarProps) {
   const [debts, setDebts] = useLocalStorageSeed(storageKey, initialDebts);
   useLocalStorage(storageKey, debts);
-  useEffect(() => { onChange?.(debts); }, [debts]);
+  useEffect(() => { onChange?.(debts); }, [debts, onChange]);
 
   const today = new Date();
   const [cursor, setCursor] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -366,7 +366,7 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormLabel label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., X1 Card" /></FormLabel>
-          <FormLabel label="Amount"><Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="0.00" /></FormLabel>
+          <FormLabel label="Payment Amount"><Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="0.00" /></FormLabel>
           <FormLabel label="Anchor Due Date"><Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></FormLabel>
           <FormLabel label="Recurrence">
             <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
