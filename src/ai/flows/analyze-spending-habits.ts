@@ -13,7 +13,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { Goal } from '@/lib/types';
 
 const GoalSchema = z.object({
     id: z.string(),
@@ -84,6 +83,9 @@ const analyzeSpendingHabitsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from analyzeSpendingHabitsPrompt');
+    }
+    return output;
   }
 );

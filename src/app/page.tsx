@@ -8,6 +8,7 @@ import {
   type AuthError,
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,25 +39,9 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (error) {
       const authError = error as AuthError
-      let errorMessage = "An unexpected error occurred. Please try again."
-      switch (authError.code) {
-          case "auth/user-not-found":
-              errorMessage = "No account found with this email. Please sign up."
-              break;
-          case "auth/wrong-password":
-              errorMessage = "Incorrect password. Please try again."
-              break;
-          case "auth/email-already-in-use":
-              errorMessage = "This email is already registered. Please sign in."
-              break;
-          case "auth/weak-password":
-              errorMessage = "The password is too weak. Please use at least 6 characters."
-              break;
-          case "auth/configuration-not-found":
-              errorMessage = "Firebase Authentication is not yet configured. Please ensure Email/Password sign-in is enabled in the Firebase console."
-              break;
-          default:
-              console.error(authError.code, authError.message)
+      const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
+      if (!authErrorMessages[authError.code]) {
+        console.error(authError.code, authError.message)
       }
       toast({
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
@@ -64,7 +49,7 @@ export default function LoginPage() {
         variant: "destructive",
       })
     } finally {
-        setIsLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -80,7 +65,7 @@ export default function LoginPage() {
               {isLoginView ? "Welcome Back" : "Create an Account"}
             </CardTitle>
             <CardDescription>
-              {isLoginView 
+              {isLoginView
                   ? "Sign in to access your financial dashboard."
                   : "Your personal finance companion for a successful nursing career."}
             </CardDescription>
@@ -90,21 +75,21 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="nurse@hospital.com" 
-                required 
+              <Input
+                id="email"
+                type="email"
+                placeholder="nurse@hospital.com"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
+              <Input
+                id="password"
+                type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
