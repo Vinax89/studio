@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Recurrence, CalendarDebt as Debt } from "@/lib/types"; // Use the aliased CalendarDebt type
-import { computeOccurrences, groupOccurrences, Occurrence } from "@/lib/debt-occurrences";
+import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -79,9 +79,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
   const gridFrom = grid[0];
   const gridTo = grid[grid.length - 1];
 
-  const occurrences = useMemo<Occurrence[]>(() => computeOccurrences(debts, gridFrom, gridTo), [debts, gridFrom, gridTo]);
-
-  const grouped = useMemo(() => groupOccurrences(occurrences, query), [occurrences, query]);
+  const { occurrences, grouped } = useDebtOccurrences(debts, gridFrom, gridTo, query);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
