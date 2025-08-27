@@ -23,27 +23,17 @@ export const TransactionsTable = memo(function TransactionsTable({
   pageSize = 20,
 }: TransactionsTableProps) {
   const [page, setPage] = useState(0)
-
-  const formattedTransactions = useMemo(
-    () =>
-      transactions.map((transaction) => ({
-        ...transaction,
-        formattedDate: new Date(transaction.date).toLocaleDateString(),
-        formattedAmount: `${
-          transaction.type === "Income" ? "+" : "-"
-        }$${transaction.amount.toFixed(2)}`,
-      })),
-    [transactions],
-  )
-
-  const pageCount = Math.max(
-    1,
-    Math.ceil(formattedTransactions.length / pageSize),
-  )
+  const pageCount = Math.max(1, Math.ceil(transactions.length / pageSize))
   const currentTransactions = useMemo(() => {
     const start = page * pageSize
-    return formattedTransactions.slice(start, start + pageSize)
-  }, [formattedTransactions, page, pageSize])
+    return transactions.slice(start, start + pageSize).map((transaction) => ({
+      ...transaction,
+      formattedDate: new Date(transaction.date).toLocaleDateString(),
+      formattedAmount: `${
+        transaction.type === "Income" ? "+" : "-"
+      }$${transaction.amount.toFixed(2)}`,
+    }))
+  }, [transactions, page, pageSize])
 
   const previousPage = () => setPage((p) => Math.max(p - 1, 0))
   const nextPage = () => setPage((p) => Math.min(p + 1, pageCount - 1))
