@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -7,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { Debt } from "@/lib/types"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card"
 
 interface DebtListProps {
   debts: Debt[];
@@ -17,7 +18,8 @@ export function DebtList({ debts }: DebtListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Debt Accounts</CardTitle>
+        <CardTitle>All Debt Accounts</CardTitle>
+        <CardDescription>A list of all your outstanding debts.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>

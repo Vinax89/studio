@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react";
@@ -6,10 +7,12 @@ import type { Debt } from "@/lib/types";
 import { DebtCalendar } from "@/components/debts/debt-calendar";
 import { DebtList } from "@/components/debts/debt-list";
 import { AddDebtDialog } from "@/components/debts/add-debt-dialog";
+import { DebtDetails } from "@/components/debts/debt-details";
 
 
 export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>(mockDebts);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   const addDebt = (debt: Omit<Debt, 'id'>) => {
     setDebts(prev => [
@@ -17,6 +20,9 @@ export default function DebtsPage() {
       ...prev
     ]);
   };
+
+  const debtsForSelectedDay = selectedDate ? debts.filter(d => d.dueDate === selectedDate.getDate()) : [];
+
 
   return (
     <div className="space-y-6">
@@ -27,9 +33,18 @@ export default function DebtsPage() {
         </div>
         <AddDebtDialog onSave={addDebt} />
       </div>
-        <div className="grid gap-6 lg:grid-cols-2">
-            <DebtCalendar debts={debts} />
-            <DebtList debts={debts} />
+        <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+                <DebtCalendar 
+                    debts={debts} 
+                    selectedDate={selectedDate}
+                    onDateSelect={setSelectedDate}
+                />
+            </div>
+            <div className="space-y-6">
+                <DebtDetails date={selectedDate} debts={debtsForSelectedDay} />
+                <DebtList debts={debts} />
+            </div>
         </div>
     </div>
   );
