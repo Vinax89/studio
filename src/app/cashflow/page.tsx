@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useMemo } from "react"
 import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows/calculate-cashflow"
