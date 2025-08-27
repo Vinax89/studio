@@ -15,18 +15,3 @@ export type Goal = {
   currentAmount: number;
   deadline: string;
 };
-
-export type Shift = {
-    id: string;
-    date: string;
-    type: 'Day' | 'Night' | 'Evening';
-    hours: number;
-}
-
-export type ShiftTemplate = {
-    id: string;
-    name: string;
-    shiftType: 'Day' | 'Night' | 'Evening';
-    hours: number;
-    days: { day: string; isWorking: boolean }[];
-}
