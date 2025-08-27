@@ -1,29 +1,14 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-function getEnvVar(key: string, defaultValue?: string): string {
-  const value = process.env[key];
-  if (value === undefined || value === "") {
-    if (defaultValue !== undefined) {
-      return defaultValue;
-    }
-    throw new Error(`Missing environment variable: ${key}`);
-  }
-  return value;
-}
-
-function getFirebaseConfig() {
-  return {
-    apiKey: getEnvVar("NEXT_PUBLIC_FIREBASE_API_KEY"),
-    authDomain: getEnvVar("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"),
-    projectId: getEnvVar("NEXT_PUBLIC_FIREBASE_PROJECT_ID"),
-    storageBucket: getEnvVar("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
-    messagingSenderId: getEnvVar("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"),
-    appId: getEnvVar("NEXT_PUBLIC_FIREBASE_APP_ID"),
-  };
-}
-
-const firebaseConfig = getFirebaseConfig();
+const firebaseConfig = {
+  apiKey: "AIzaSyDkQ_CcJgWzojHkPOA-2hbO6zD_EH39CuY",
+  authDomain: "nursefinai.firebaseapp.com",
+  projectId: "nursefinai",
+  storageBucket: "nursefinai.appspot.com",
+  messagingSenderId: "18157000551",
+  appId: "1:18157000551:web:a565b5d1ff4537deb141c2"
+};
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
