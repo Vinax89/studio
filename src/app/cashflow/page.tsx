@@ -164,7 +164,7 @@ export default function CashflowPage() {
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="deductions">Total Monthly Deductions</Label>
-                      <Input id="deductions" type="number" placeholder="e.g., 3500" value={monthlyDductions} onChange={(e) => setMonthlyDeductions(e.target.value)} />
+                      <Input id="deductions" type="number" placeholder="e.g., 3500" value={monthlyDeductions} onChange={(e) => setMonthlyDeductions(e.target.value)} />
                   </div>
               </div>
               <Button type="submit" disabled={isLoading} size="lg">
@@ -304,5 +304,3 @@ export default function CashflowPage() {
     </div>
   )
 }
-
-    
