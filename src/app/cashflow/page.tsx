@@ -61,6 +61,41 @@ export default function CashflowPage() {
   const [lastEnteredShift, setLastEnteredShift] = useState<ShiftDetails | null>(null);
 
   const { toast } = useToast();
+
+   const overtimeShifts = useMemo(() => {
+    const weeklyHours: { [weekStart: string]: number } = {};
+    const weekStartDates: { [weekStart: string]: Date } = {};
+
+    shifts.forEach(shift => {
+        const shiftDay = shift.date.getDay();
+        const weekStart = new Date(shift.date);
+        weekStart.setDate(shift.date.getDate() - shiftDay);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekStartStr = weekStart.toISOString();
+        
+        if (!weeklyHours[weekStartStr]) {
+            weeklyHours[weekStartStr] = 0;
+            weekStartDates[weekStartStr] = weekStart;
+        }
+        weeklyHours[weekStartStr] += shift.hours;
+    });
+
+    const overtimeDates: Date[] = [];
+    for (const weekStartStr in weeklyHours) {
+        if (weeklyHours[weekStartStr] > 40) {
+            const weekStart = weekStartDates[weekStartStr];
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            shifts.forEach(shift => {
+                if (shift.date >= weekStart && shift.date <= weekEnd) {
+                    overtimeDates.push(shift.date);
+                }
+            });
+        }
+    }
+    return overtimeDates;
+  }, [shifts]);
   
   const payPeriodCalculation = useMemo(() => {
     if (!payPeriod || !payPeriod.from || !payPeriod.to) {
@@ -320,11 +355,13 @@ export default function CashflowPage() {
                     onSelect={handleDateSelect}
                     modifiers={{ 
                         scheduled: shifts.map(s => s.date),
-                        payPeriod: payPeriod || {}
+                        payPeriod: payPeriod || {},
+                        overtime: overtimeShifts,
                     }}
                     modifiersClassNames={{ 
                         scheduled: "bg-primary/20",
-                        payPeriod: "bg-accent text-accent-foreground"
+                        payPeriod: "bg-accent text-accent-foreground",
+                        overtime: "bg-destructive/20 text-destructive-foreground",
                     }}
                 />
             </CardContent>
@@ -402,6 +439,7 @@ export default function CashflowPage() {
                                 <div key={shift.date.toISOString()} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
                                     <div>
                                         <p className="font-semibold">{shift.date.toLocaleDateString()}</p>
+
                                         <p className="text-muted-foreground">{shift.hours} hrs @ ${shift.rate}/hr</p>
                                         {shift.differentials && <p className="text-xs text-muted-foreground">({shift.differentials})</p>}
                                     </div>
