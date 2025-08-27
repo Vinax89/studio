@@ -15,6 +15,7 @@ export type Goal = {
   targetAmount: number;
   currentAmount: number;
   deadline: string;
+  importance: number; // New field: 1-5 rating
 };
 
 export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";

@@ -1,7 +1,9 @@
+
 "use client"
 
 import { useState } from "react"
 import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput } from "@/ai/flows/analyze-spending-habits"
+import { mockGoals } from "@/lib/data"; // Import mock goals
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -11,11 +13,14 @@ import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function InsightsPage() {
-  const [userDescription, setUserDescription] = useState("")
+  const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
   const { toast } = useToast();
+  
+  // For this demo, we'll use the mockGoals. In a real app, this would be fetched.
+  const goals = mockGoals;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -34,10 +39,10 @@ export default function InsightsPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!userDescription || files.length === 0) {
+    if (files.length === 0) {
       toast({
         title: "Missing Information",
-        description: "Please provide a description and at least one financial document.",
+        description: "Please upload at least one financial document.",
         variant: "destructive",
       });
       return;
@@ -48,7 +53,11 @@ export default function InsightsPage() {
 
     try {
       const financialDocuments = await Promise.all(files.map(fileToDataURI));
-      const result = await analyzeSpendingHabits({ userDescription, financialDocuments });
+      const result = await analyzeSpendingHabits({ 
+          userDescription, 
+          financialDocuments,
+          goals 
+      });
       setAnalysisResult(result);
     } catch (error) {
       console.error("Error analyzing spending habits:", error);
@@ -66,24 +75,24 @@ export default function InsightsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">AI-Powered Financial Insights</h1>
-        <p className="text-muted-foreground">Upload your financial documents to get personalized advice.</p>
+        <p className="text-muted-foreground">Get personalized advice based on your goals and financial documents.</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Generate Insights</CardTitle>
-          <CardDescription>Describe your financial situation and goals, then upload documents like pay stubs or bank statements.</CardDescription>
+          <CardDescription>Your financial goals (from the Goals page) will be automatically included in the analysis. Just provide any relevant documents.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="user-description">Your Financial Goals</Label>
+             <div className="space-y-2">
+              <Label htmlFor="user-description">Your Personal Context (Optional)</Label>
               <Textarea
                 id="user-description"
                 placeholder="e.g., I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years."
                 value={userDescription}
                 onChange={(e) => setUserDescription(e.target.value)}
-                rows={4}
+                rows={3}
               />
             </div>
             <div className="space-y-2">
@@ -94,7 +103,7 @@ export default function InsightsPage() {
                 multiple
                 onChange={handleFileChange}
               />
-              <p className="text-sm text-muted-foreground">You can upload multiple files.</p>
+              <p className="text-sm text-muted-foreground">Upload documents like pay stubs or bank statements.</p>
             </div>
             <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
@@ -150,7 +159,7 @@ export default function InsightsPage() {
                 </div>
                 <div>
                     <CardTitle>Personalized Recommendations</CardTitle>
-                    <CardDescription>Actionable advice based on your profile.</CardDescription>
+                    <CardDescription>Actionable advice based on your goals and their importance.</CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
