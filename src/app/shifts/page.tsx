@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { DayPickerProps } from "react-day-picker";
 import { mockShifts, mockShiftTemplates } from "@/lib/data";
 import type { Shift, ShiftTemplate } from "@/lib/types";
-import { add, format, parse } from "date-fns";
+import { add, format } from "date-fns";
 
-import { Button } from "@/components/ui/button";
 import { ShiftCalendar } from "@/components/shifts/shift-calendar";
 import { ShiftTemplateForm } from "@/components/shifts/shift-template-form";
 import { ApplyTemplateDialog } from "@/components/shifts/apply-template-dialog";
@@ -40,7 +38,7 @@ export default function ShiftsPage() {
                 id: `shift-${shifts.length + i + 1}`,
                 date: format(currentDate, 'yyyy-MM-dd'),
                 type: template.shiftType,
-                hours: template.hours,
+                hours: template.hours
              });
         }
         currentDate = add(currentDate, { days: 1 });
