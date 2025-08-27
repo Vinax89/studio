@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -16,6 +16,7 @@ export default function TransactionsPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPending, startTransition] = useTransition();
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
 
@@ -41,6 +42,12 @@ export default function TransactionsPage() {
     });
   }, [transactions, searchTerm, filterType, filterCategory]);
 
+  const handleSearchChange = (value: string) => {
+    startTransition(() => {
+      setSearchTerm(value);
+    });
+  };
+
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between gap-4">
@@ -63,13 +70,17 @@ export default function TransactionsPage() {
 
       <TransactionsFilter
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         filterType={filterType}
         onTypeChange={setFilterType}
         filterCategory={filterCategory}
         onCategoryChange={setFilterCategory}
         categories={categories}
       />
+
+      {isPending && (
+        <p className="text-sm text-muted-foreground">Filtering…</p>
+      )}
 
       <TransactionsTable transactions={filteredTransactions} />
     </div>
