@@ -200,7 +200,7 @@ export default function CashflowPage() {
                 <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
                 <CardDescription>Select a date to add or edit a shift.</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center">
+            <CardContent>
                 <Calendar
                     mode="single"
                     selected={selectedDate}
