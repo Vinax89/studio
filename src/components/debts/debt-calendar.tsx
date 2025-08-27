@@ -24,11 +24,11 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
     const dueDates = getDueDatesForMonth(month.getFullYear(), month.getMonth());
 
     const DayContent = (day: Date) => {
-        const isDueDate = dueDates.some(d => d.getTime() === day.getTime());
+        const isDueDate = dueDates.some(d => d.getDate() === day.getDate() && d.getMonth() === day.getMonth() && d.getFullYear() === day.getFullYear());
         return (
             <div className="relative h-full w-full flex items-center justify-center">
                 {day.getDate()}
-                {isDueDate && <div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary" />}
+                {isDueDate && <div className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-primary" />}
             </div>
         )
     }
@@ -41,9 +41,9 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
             onSelect={onDateSelect}
             modifiers={{ dueDate: dueDates }}
             modifiersClassNames={{
-                dueDate: "font-bold",
+                dueDate: "font-bold text-primary",
             }}
-            className="rounded-lg border"
+            className="rounded-lg border w-full"
             components={{
                 DayContent: ({ date }) => DayContent(date)
             }}

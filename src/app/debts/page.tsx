@@ -21,7 +21,7 @@ export default function DebtsPage() {
     ]);
   };
 
-  const debtsForSelectedDay = selectedDate ? debts.filter(d => d.dueDate === selectedDate.getDate()) : [];
+  const debtsForSelectedDay = selectedDate ? debts.filter(d => new Date(selectedDate).getDate() === d.dueDate) : [];
 
 
   return (
@@ -33,15 +33,15 @@ export default function DebtsPage() {
         </div>
         <AddDebtDialog onSave={addDebt} />
       </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+        <div className="grid gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-3">
                 <DebtCalendar 
                     debts={debts} 
                     selectedDate={selectedDate}
                     onDateSelect={setSelectedDate}
                 />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-6 lg:col-span-2">
                 <DebtDetails date={selectedDate} debts={debtsForSelectedDay} />
                 <DebtList debts={debts} />
             </div>

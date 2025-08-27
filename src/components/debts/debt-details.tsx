@@ -13,12 +13,13 @@ export function DebtDetails({ date, debts }: DebtDetailsProps) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Due Today</CardTitle>
+                    <CardTitle>Due Payments</CardTitle>
+                     <CardDescription>Select a day to see what's due.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-6">
                         <CalendarIcon className="h-10 w-10 mb-4" />
-                        <p>Select a day on the calendar to see what's due.</p>
+                        <p>Select a day on the calendar.</p>
                     </div>
                 </CardContent>
             </Card>
