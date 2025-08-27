@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -63,35 +62,37 @@ export default function CashflowPage() {
   const { toast } = useToast();
 
    const overtimeShifts = useMemo(() => {
-    const weeklyHours: { [weekStart: string]: number } = {};
-    const weekStartDates: { [weekStart: string]: Date } = {};
+    const weeklyShifts: { [weekStart: string]: Shift[] } = {};
 
+    // Group shifts by week
     shifts.forEach(shift => {
-        const shiftDay = shift.date.getDay();
+        const shiftDay = shift.date.getDay(); // Sunday = 0
         const weekStart = new Date(shift.date);
         weekStart.setDate(shift.date.getDate() - shiftDay);
         weekStart.setHours(0, 0, 0, 0);
         const weekStartStr = weekStart.toISOString();
         
-        if (!weeklyHours[weekStartStr]) {
-            weeklyHours[weekStartStr] = 0;
-            weekStartDates[weekStartStr] = weekStart;
+        if (!weeklyShifts[weekStartStr]) {
+            weeklyShifts[weekStartStr] = [];
         }
-        weeklyHours[weekStartStr] += shift.hours;
+        weeklyShifts[weekStartStr].push(shift);
     });
 
     const overtimeDates: Date[] = [];
-    for (const weekStartStr in weeklyHours) {
-        if (weeklyHours[weekStartStr] > 40) {
-            const weekStart = weekStartDates[weekStartStr];
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            
-            shifts.forEach(shift => {
-                if (shift.date >= weekStart && shift.date <= weekEnd) {
-                    overtimeDates.push(shift.date);
-                }
-            });
+    for (const weekStartStr in weeklyShifts) {
+        const week = weeklyShifts[weekStartStr];
+        // Sort shifts chronologically to calculate running total
+        week.sort((a,b) => a.date.getTime() - b.date.getTime());
+
+        let weeklyHours = 0;
+        for (const shift of week) {
+            const previousHours = weeklyHours;
+            weeklyHours += shift.hours;
+            // If the hours *before* this shift were already over 40, this is an extra shift.
+            // Or, if this shift is the one that *crosses* the 40-hour threshold.
+            if (previousHours >= 40 || (previousHours < 40 && weeklyHours > 40)) {
+                 overtimeDates.push(shift.date);
+            }
         }
     }
     return overtimeDates;
