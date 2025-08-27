@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock } from "lucide-react"
+import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock, BarChart, Zap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar } from "@/components/ui/calendar"
 import type { DateRange } from "react-day-picker"
@@ -52,6 +53,7 @@ export default function CashflowPage() {
   const [shifts, setShifts] = useState<Shift[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [payPeriod, setPayPeriod] = useState<DateRange | undefined>(undefined);
+  const [cursorDate, setCursorDate] = useState(new Date());
   
   const [shiftHours, setShiftHours] = useState("")
   const [hourlyRate, setHourlyRate] = useState("")
@@ -158,6 +160,58 @@ export default function CashflowPage() {
         totalHours: totalRegularHours + totalOvertimeHours
     };
   }, [shifts, payPeriod]);
+
+  const monthlyStats = useMemo(() => {
+    const month = cursorDate.getMonth();
+    const year = cursorDate.getFullYear();
+    const shiftsInMonth = shifts.filter(s => s.date.getMonth() === month && s.date.getFullYear() === year);
+
+    let totalMonthlyIncome = 0;
+    let totalMonthlyHours = 0;
+    let totalMonthlyOvertimeHours = 0;
+
+    const weeklyShifts: { [weekStart: string]: Shift[] } = {};
+    shiftsInMonth.forEach(shift => {
+        const shiftDay = shift.date.getDay();
+        const weekStart = new Date(shift.date);
+        weekStart.setDate(shift.date.getDate() - shiftDay);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekStartStr = weekStart.toISOString();
+        if (!weeklyShifts[weekStartStr]) weeklyShifts[weekStartStr] = [];
+        weeklyShifts[weekStartStr].push(shift);
+    });
+
+    for (const weekStartStr in weeklyShifts) {
+        const week = weeklyShifts[weekStartStr];
+        let weeklyHours = 0;
+        let weeklyPremiumPay = 0;
+        
+        week.forEach(shift => {
+            weeklyHours += shift.hours;
+            weeklyPremiumPay += shift.premiumPay || 0;
+        });
+
+        let regularHours = Math.min(weeklyHours, 40);
+        let overtimeHours = Math.max(0, weeklyHours - 40);
+        totalMonthlyHours += weeklyHours;
+        totalMonthlyOvertimeHours += overtimeHours;
+        
+        if (week.length > 0) {
+            const avgRate = week.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
+            const regularPay = regularHours * avgRate;
+            const overtimePay = overtimeHours * avgRate * 1.5;
+            totalMonthlyIncome += regularPay + overtimePay + weeklyPremiumPay;
+        }
+    }
+
+    const burnoutIndex = totalMonthlyHours > 0 ? (totalMonthlyOvertimeHours / totalMonthlyHours) * 100 : 0;
+
+    return {
+        totalMonthlyIncome,
+        totalMonthlyHours,
+        burnoutIndex,
+    }
+  }, [shifts, cursorDate]);
 
 
   const shiftsInPayPeriod = useMemo(() => {
@@ -354,6 +408,8 @@ export default function CashflowPage() {
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
+                    month={cursorDate}
+                    onMonthChange={setCursorDate}
                     modifiers={{ 
                         scheduled: shifts.map(s => s.date),
                         payPeriod: payPeriod || {},
@@ -365,6 +421,29 @@ export default function CashflowPage() {
                         overtime: "bg-destructive/20 text-destructive-foreground",
                     }}
                 />
+            </CardContent>
+        </Card>
+
+         <Card>
+            <CardHeader>
+                <CardTitle>Monthly Summary</CardTitle>
+                <CardDescription>
+                    Analysis for {cursorDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-3 gap-4 text-center">
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Est. Income</p>
+                    <p className="text-lg font-bold">${monthlyStats.totalMonthlyIncome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Hours</p>
+                    <p className="text-lg font-bold">{monthlyStats.totalMonthlyHours.toFixed(1)}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Burnout Index</p>
+                    <p className="text-lg font-bold">{monthlyStats.burnoutIndex.toFixed(1)}% OT</p>
+                </div>
             </CardContent>
         </Card>
 
