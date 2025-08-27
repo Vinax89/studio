@@ -2,12 +2,17 @@
 import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types";
+import { mockTransactions } from "@/lib/data";
 
-interface OverviewCardsProps {
-    transactions: Transaction[];
+// Simulate slow data fetching
+const getTransactions = async (): Promise<Transaction[]> => {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return mockTransactions;
 }
 
-export default function OverviewCards({ transactions }: OverviewCardsProps) {
+
+export default async function OverviewCards() {
+  const transactions = await getTransactions();
   const incomeTransactions = transactions.filter(t => t.type === 'Income');
   const expenseTransactions = transactions.filter(t => t.type === 'Expense');
 

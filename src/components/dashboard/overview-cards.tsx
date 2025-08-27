@@ -1,3 +1,4 @@
+
 "use client"
 
 import { DollarSign, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
