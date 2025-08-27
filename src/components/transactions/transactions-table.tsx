@@ -7,18 +7,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
-import { memo, useMemo } from "react"
+import { memo, useMemo, useState } from "react"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
+  pageSize?: number
 }
 
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
+  pageSize = 20,
 }: TransactionsTableProps) {
+  const [page, setPage] = useState(0)
+
   const formattedTransactions = useMemo(
     () =>
       transactions.map((transaction) => ({
@@ -30,6 +35,18 @@ export const TransactionsTable = memo(function TransactionsTable({
       })),
     [transactions],
   )
+
+  const pageCount = Math.max(
+    1,
+    Math.ceil(formattedTransactions.length / pageSize),
+  )
+  const currentTransactions = useMemo(() => {
+    const start = page * pageSize
+    return formattedTransactions.slice(start, start + pageSize)
+  }, [formattedTransactions, page, pageSize])
+
+  const previousPage = () => setPage((p) => Math.max(p - 1, 0))
+  const nextPage = () => setPage((p) => Math.min(p + 1, pageCount - 1))
 
   return (
     <div className="rounded-lg border">
@@ -44,7 +61,7 @@ export const TransactionsTable = memo(function TransactionsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {formattedTransactions.map((transaction) => (
+          {currentTransactions.map((transaction) => (
             <TableRow key={transaction.id}>
               <TableCell>{transaction.formattedDate}</TableCell>
               <TableCell className="font-medium">
@@ -73,6 +90,27 @@ export const TransactionsTable = memo(function TransactionsTable({
           ))}
         </TableBody>
       </Table>
+      <div className="flex items-center justify-between p-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={previousPage}
+          disabled={page === 0}
+        >
+          Previous
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          Page {page + 1} of {pageCount}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={nextPage}
+          disabled={page === pageCount - 1}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   )
 })
