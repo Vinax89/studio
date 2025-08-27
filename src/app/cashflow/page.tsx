@@ -62,18 +62,67 @@ export default function CashflowPage() {
 
   const { toast } = useToast();
   
-  const totalShiftIncomeForPayPeriod = useMemo(() => {
-    if (!payPeriod || !payPeriod.from || !payPeriod.to) return 0;
-    
-    return shifts.reduce((total, shift) => {
-        if(shift.date >= payPeriod.from! && shift.date <= payPeriod.to!){
-            const basePay = shift.hours * shift.rate;
-            const premium = shift.premiumPay || 0;
-            return total + basePay + premium;
+  const payPeriodCalculation = useMemo(() => {
+    if (!payPeriod || !payPeriod.from || !payPeriod.to) {
+        return { totalIncome: 0, regularHours: 0, overtimeHours: 0, totalHours: 0 };
+    }
+
+    const week1Start = payPeriod.from;
+    const week1End = new Date(week1Start);
+    week1End.setDate(week1End.getDate() + 6);
+
+    const week2Start = new Date(week1Start);
+    week2Start.setDate(week1Start.getDate() + 7);
+    const week2End = payPeriod.to;
+
+    let totalIncome = 0;
+    let totalRegularHours = 0;
+    let totalOvertimeHours = 0;
+
+    const calculateWeekPay = (start: Date, end: Date) => {
+        const weekShifts = shifts.filter(s => s.date >= start && s.date <= end);
+        let weeklyHours = 0;
+        let weeklyIncome = 0;
+        let weeklyPremiumPay = 0;
+
+        // First pass: Calculate total hours and sum premium pay
+        weekShifts.forEach(shift => {
+            weeklyHours += shift.hours;
+            weeklyPremiumPay += shift.premiumPay || 0;
+        });
+        
+        let regularHours = Math.min(weeklyHours, 40);
+        let overtimeHours = Math.max(0, weeklyHours - 40);
+        
+        totalRegularHours += regularHours;
+        totalOvertimeHours += overtimeHours;
+
+        // Second pass: Apportion pay based on averaged rate if needed, or use a single rate
+        // This simple model assumes rate is consistent across shifts for OT calculation.
+        // A more complex model might need to decide which shift's rate to use for OT.
+        if (weekShifts.length > 0) {
+           const avgRate = weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
+           const regularPay = regularHours * avgRate;
+           const overtimePay = overtimeHours * avgRate * 1.5;
+           weeklyIncome = regularPay + overtimePay + weeklyPremiumPay;
         }
-        return total;
-    }, 0);
+
+        return weeklyIncome;
+    };
+    
+    const week1Pay = calculateWeekPay(week1Start, week1End);
+    const week2Pay = calculateWeekPay(week2Start, week2End);
+    
+    totalIncome = week1Pay + week2Pay;
+
+    return { 
+        totalIncome, 
+        regularHours: totalRegularHours,
+        overtimeHours: totalOvertimeHours,
+        totalHours: totalRegularHours + totalOvertimeHours
+    };
   }, [shifts, payPeriod]);
+
 
   const shiftsInPayPeriod = useMemo(() => {
       if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
@@ -331,8 +380,21 @@ export default function CashflowPage() {
                                 <DollarSign className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">${totalShiftIncomeForPayPeriod.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <div className="text-2xl font-bold">${payPeriodCalculation.totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                 <p className="text-xs text-muted-foreground">from {shiftsInPayPeriod.length} shift(s) in this period</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Hours Breakdown</CardTitle>
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-sm space-y-1">
+                                    <div className="flex justify-between"><span>Regular Hours:</span> <span>{payPeriodCalculation.regularHours.toFixed(2)}</span></div>
+                                    <div className="flex justify-between"><span>Overtime Hours:</span> <span>{payPeriodCalculation.overtimeHours.toFixed(2)}</span></div>
+                                    <div className="flex justify-between font-bold"><span>Total Hours:</span> <span>{payPeriodCalculation.totalHours.toFixed(2)}</span></div>
+                                </div>
                             </CardContent>
                         </Card>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
