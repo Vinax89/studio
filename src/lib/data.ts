@@ -1,4 +1,4 @@
-import type { Transaction, Goal } from './types';
+import type { Transaction, Goal, Debt } from './types';
 
 export const mockTransactions: Transaction[] = [
   { id: '1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', isRecurring: true },
@@ -16,4 +16,10 @@ export const mockGoals: Goal[] = [
   { id: '2', name: 'Retirement Fund Boost', targetAmount: 10000, currentAmount: 4200, deadline: '2024-12-31' },
   { id: '3', name: 'Emergency Fund', targetAmount: 15000, currentAmount: 14800, deadline: '2024-09-30' },
   { id: '4', name: 'Vacation to Hawaii', targetAmount: 4000, currentAmount: 1250, deadline: '2025-06-01' },
+];
+
+export const mockDebts: Debt[] = [
+    { id: '1', name: 'Student Loan', totalAmount: 22000, minimumPayment: 350, dueDate: 8 },
+    { id: '2', name: 'Car Loan', totalAmount: 15000, minimumPayment: 275, dueDate: 20 },
+    { id: '3', name: 'Credit Card', totalAmount: 2500, minimumPayment: 100, dueDate: 25 },
 ];

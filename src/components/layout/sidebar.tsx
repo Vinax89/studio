@@ -15,6 +15,7 @@ import {
   Sparkles,
   Landmark,
   Settings,
+  CreditCard,
 } from "lucide-react"
 import { NurseFinAILogo } from "@/components/icons"
 import { cn } from "@/lib/utils"
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
+  { href: "/debts", icon: CreditCard, label: "Debts" },
   { href: "/goals", icon: Target, label: "Goals" },
   { href: "/insights", icon: Sparkles, label: "AI Insights" },
   { href: "/taxes", icon: Landmark, label: "Tax Estimator" },

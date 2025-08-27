@@ -15,3 +15,11 @@ export type Goal = {
   currentAmount: number;
   deadline: string;
 };
+
+export type Debt = {
+    id: string;
+    name: string;
+    totalAmount: number;
+    minimumPayment: number;
+    dueDate: number; // Day of the month
+}
