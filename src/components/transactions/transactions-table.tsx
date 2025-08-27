@@ -10,7 +10,14 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
-import { memo, useMemo, useState, forwardRef, type HTMLAttributes } from "react"
+import {
+  memo,
+  useMemo,
+  useState,
+  forwardRef,
+  type HTMLAttributes,
+  type ComponentType,
+} from "react"
 import { FixedSizeList, type ListChildComponentProps } from "react-window"
 import { Button } from "@/components/ui/button"
 
@@ -71,22 +78,19 @@ export const TransactionsTable = memo(function TransactionsTable({
     )
   }
 
-  const Outer = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-    ({ style, children, ...props }, ref) => (
-      <div
-        ref={ref}
-        style={{ ...style, overflow: "auto" }}
-        {...props}
-      >
-        <Table>{children}</Table>
-      </div>
-    ),
-  )
+  const Outer: ComponentType<HTMLAttributes<HTMLDivElement>> =
+    forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+      ({ style, children, ...props }, ref) => (
+        <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
+          <Table>{children}</Table>
+        </div>
+      ),
+    )
 
-  const Inner = forwardRef<
-    HTMLTableSectionElement,
-    HTMLAttributes<HTMLTableSectionElement>
-  >((props, ref) => <TableBody ref={ref} {...props} />)
+  const Inner: ComponentType<HTMLAttributes<HTMLTableSectionElement>> =
+    forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
+      (props, ref) => <TableBody ref={ref} {...props} />,
+    )
 
   return (
     <div className="rounded-lg border">
@@ -106,8 +110,8 @@ export const TransactionsTable = memo(function TransactionsTable({
         itemCount={currentTransactions.length}
         itemSize={rowHeight}
         width="100%"
-        outerElementType={Outer as any}
-        innerElementType={Inner as any}
+        outerElementType={Outer}
+        innerElementType={Inner}
         itemKey={(index) => currentTransactions[index].id}
       >
         {Row}
