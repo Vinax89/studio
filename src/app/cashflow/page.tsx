@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -217,7 +216,7 @@ export default function CashflowPage() {
   const shiftsInPayPeriod = useMemo(() => {
       if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
       return shifts
-        .filter(shift => shift.date >= payPeriod.from! && shift.date <= payPeriod.to!)
+        .filter(shift => shift.date >= payPeriod!.from! && shift.date <= payPeriod!.to!)
         .sort((a,b) => a.date.getTime() - b.date.getTime());
   }, [shifts, payPeriod]);
 
