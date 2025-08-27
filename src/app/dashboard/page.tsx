@@ -43,7 +43,9 @@ export default async function DashboardPage() {
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
       </Suspense>
-      <DashboardCharts transactions={transactions} chartData={chartData} />
+      <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
+        <DashboardCharts transactions={transactions} chartData={chartData} />
+      </Suspense>
     </div>
   )
 }
