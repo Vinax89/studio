@@ -8,40 +8,40 @@ body {
 
 @layer base {
   :root {
-    --background: 240 67% 94%;
-    --foreground: 275 100% 10%;
-    --card: 240 60% 99%;
-    --card-foreground: 275 100% 10%;
-    --popover: 240 60% 99%;
-    --popover-foreground: 275 100% 10%;
-    --primary: 275 100% 25%;
-    --primary-foreground: 240 60% 99%;
-    --secondary: 240 20% 96%;
-    --secondary-foreground: 275 100% 10%;
-    --muted: 240 20% 96%;
-    --muted-foreground: 240 5% 45%;
-    --accent: 271 76% 53%;
-    --accent-foreground: 240 60% 99%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 88%;
-    --input: 240 20% 98%;
-    --ring: 271 76% 53%;
-    --chart-1: 275 100% 25%;
-    --chart-2: 271 76% 53%;
-    --chart-3: 275 80% 65%;
-    --chart-4: 240 50% 75%;
-    --chart-5: 271 50% 80%;
-    --radius: 0.5rem;
+    --background: 240 10% 98%;
+    --foreground: 240 6% 10%;
+    --card: 240 10% 98%;
+    --card-foreground: 240 6% 10%;
+    --popover: 240 10% 98%;
+    --popover-foreground: 240 6% 10%;
+    --primary: 262 84% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 100% 96%;
+    --secondary-foreground: 262 70% 30%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 262 100% 96%;
+    --accent-foreground: 262 84% 58%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 84% 58%;
+    --chart-1: 262 84% 58%;
+    --chart-2: 262 70% 75%;
+    --chart-3: 262 60% 85%;
+    --chart-4: 262 50% 90%;
+    --chart-5: 262 40% 95%;
+    --radius: 1rem;
 
-    --sidebar-background: hsl(275 90% 18%);
-    --sidebar-foreground: hsl(240 60% 95%);
-    --sidebar-primary: hsl(240 60% 99%);
-    --sidebar-primary-foreground: hsl(275 100% 25%);
-    --sidebar-accent: hsl(275 80% 28%);
-    --sidebar-accent-foreground: hsl(240 60% 99%);
-    --sidebar-border: hsl(275 80% 22%);
-    --sidebar-ring: hsl(271 76% 53%);
+    --sidebar-background: hsl(262 90% 98%);
+    --sidebar-foreground: hsl(240 6% 10%);
+    --sidebar-primary: hsl(262 84% 58%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(262 100% 94%);
+    --sidebar-accent-foreground: hsl(262 84% 58%);
+    --sidebar-border: hsl(240 6% 90%);
+    --sidebar-ring: hsl(262 84% 58%);
   }
   .dark {
     --background: 240 6% 10%;
@@ -50,33 +50,33 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 240 6% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 271 76% 53%;
-    --primary-foreground: 240 60% 99%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 262 84% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 20% 18%;
+    --secondary-foreground: 262 80% 90%;
     --muted: 240 4% 16%;
     --muted-foreground: 240 5% 65%;
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 262 20% 18%;
+    --accent-foreground: 262 80% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
     --border: 240 4% 16%;
     --input: 240 4% 16%;
-    --ring: 271 76% 53%;
-    --chart-1: 275 100% 25%;
-    --chart-2: 271 76% 53%;
-    --chart-3: 275 80% 65%;
-    --chart-4: 240 50% 75%;
-    --chart-5: 271 50% 80%;
+    --ring: 262 84% 58%;
+    --chart-1: 262 84% 58%;
+    --chart-2: 262 70% 45%;
+    --chart-3: 262 60% 35%;
+    --chart-4: 262 50% 25%;
+    --chart-5: 262 40% 15%;
 
-    --sidebar-background: hsl(240 6% 10%);
+    --sidebar-background: hsl(240 6% 8%);
     --sidebar-foreground: hsl(0 0% 98%);
-    --sidebar-primary: hsl(271 76% 53%);
-    --sidebar-primary-foreground: hsl(240 60% 99%);
-    --sidebar-accent: hsl(240 4% 16%);
+    --sidebar-primary: hsl(262 84% 58%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(262 20% 20%);
     --sidebar-accent-foreground: hsl(0 0% 98%);
     --sidebar-border: hsl(240 4% 16%);
-    --sidebar-ring: hsl(271 76% 53%);
+    --sidebar-ring: hsl(262 84% 58%);
   }
 }
 

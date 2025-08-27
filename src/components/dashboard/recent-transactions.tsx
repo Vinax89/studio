@@ -19,7 +19,7 @@ export default function RecentTransactions() {
             <Avatar className="hidden h-9 w-9 sm:flex">
                 <AvatarFallback className={cn(
                     transaction.type === 'Income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600',
-                    'dark:bg-transparent'
+                    'dark:bg-secondary dark:text-secondary-foreground'
                 )}>
                     {transaction.type === 'Income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
                 </AvatarFallback>
