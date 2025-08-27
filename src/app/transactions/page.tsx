@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -16,7 +16,7 @@ export default function TransactionsPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
 
@@ -35,18 +35,18 @@ export default function TransactionsPage() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
-        const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = transaction.description.toLowerCase().includes(deferredSearchTerm.toLowerCase());
         const matchesType = filterType === 'all' || transaction.type === filterType;
         const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
         return matchesSearch && matchesType && matchesCategory;
     });
-  }, [transactions, searchTerm, filterType, filterCategory]);
+  }, [transactions, deferredSearchTerm, filterType, filterCategory]);
 
   const handleSearchChange = (value: string) => {
-    startTransition(() => {
-      setSearchTerm(value);
-    });
+    setSearchTerm(value);
   };
+
+  const isSearching = deferredSearchTerm !== searchTerm;
 
   return (
     <div className="space-y-6">
@@ -78,7 +78,7 @@ export default function TransactionsPage() {
         categories={categories}
       />
 
-      {isPending && (
+      {isSearching && (
         <p className="text-sm text-muted-foreground">Filtering…</p>
       )}
 
