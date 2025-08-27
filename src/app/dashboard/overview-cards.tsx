@@ -4,9 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types";
 import { mockTransactions } from "@/lib/data";
 
-// Simulate slow data fetching
+// Optional demo delay; disable in production
+const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
+
 const getTransactions = async (): Promise<Transaction[]> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  if (enableMockDelay) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
   return mockTransactions;
 }
 
