@@ -392,7 +392,7 @@ export default function CashflowPage() {
                             <CardContent>
                                 <div className="text-sm space-y-1">
                                     <div className="flex justify-between"><span>Regular Hours:</span> <span>{payPeriodCalculation.regularHours.toFixed(2)}</span></div>
-                                    <div className="flex justify-between"><span>Overtime Hours:</span> <span>{payPeriodCalculation.overtimeHours.toFixed(2)}</span></div>
+                                    <div className="flex justify-between font-semibold text-primary"><span>Overtime Hours:</span> <span>{payPeriodCalculation.overtimeHours.toFixed(2)}</span></div>
                                     <div className="flex justify-between font-bold"><span>Total Hours:</span> <span>{payPeriodCalculation.totalHours.toFixed(2)}</span></div>
                                 </div>
                             </CardContent>
