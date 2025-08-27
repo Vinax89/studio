@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/analyze-spending-habits.ts';
 import '@/ai/flows/tax-estimation.ts';
+import '@/ai/flows/analyze-receipt.ts';

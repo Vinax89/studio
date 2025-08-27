@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File } from "lucide-react";
+import { File, ScanLine } from "lucide-react";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const router = useRouter();
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     setTransactions(prev => [
@@ -29,6 +31,10 @@ export default function TransactionsPage() {
             <Button variant="outline">
                 <File className="mr-2 h-4 w-4" />
                 Export
+            </Button>
+             <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
+                <ScanLine className="mr-2 h-4 w-4" />
+                Scan Receipt
             </Button>
             <AddTransactionDialog onSave={addTransaction} />
         </div>
