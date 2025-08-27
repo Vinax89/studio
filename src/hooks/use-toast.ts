@@ -129,7 +129,10 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
+// Use a Set for listeners to allow O(1) add/remove operations.
+// This avoids repeatedly scanning the array when hooks unmount,
+// which improves performance in scenarios with many listeners.
+const listeners = new Set<(state: State) => void>()
 
 let memoryState: State = { toasts: [] }
 
@@ -175,12 +178,9 @@ function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
-    listeners.push(setState)
+    listeners.add(setState)
     return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
+      listeners.delete(setState)
     }
   }, [])
 
