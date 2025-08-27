@@ -35,16 +35,17 @@ const IncomeExpenseChart = dynamic(
 // Optional demo delay; disable in production
 const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
 
-const mockDelay = (ms: number) =>
-  enableMockDelay ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve();
-
 const getTransactions = async (): Promise<Transaction[]> => {
-  await mockDelay(1000);
+  if (enableMockDelay) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
   return mockTransactions;
 };
 
 const getChartData = async () => {
-  await mockDelay(1500);
+  if (enableMockDelay) {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
   return [
     { month: "Jan", income: 4000, expenses: 2400 },
     { month: "Feb", income: 3000, expenses: 1398 },
