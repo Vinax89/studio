@@ -24,9 +24,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {},
   // This is to allow cross-origin requests in development.
   // The preview window is on a different subdomain than the dev server.
-  experimental: {},
   allowedDevOrigins: ["https://*.cloudworkstations.dev"],
 };
 
