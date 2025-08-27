@@ -7,3 +7,6 @@ runConfig:
   maxInstances: 1
   cpu: 2
   memoryMiB: 4096
+  env:
+    - name: GENKIT_MODEL
+      value: googleai/gemini-2.5-flash # Optional override for the Genkit model
