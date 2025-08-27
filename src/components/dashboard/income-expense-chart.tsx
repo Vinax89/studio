@@ -9,6 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useTheme } from "next-themes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BarChart = dynamic(
   () => import("recharts").then((mod) => mod.BarChart),
@@ -40,7 +41,10 @@ const Legend = dynamic(
 );
 const ResponsiveContainer = dynamic(
   () => import("recharts").then((mod) => mod.ResponsiveContainer),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[300px] w-full" />,
+  }
 );
 
 interface IncomeExpenseChartProps {
