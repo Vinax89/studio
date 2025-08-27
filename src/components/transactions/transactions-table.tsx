@@ -35,10 +35,10 @@ export const TransactionsTable = memo(function TransactionsTable({
   height = 400,
   rowHeight = 56,
 }: TransactionsTableProps) {
-  const [range, setRange] = useState({ start: 0, end: 0 })
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 })
 
   const visibleTransactions = useMemo(() => {
-    const slice = transactions.slice(range.start, range.end + 1)
+    const slice = transactions.slice(visibleRange.start, visibleRange.end + 1)
     return slice.map((transaction) => ({
       ...transaction,
       formattedDate: new Date(transaction.date).toLocaleDateString(),
@@ -46,11 +46,11 @@ export const TransactionsTable = memo(function TransactionsTable({
         transaction.type === "Income" ? "+" : "-"
       }$${transaction.amount.toFixed(2)}`,
     }))
-  }, [transactions, range])
+  }, [transactions, visibleRange])
 
   const Row = ({ index, style }: ListChildComponentProps) => {
     const fallback = transactions[index]
-    const offset = index - range.start
+    const offset = index - visibleRange.start
     const transaction =
       offset >= 0 && offset < visibleTransactions.length
         ? visibleTransactions[offset]
@@ -125,7 +125,7 @@ export const TransactionsTable = memo(function TransactionsTable({
         innerElementType={Inner as any}
         itemKey={(index) => transactions[index].id}
         onItemsRendered={({ visibleStartIndex, visibleStopIndex }) =>
-          setRange({ start: visibleStartIndex, end: visibleStopIndex })
+          setVisibleRange({ start: visibleStartIndex, end: visibleStopIndex })
         }
       >
         {Row}
