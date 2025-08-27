@@ -16,6 +16,8 @@ interface Shift {
   date: Date;
   hours: number;
   rate: number;
+  premiumPay?: number;
+  differentials?: string;
 }
 
 export default function CashflowPage() {
@@ -29,10 +31,16 @@ export default function CashflowPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [shiftHours, setShiftHours] = useState("")
   const [hourlyRate, setHourlyRate] = useState("")
+  const [premiumPay, setPremiumPay] = useState("")
+  const [differentials, setDifferentials] = useState("")
 
   const { toast } = useToast();
   
-  const totalShiftIncome = shifts.reduce((total, shift) => total + shift.hours * shift.rate, 0);
+  const totalShiftIncome = shifts.reduce((total, shift) => {
+    const basePay = shift.hours * shift.rate;
+    const premium = shift.premiumPay || 0;
+    return total + basePay + premium;
+  }, 0);
 
   const handleCashflowSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -78,28 +86,28 @@ export default function CashflowPage() {
           return;
       }
 
-      // Check if a shift already exists for the selected date
       const existingShiftIndex = shifts.findIndex(s => s.date.getTime() === selectedDate.getTime());
       
       const newShift: Shift = {
           date: selectedDate,
           hours: parseFloat(shiftHours),
-          rate: parseFloat(hourlyRate)
+          rate: parseFloat(hourlyRate),
+          premiumPay: premiumPay ? parseFloat(premiumPay) : undefined,
+          differentials: differentials || undefined,
       };
 
       if (existingShiftIndex > -1) {
-          // Update existing shift
           const updatedShifts = [...shifts];
           updatedShifts[existingShiftIndex] = newShift;
           setShifts(updatedShifts);
       } else {
-          // Add new shift
           setShifts([...shifts, newShift]);
       }
       
-      // Clear form
       setShiftHours("");
       setHourlyRate("");
+      setPremiumPay("");
+      setDifferentials("");
   }
   
   const handleDateSelect = (date: Date | undefined) => {
@@ -109,9 +117,13 @@ export default function CashflowPage() {
         if (existingShift) {
             setShiftHours(String(existingShift.hours));
             setHourlyRate(String(existingShift.rate));
+            setPremiumPay(existingShift.premiumPay ? String(existingShift.premiumPay) : "");
+            setDifferentials(existingShift.differentials || "");
         } else {
             setShiftHours("");
             setHourlyRate("");
+            setPremiumPay("");
+            setDifferentials("");
         }
       }
   };
@@ -207,7 +219,6 @@ export default function CashflowPage() {
                     onSelect={handleDateSelect}
                     modifiers={{ scheduled: shifts.map(s => s.date) }}
                     modifiersClassNames={{ scheduled: "bg-primary/20" }}
-                    
                 />
             </CardContent>
         </Card>
@@ -226,6 +237,14 @@ export default function CashflowPage() {
                         <div className="space-y-2">
                             <Label htmlFor="rate">Hourly Rate ($)</Label>
                             <Input id="rate" type="number" placeholder="e.g., 45.50" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="differentials">Differentials (e.g., Night Shift)</Label>
+                            <Input id="differentials" placeholder="e.g., Night, Weekend" value={differentials} onChange={e => setDifferentials(e.target.value)} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="premium">Premium Pay (Additional)</Label>
+                            <Input id="premium" type="number" placeholder="e.g., 50" value={premiumPay} onChange={e => setPremiumPay(e.target.value)} />
                         </div>
                         <Button type="submit" className="w-full">
                             {shifts.some(s => s.date.getTime() === selectedDate.getTime()) ? 'Update Shift' : 'Add Shift'}
@@ -259,8 +278,9 @@ export default function CashflowPage() {
                                 <div>
                                     <p className="font-semibold">{shift.date.toLocaleDateString()}</p>
                                     <p className="text-muted-foreground">{shift.hours} hrs @ ${shift.rate}/hr</p>
+                                    {shift.differentials && <p className="text-xs text-muted-foreground">({shift.differentials})</p>}
                                 </div>
-                                <div className="font-medium">${(shift.hours * shift.rate).toFixed(2)}</div>
+                                <div className="font-medium">${((shift.hours * shift.rate) + (shift.premiumPay || 0)).toFixed(2)}</div>
                             </div>
                         ))}
                     </div>
