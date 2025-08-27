@@ -15,12 +15,17 @@ const getTransactions = async (): Promise<Transaction[]> => {
 
 export default async function OverviewCards() {
   const transactions = await getTransactions();
-  const incomeTransactions = transactions.filter(t => t.type === 'Income');
-  const expenseTransactions = transactions.filter(t => t.type === 'Expense');
-
-  const totalIncome = incomeTransactions.reduce((acc, t) => acc + t.amount, 0);
-  const totalExpenses = expenseTransactions.reduce((acc, t) => acc + t.amount, 0);
-  
+  const { totalIncome, totalExpenses } = transactions.reduce(
+    (acc, t) => {
+      if (t.type === "Income") {
+        acc.totalIncome += t.amount;
+      } else if (t.type === "Expense") {
+        acc.totalExpenses += t.amount;
+      }
+      return acc;
+    },
+    { totalIncome: 0, totalExpenses: 0 }
+  );
   const savings = totalIncome - totalExpenses;
 
 
