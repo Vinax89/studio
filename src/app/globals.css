@@ -31,11 +31,11 @@
     --chart-5: 120 70% 50%;
   }
   .dark {
-    --background: 210 10% 12%;
+    --background: 220 12% 10%;
     --foreground: 210 10% 85%;
-    --card: 210 10% 16%;
+    --card: 220 12% 14%;
     --card-foreground: 210 10% 85%;
-    --popover: 210 10% 12%;
+    --popover: 220 12% 10%;
     --popover-foreground: 210 10% 85%;
     --primary: 182 80% 50%;
     --primary-foreground: 182 80% 10%;
@@ -50,11 +50,11 @@
     --border: 210 10% 24%;
     --input: 210 10% 24%;
     --ring: 182 80% 50%;
-    --chart-1: 190 80% 55%;
-    --chart-2: 340 90% 65%;
-    --chart-3: 40 90% 60%;
-    --chart-4: 280 85% 70%;
-    --chart-5: 120 70% 50%;
+    --chart-1: 210 90% 60%;
+    --chart-2: 160 90% 60%;
+    --chart-3: 340 90% 60%;
+    --chart-4: 40 90% 60%;
+    --chart-5: 280 90% 60%;
   }
 }
 
