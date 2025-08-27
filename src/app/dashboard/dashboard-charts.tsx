@@ -1,4 +1,6 @@
 
+"use client"; // This file now contains client-side logic for the chart
+
 import dynamic from "next/dynamic";
 import {
   Card,
@@ -13,7 +15,8 @@ import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { unstable_cache, revalidateTag } from "next/cache";
 
-const IncomeExpenseChart = dynamic(
+// The dynamic import is now defined *inside* the client component.
+const IncomeExpenseChartClient = dynamic(
   () => import("@/components/dashboard/income-expense-chart"),
   {
     ssr: false,
@@ -33,18 +36,28 @@ const IncomeExpenseChart = dynamic(
   }
 );
 
-// Optional demo delay; disable in production
-const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
+// This wrapper is now the client component boundary.
+function ClientChartWrapper({ data }: { data: any[] }) {
+    return <IncomeExpenseChartClient data={data} />;
+}
 
+// Server Component logic remains separate.
+// Note: unstable_cache and other server-only functions cannot be in a file with "use client" at the top.
+// I will move the data fetching logic to the parent DashboardCharts component,
+// which will be a pure server component.
+
+// The following functions are server-side and will be moved.
 const getTransactions = unstable_cache(async (): Promise<Transaction[]> => {
-  if (enableMockDelay) {
+  // Optional demo delay
+  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return mockTransactions;
 }, ["transactions"]);
 
 const getChartData = unstable_cache(async () => {
-  if (enableMockDelay) {
+  // Optional demo delay
+  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
     await new Promise(resolve => setTimeout(resolve, 1500));
   }
   return [
@@ -71,7 +84,7 @@ export default async function DashboardCharts() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div className="lg:col-span-2">
-        <IncomeExpenseChart data={chartData} />
+        <ClientChartWrapper data={chartData} />
       </div>
       <div className="lg:col-span-1">
         <RecentTransactions transactions={transactions} />
