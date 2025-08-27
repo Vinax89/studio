@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock, BarChart, Zap } from "lucide-react"
+import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar } from "@/components/ui/calendar"
 import type { DateRange } from "react-day-picker"
@@ -519,7 +519,6 @@ export default function CashflowPage() {
                                 <div key={shift.date.toISOString()} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
                                     <div>
                                         <p className="font-semibold">{shift.date.toLocaleDateString()}</p>
-
                                         <p className="text-muted-foreground">{shift.hours} hrs @ ${shift.rate}/hr</p>
                                         {shift.differentials && <p className="text-xs text-muted-foreground">({shift.differentials})</p>}
                                     </div>
