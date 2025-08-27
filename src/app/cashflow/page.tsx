@@ -200,14 +200,14 @@ export default function CashflowPage() {
                 <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
                 <CardDescription>Select a date to add or edit a shift.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-center">
                 <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
                     modifiers={{ scheduled: shifts.map(s => s.date) }}
                     modifiersClassNames={{ scheduled: "bg-primary/20" }}
-                    className="p-0"
+                    
                 />
             </CardContent>
         </Card>
@@ -274,5 +274,3 @@ export default function CashflowPage() {
     </div>
   )
 }
-
-    
