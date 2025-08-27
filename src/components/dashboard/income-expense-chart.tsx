@@ -19,12 +19,12 @@ export default function IncomeExpenseChart() {
   const tickColor = theme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
 
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <CardTitle>Income vs. Expenses</CardTitle>
         <CardDescription>A look at your cash flow for the last 7 months.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="py-6">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
