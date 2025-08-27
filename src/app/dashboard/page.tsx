@@ -1,5 +1,5 @@
-import OverviewCards from "@/app/dashboard/overview-cards";
 import DashboardCharts from "@/app/dashboard/dashboard-charts";
+import OverviewCards from "@/app/dashboard/overview-cards";
 
 export default function DashboardPage() {
   return (
