@@ -12,7 +12,11 @@ const nextConfig: NextConfig = {
 
   // Allow Firebase Studio / Cloud Workstations preview host to fetch /_next/*
   // @ts-expect-error - not typed in NextConfig yet
-  allowedDevOrigins: ['*.cloudworkstations.dev'],
+  allowedDevOrigins: [
+    '*.cloudworkstations.dev',
+    // Add the specific origin from the error log for stability
+    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+  ],
 
   experimental: {},
   webpack: (config, { isServer, webpack }) => {
