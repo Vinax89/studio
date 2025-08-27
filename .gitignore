@@ -9,6 +9,7 @@ node_modules/
 
 # Env & local
 .env
+.env.local
 .env.*
 !.env.example
 
