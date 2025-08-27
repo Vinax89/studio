@@ -1,6 +1,5 @@
 "use client"
 
-import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
@@ -9,12 +8,16 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useTheme } from "next-themes";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const Recharts = dynamic(() => import("recharts"), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[300px] w-full" />,
-});
+import {
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface IncomeExpenseChartProps {
   data: { month: string; income: number; expenses: number; }[];
@@ -22,19 +25,7 @@ interface IncomeExpenseChartProps {
 
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
   const { resolvedTheme } = useTheme();
-  const tickColor = resolvedTheme === 'dark' ? "#888888" : "#A1A1A9";
   const strokeColor = resolvedTheme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
-
-  const {
-    BarChart,
-    Bar,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-  } = Recharts as unknown as typeof import("recharts");
 
   return (
     <Card>
