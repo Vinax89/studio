@@ -17,7 +17,7 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Financial Goals</h1>
@@ -25,7 +25,7 @@ export default function GoalsPage() {
         </div>
         <AddGoalDialog onSave={addGoal} />
       </div>
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {goals.map(goal => (
           <GoalCard key={goal.id} goal={goal} />
         ))}

@@ -51,7 +51,7 @@ export default function TaxEstimatorPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Tax Estimation Tool</h1>
         <p className="text-muted-foreground">Get an AI-powered estimate of your annual tax burden.</p>
@@ -64,7 +64,7 @@ export default function TaxEstimatorPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-3 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="income">Annual Income</Label>
                     <Input id="income" type="number" placeholder="e.g., 75000" value={income} onChange={(e) => setIncome(e.target.value)} />
@@ -90,9 +90,9 @@ export default function TaxEstimatorPage() {
       </Card>
       
       {taxResult && (
-        <div className="mt-6">
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Estimation Results</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold tracking-tight">Estimation Results</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Estimated Tax</CardTitle>
@@ -114,7 +114,7 @@ export default function TaxEstimatorPage() {
                     </CardContent>
                 </Card>
             </div>
-             <Card className="mt-4">
+             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Breakdown</CardTitle>
                     <CardDescription>A detailed explanation of how the tax was estimated.</CardDescription>

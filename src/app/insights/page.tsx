@@ -63,7 +63,7 @@ export default function InsightsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">AI-Powered Financial Insights</h1>
         <p className="text-muted-foreground">Upload your financial documents to get personalized advice.</p>
@@ -114,7 +114,7 @@ export default function InsightsPage() {
       </Card>
       
       {analysisResult && (
-        <div className="grid gap-6 mt-6">
+        <div className="grid gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="p-3 rounded-full bg-accent text-accent-foreground">

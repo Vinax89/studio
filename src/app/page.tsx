@@ -71,18 +71,20 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
       <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
+        <CardHeader className="text-center space-y-4">
+          <div className="flex justify-center">
             <NurseFinAILogo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">
-            {isLoginView ? "Welcome Back" : "Create an Account"}
-          </CardTitle>
-          <CardDescription>
-            {isLoginView 
-                ? "Sign in to access your financial dashboard."
-                : "Your personal finance companion for a successful nursing career."}
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-3xl font-bold tracking-tight">
+              {isLoginView ? "Welcome Back" : "Create an Account"}
+            </CardTitle>
+            <CardDescription>
+              {isLoginView 
+                  ? "Sign in to access your financial dashboard."
+                  : "Your personal finance companion for a successful nursing career."}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
