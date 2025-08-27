@@ -49,16 +49,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
   
   const isAuthPage = pathname === "/";
+  // If the user is not logged in and not on the auth page, don't render anything until redirect happens.
   if (!user && !isAuthPage) {
-    return null; // Don't render children if we are redirecting
+    return null;
   }
+  // If the user is logged in and on the auth page, don't render anything until redirect happens.
   if (user && isAuthPage) {
-      return null; // Don't render login page if user is logged in
+      return null;
   }
 
-  return (
-    <AuthContext.Provider value={{ user }}>
-        {children}
-    </AuthContext.Provider>
-  );
+  // A 404 might occur if the user was on a page that no longer exists (e.g., /shifts)
+  // and the browser tries to navigate back. If the user is logged in but not on the auth page,
+  // we render the children, letting Next.js handle the valid routes.
+  if(user && !isAuthPage) {
+    return (
+      <AuthContext.Provider value={{ user }}>
+          {children}
+      </AuthContext.Provider>
+    );
+  }
+  
+  // Render login page for unauthenticated users
+  if(!user && isAuthPage){
+     return (
+        <AuthContext.Provider value={{ user }}>
+            {children}
+        </AuthContext.Provider>
+    );
+  }
+
+  return null;
 }
