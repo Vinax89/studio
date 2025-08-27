@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Recurrence, CalendarDebt as Debt } from "@/lib/types"; // Use the aliased CalendarDebt type
+import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -23,7 +24,8 @@ const parseISO = (s: string) => {
   return new Date(y, m - 1, dd);
 };
 const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
-const isSameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const currency = (n: number) => n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 
 function monthMatrix(year: number, month: number, startOn: 0 | 1) {
@@ -35,44 +37,6 @@ function monthMatrix(year: number, month: number, startOn: 0 | 1) {
   return cells;
 }
 
-function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOrAfter: Date): Date | null {
-  const anchor = parseISO(anchorISO);
-  if (recurrence === "none") return isSameDay(anchor, onOrAfter) || anchor > onOrAfter ? anchor : null;
-  const step = recurrence === "weekly" ? 7 : recurrence === "biweekly" ? 14 : 0;
-  if (recurrence === "monthly") {
-    const target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth(), anchor.getDate());
-    if (target < onOrAfter) target.setMonth(target.getMonth() + 1);
-    return target;
-  }
-  const diffDays = Math.floor((onOrAfter.getTime() - anchor.getTime()) / 86400000);
-  const k = diffDays <= 0 ? 0 : Math.ceil(diffDays / step);
-  const candidate = addDays(anchor, k * step);
-  return candidate < onOrAfter ? addDays(candidate, step) : candidate;
-}
-
-function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
-  const out: Date[] = [];
-  const maxIter = 400; 
-  if (debt.recurrence === "none") {
-    const d = parseISO(debt.dueDate);
-    if (d >= from && d <= to) out.push(d);
-    return out;
-  }
-  let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
-  let iter = 0;
-  const stepDays = debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 30;
-  while (cur && cur <= to && iter < maxIter) {
-    out.push(new Date(cur));
-    if (debt.recurrence === 'monthly') {
-        const nextMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, cur.getDate());
-        cur = nextMonth;
-    } else {
-        cur = addDays(cur, stepDays);
-    }
-    iter++;
-  }
-  return out;
-}
 
 function useLocalStorage(key: string | undefined, value: Debt[] | undefined) {
   useEffect(() => {
@@ -116,26 +80,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
   const gridFrom = grid[0];
   const gridTo = grid[grid.length - 1];
 
-  type Occurrence = { date: string; debt: Debt };
-  const occurrences = useMemo<Occurrence[]>(() => {
-    const results: Occurrence[] = [];
-    debts.forEach((d) => {
-      const occ = allOccurrencesInRange(d, gridFrom, gridTo);
-      occ.forEach((dt) => results.push({ date: iso(dt), debt: d }));
-    });
-    return results.sort((a, b) => a.date.localeCompare(b.date));
-  }, [debts, gridFrom, gridTo]);
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, Occurrence[]>();
-    for (const oc of occurrences) {
-      if (query && !(`${oc.debt.name} ${oc.debt.notes ?? ""}`.toLowerCase().includes(query.toLowerCase()))) continue;
-      const arr = map.get(oc.date) ?? [];
-      arr.push(oc);
-      map.set(oc.date, arr);
-    }
-    return map;
-  }, [occurrences, query]);
+  const { occurrences, grouped } = useDebtOccurrences(debts, gridFrom, gridTo, query);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -172,27 +117,15 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     let total = 0;
     let paid = 0;
     let autopay = 0;
-    const monthOccurrences = new Map<string, Occurrence[]>();
-    debts.forEach((d) => {
-      const occ = allOccurrencesInRange(d, gridFrom, gridTo);
-      occ.forEach((dt) => {
-         const dateStr = iso(dt);
-         if (dt.getMonth() === cursor.getMonth()) {
-            if (!monthOccurrences.has(dateStr)) monthOccurrences.set(dateStr, []);
-            monthOccurrences.get(dateStr)!.push({date: dateStr, debt: d});
-         }
-      });
-    });
-
-    for (const [dateISO, arr] of monthOccurrences.entries()) {
-      for (const oc of arr) {
-        total += oc.debt.amount;
-        if (oc.debt.autopay) autopay += oc.debt.amount;
-        if (oc.debt.paidDates?.includes(dateISO)) paid += oc.debt.amount;
-      }
+    for (const oc of occurrences) {
+      const dt = parseISO(oc.date);
+      if (dt.getMonth() !== cursor.getMonth()) continue;
+      total += oc.debt.amount;
+      if (oc.debt.autopay) autopay += oc.debt.amount;
+      if (oc.debt.paidDates?.includes(oc.date)) paid += oc.debt.amount;
     }
     return { total, paid, autopay };
-  }, [debts, gridFrom, gridTo, cursor]);
+  }, [occurrences, cursor]);
 
   const headerLabel = cursor.toLocaleString(undefined, { month: "long", year: "numeric" });
 
