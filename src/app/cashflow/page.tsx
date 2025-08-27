@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows/calculate-cashflow"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -22,6 +22,26 @@ interface Shift {
 
 type ShiftDetails = Omit<Shift, 'date'>;
 
+// Helper to find the start of a 2-week pay period (a Sunday) for any given date.
+const getPayPeriodStart = (date: Date) => {
+    const d = new Date(date);
+    const dayOfWeek = d.getDay(); // Sunday = 0, Saturday = 6
+    const daysSinceLastSunday = dayOfWeek;
+    const lastSunday = new Date(d.setDate(d.getDate() - daysSinceLastSunday));
+    lastSunday.setHours(0,0,0,0);
+
+    // Use a fixed anchor date to determine the "even" or "odd" week period.
+    const anchor = new Date('2024-01-07T00:00:00.000Z'); // A known Sunday
+    const diffWeeks = Math.floor((lastSunday.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
+
+    if (diffWeeks % 2 !== 0) {
+        // It's in the second week of a pay period, so the start was the *previous* Sunday
+        lastSunday.setDate(lastSunday.getDate() - 7);
+    }
+    
+    return lastSunday;
+};
+
 
 export default function CashflowPage() {
   const [annualIncome, setAnnualIncome] = useState("")
@@ -32,20 +52,35 @@ export default function CashflowPage() {
   
   const [shifts, setShifts] = useState<Shift[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [payPeriod, setPayPeriod] = useState<DateRange | undefined>(undefined);
+  
   const [shiftHours, setShiftHours] = useState("")
   const [hourlyRate, setHourlyRate] = useState("")
   const [premiumPay, setPremiumPay] = useState("")
   const [differentials, setDifferentials] = useState("")
   const [lastEnteredShift, setLastEnteredShift] = useState<ShiftDetails | null>(null);
 
-
   const { toast } = useToast();
   
-  const totalShiftIncome = shifts.reduce((total, shift) => {
-    const basePay = shift.hours * shift.rate;
-    const premium = shift.premiumPay || 0;
-    return total + basePay + premium;
-  }, 0);
+  const totalShiftIncomeForPayPeriod = useMemo(() => {
+    if (!payPeriod || !payPeriod.from || !payPeriod.to) return 0;
+    
+    return shifts.reduce((total, shift) => {
+        if(shift.date >= payPeriod.from! && shift.date <= payPeriod.to!){
+            const basePay = shift.hours * shift.rate;
+            const premium = shift.premiumPay || 0;
+            return total + basePay + premium;
+        }
+        return total;
+    }, 0);
+  }, [shifts, payPeriod]);
+
+  const shiftsInPayPeriod = useMemo(() => {
+      if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
+      return shifts
+        .filter(shift => shift.date >= payPeriod.from! && shift.date <= payPeriod.to!)
+        .sort((a,b) => a.date.getTime() - b.date.getTime());
+  }, [shifts, payPeriod]);
 
   const handleCashflowSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -115,7 +150,13 @@ export default function CashflowPage() {
   
   const handleDateSelect = (date: Date | undefined) => {
       setSelectedDate(date);
+      
       if (date) {
+        const start = getPayPeriodStart(date);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 13);
+        setPayPeriod({ from: start, to: end });
+
         const existingShift = shifts.find(s => s.date.getTime() === date.getTime());
         if (existingShift) {
             setShiftHours(String(existingShift.hours));
@@ -135,6 +176,8 @@ export default function CashflowPage() {
             setPremiumPay("");
             setDifferentials("");
         }
+      } else {
+        setPayPeriod(undefined);
       }
   };
 
@@ -206,7 +249,6 @@ export default function CashflowPage() {
                <Card>
                   <CardHeader>
                       <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" /> Analysis</CardTitle>
-                      <CardDescription>A brief summary of your cashflow situation.</CardDescription>
                   </CardHeader>
                   <CardContent>
                       <p className="leading-relaxed">{cashflowResult.analysis}</p>
@@ -220,15 +262,21 @@ export default function CashflowPage() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
-                <CardDescription>Select a date to add or edit a shift. New shifts will pre-fill from the last one entered.</CardDescription>
+                <CardDescription>Select a date to highlight a pay period and add shifts.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
-                    modifiers={{ scheduled: shifts.map(s => s.date) }}
-                    modifiersClassNames={{ scheduled: "bg-primary/20" }}
+                    modifiers={{ 
+                        scheduled: shifts.map(s => s.date),
+                        payPeriod: payPeriod || {}
+                    }}
+                    modifiersClassNames={{ 
+                        scheduled: "bg-primary/20",
+                        payPeriod: "bg-accent text-accent-foreground"
+                    }}
                 />
             </CardContent>
         </Card>
@@ -264,43 +312,51 @@ export default function CashflowPage() {
             </Card>
         )}
         
-         <Card>
-            <CardHeader>
-                <CardTitle>Shift Summary</CardTitle>
-                <CardDescription>A list of your scheduled shifts.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {shifts.length > 0 ? (
-                  <div className="space-y-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Estimated Shift Income</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">${totalShiftIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                            <p className="text-xs text-muted-foreground">from {shifts.length} shift(s)</p>
-                        </CardContent>
-                    </Card>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {shifts.sort((a,b) => a.date.getTime() - b.date.getTime()).map(shift => (
-                            <div key={shift.date.toISOString()} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
-                                <div>
-                                    <p className="font-semibold">{shift.date.toLocaleDateString()}</p>
-                                    <p className="text-muted-foreground">{shift.hours} hrs @ ${shift.rate}/hr</p>
-                                    {shift.differentials && <p className="text-xs text-muted-foreground">({shift.differentials})</p>}
+         {payPeriod && (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Pay Period Summary</CardTitle>
+                     {payPeriod.from && payPeriod.to && (
+                        <CardDescription>
+                            {payPeriod.from.toLocaleDateString()} - {payPeriod.to.toLocaleDateString()}
+                        </CardDescription>
+                     )}
+                </CardHeader>
+                <CardContent>
+                    {shiftsInPayPeriod.length > 0 ? (
+                      <div className="space-y-4">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Estimated Income</CardTitle>
+                                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">${totalShiftIncomeForPayPeriod.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <p className="text-xs text-muted-foreground">from {shiftsInPayPeriod.length} shift(s) in this period</p>
+                            </CardContent>
+                        </Card>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {shiftsInPayPeriod.map(shift => (
+                                <div key={shift.date.toISOString()} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                                    <div>
+                                        <p className="font-semibold">{shift.date.toLocaleDateString()}</p>
+                                        <p className="text-muted-foreground">{shift.hours} hrs @ ${shift.rate}/hr</p>
+                                        {shift.differentials && <p className="text-xs text-muted-foreground">({shift.differentials})</p>}
+                                    </div>
+                                    <div className="font-medium">${((shift.hours * shift.rate) + (shift.premiumPay || 0)).toFixed(2)}</div>
                                 </div>
-                                <div className="font-medium">${((shift.hours * shift.rate) + (shift.premiumPay || 0)).toFixed(2)}</div>
-                            </div>
-                        ))}
-                    </div>
-                  </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">No shifts added yet. Select a date on the calendar to begin.</p>
-                )}
-            </CardContent>
-        </Card>
+                            ))}
+                        </div>
+                      </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">No shifts added in this pay period yet.</p>
+                    )}
+                </CardContent>
+            </Card>
+         )}
       </div>
     </div>
   )
 }
+
+    
