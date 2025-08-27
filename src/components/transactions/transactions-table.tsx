@@ -28,7 +28,7 @@ export const TransactionsTable = memo(function TransactionsTable({
   rowHeight = 56,
 }: TransactionsTableProps) {
   const [page, setPage] = useState(0)
-  const pageSize = 20
+  const [pageSize] = useState(20)
 
   const currentTransactions = useMemo(
     () =>
