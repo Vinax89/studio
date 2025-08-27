@@ -1,19 +1,27 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Keep this file minimal. No experimental flags unless needed.
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'placehold.co', port: '', pathname: '/**' },
-      { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'placehold.co', pathname: '/**' },
+      { protocol: 'https', hostname: 'picsum.photos', pathname: '/**' },
     ],
   },
-  // Dev cross-origin whitelist (multi-level host support)
+
+  // IMPORTANT: allowedDevOrigins must be hostnames (no scheme/port).
+  // 1) Put the exact current workstations hosts
+  // 2) Add a stable wildcard that matches the multi-level pattern
+  //    used by Cloud Workstations (two labels before the root).
   allowedDevOrigins: [
-    // pattern that matches the Firebase Studio + cluster two-label shape
-    '*-firebase-studio-*.cluster-*.cloudworkstations.dev',
+    // Explicit rotating hosts you’ve actually seen:
+    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+    '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+
+    // Broad patterns (ordered from specific to general):
+    '*-firebase-studio-*.cloudworkstations.dev',
+    '*.cluster-*.cloudworkstations.dev',
+    '*.cloudworkstations.dev',
   ],
 };
 
-export default nextConfig;
+module.exports = nextConfig;
