@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RecentTransactions from "@/components/dashboard/recent-transactions";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
-import { unstable_cache, revalidateTag } from "next/cache";
 
 // The dynamic import is now defined *inside* the client component.
 const IncomeExpenseChartClient = dynamic(
@@ -47,15 +46,15 @@ function ClientChartWrapper({ data }: { data: any[] }) {
 // which will be a pure server component.
 
 // The following functions are server-side and will be moved.
-const getTransactions = unstable_cache(async (): Promise<Transaction[]> => {
+const getTransactions = async (): Promise<Transaction[]> => {
   // Optional demo delay
   if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return mockTransactions;
-}, ["transactions"]);
+};
 
-const getChartData = unstable_cache(async () => {
+const getChartData = async () => {
   // Optional demo delay
   if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -69,10 +68,7 @@ const getChartData = unstable_cache(async () => {
     { month: "Jun", income: 4390, expenses: 3800 },
     { month: "Jul", income: 5100, expenses: 2550 },
   ];
-}, ["chart-data"]);
-
-export const revalidateTransactions = () => revalidateTag("transactions");
-export const revalidateChartData = () => revalidateTag("chart-data");
+};
 
 
 export default async function DashboardCharts() {
