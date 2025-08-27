@@ -22,6 +22,8 @@ const TaxEstimationInputSchema = z.object({
   location: z
     .string()
     .describe('The location of the user. e.g. city, state'),
+  filingStatus: z.enum(['single', 'married_jointly', 'married_separately', 'head_of_household'])
+    .describe("The user's tax filing status, which is a key part of the W-4."),
 });
 export type TaxEstimationInput = z.infer<typeof TaxEstimationInputSchema>;
 
@@ -46,13 +48,16 @@ const taxEstimationPrompt = ai.definePrompt({
   name: 'taxEstimationPrompt',
   input: {schema: TaxEstimationInputSchema},
   output: {schema: TaxEstimationOutputSchema},
-  prompt: `You are an expert tax estimator. Based on the user's income, deductions, and location, provide an estimate of their tax obligations.
+  prompt: `You are an expert tax estimator. Your calculations must be based on the official **2025 U.S. federal tax brackets**.
+
+Based on the user's income, filing status, deductions, and location, provide an estimate of their tax obligations.
 
 Income: {{{income}}}
 Deductions: {{{deductions}}}
 Location: {{{location}}}
+Filing Status: {{{filingStatus}}}
 
-Provide a detailed breakdown of how the tax was estimated, including the tax rate.
+Provide a detailed breakdown of how the tax was estimated, explaining how the filing status affects the standard deduction and the applicable tax brackets.
 
 Consider federal, state, and local taxes where applicable.
 

@@ -8,11 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Calculator, Percent, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+type FilingStatus = 'single' | 'married_jointly' | 'married_separately' | 'head_of_household';
 
 export default function TaxEstimatorPage() {
   const [income, setIncome] = useState("")
   const [deductions, setDeductions] = useState("")
   const [location, setLocation] = useState("")
+  const [filingStatus, setFilingStatus] = useState<FilingStatus>('single')
   const [isLoading, setIsLoading] = useState(false)
   const [taxResult, setTaxResult] = useState<TaxEstimationOutput | null>(null)
   const { toast } = useToast();
@@ -36,6 +40,7 @@ export default function TaxEstimatorPage() {
         income: parseFloat(income),
         deductions: parseFloat(deductions),
         location,
+        filingStatus,
       })
       setTaxResult(result)
     } catch (error) {
@@ -54,24 +59,38 @@ export default function TaxEstimatorPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Tax Estimation Tool</h1>
-        <p className="text-muted-foreground">Get an AI-powered estimate of your annual tax burden.</p>
+        <p className="text-muted-foreground">Get an AI-powered estimate of your annual tax burden using 2025 brackets.</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Estimate Your Taxes</CardTitle>
-          <CardDescription>Enter your income, deductions, and location to get a projection. This is not financial advice.</CardDescription>
+          <CardDescription>Enter your income, deductions, and filing status to get a projection. This is not financial advice.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid sm:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="income">Annual Income</Label>
                     <Input id="income" type="number" placeholder="e.g., 75000" value={income} onChange={(e) => setIncome(e.target.value)} />
                 </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="filing-status">Filing Status</Label>
+                    <Select value={filingStatus} onValueChange={(value: FilingStatus) => setFilingStatus(value)}>
+                        <SelectTrigger id="filing-status">
+                            <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="single">Single</SelectItem>
+                            <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
+                            <SelectItem value="married_separately">Married Filing Separately</SelectItem>
+                            <SelectItem value="head_of_household">Head of Household</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="deductions">Total Deductions</Label>
-                    <Input id="deductions" type="number" placeholder="e.g., 13850" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
+                    <Input id="deductions" type="number" placeholder="e.g., 14600" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
