@@ -1,5 +1,5 @@
 
-import OverviewCards from "@/app/dashboard/overview-cards";
+import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
