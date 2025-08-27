@@ -19,8 +19,8 @@ export const mockGoals: Goal[] = [
 ];
 
 export const mockDebts: Debt[] = [
-    { id: '1', name: 'Student Loan', totalAmount: 22000, minimumPayment: 350, dueDate: '2024-01-08', recurrence: 'monthly' },
-    { id: '2', name: 'Car Loan', totalAmount: 15000, minimumPayment: 275, dueDate: '2024-01-20', recurrence: 'monthly' },
-    { id: '3', name: 'Credit Card', totalAmount: 2500, minimumPayment: 100, dueDate: '2024-01-25', recurrence: 'monthly' },
-    { id: '4', name: 'Hospital Bill', totalAmount: 500, minimumPayment: 500, dueDate: new Date().toISOString().split('T')[0], recurrence: 'once' },
+    { id: '1', name: 'Student Loan', initialAmount: 22000, currentAmount: 18500, interestRate: 5.8, minimumPayment: 350, dueDate: '2024-01-08', recurrence: 'monthly' },
+    { id: '2', name: 'Car Loan', initialAmount: 15000, currentAmount: 8200, interestRate: 4.2, minimumPayment: 275, dueDate: '2024-01-20', recurrence: 'monthly' },
+    { id: '3', name: 'Credit Card', initialAmount: 2500, currentAmount: 1100, interestRate: 21.9, minimumPayment: 100, dueDate: '2024-01-25', recurrence: 'monthly' },
+    { id: '4', name: 'Hospital Bill', initialAmount: 500, currentAmount: 0, interestRate: 0, minimumPayment: 500, dueDate: new Date().toISOString().split('T')[0], recurrence: 'once' },
 ];

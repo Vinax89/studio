@@ -19,7 +19,9 @@ export type Goal = {
 export type Debt = {
     id: string;
     name: string;
-    totalAmount: number;
+    initialAmount: number;
+    currentAmount: number;
+    interestRate: number;
     minimumPayment: number;
     dueDate: string; // ISO date string for the start date
     recurrence: 'once' | 'monthly';

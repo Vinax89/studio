@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -28,7 +27,7 @@ export function DebtList({ debts }: DebtListProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Account</TableHead>
-              <TableHead>Total Owed</TableHead>
+              <TableHead>Current Owed</TableHead>
               <TableHead>Min. Payment</TableHead>
               <TableHead>Recurrence</TableHead>
               <TableHead className="text-right">Next Due</TableHead>
@@ -38,7 +37,7 @@ export function DebtList({ debts }: DebtListProps) {
             {debts.map((debt) => (
               <TableRow key={debt.id}>
                 <TableCell className="font-medium">{debt.name}</TableCell>
-                <TableCell>${debt.totalAmount.toLocaleString()}</TableCell>
+                <TableCell>${debt.currentAmount.toLocaleString()}</TableCell>
                 <TableCell>${debt.minimumPayment.toLocaleString()}</TableCell>
                 <TableCell><Badge variant="secondary" className="capitalize">{debt.recurrence}</Badge></TableCell>
                 <TableCell className="text-right">{format(new Date(debt.dueDate + 'T00:00:00'), "MMM do")}</TableCell>
