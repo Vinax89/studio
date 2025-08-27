@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import { DayPicker, DayProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import type { Debt } from "@/lib/types";
@@ -87,10 +88,4 @@ export function DebtCalendar({ debts, selectedDate, onDateSelect }: DebtCalendar
       />
     </DayPickerContext.Provider>
   );
-}
-
-// React is needed for create context
-const React = {
-    createContext: require('react').createContext,
-    useContext: require('react').useContext,
 }
