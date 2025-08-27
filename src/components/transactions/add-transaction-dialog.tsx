@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 
@@ -33,6 +34,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [amount, setAmount] = useState("")
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
+    const [isRecurring, setIsRecurring] = useState(false)
 
     const handleSave = () => {
         if(description && amount && type && category) {
@@ -40,7 +42,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                 description,
                 amount: parseFloat(amount),
                 type,
-                category
+                category,
+                isRecurring
             })
             setOpen(false)
             // Reset form
@@ -48,6 +51,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             setAmount("")
             setType("Expense")
             setCategory("")
+            setIsRecurring(false)
         }
     }
 
@@ -90,6 +94,10 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
             <Input id="category" placeholder="e.g. Uniforms, Salary" value={category} onChange={(e) => setCategory(e.target.value)} className="col-span-3" />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="recurring" className="text-right">Recurring</Label>
+            <Switch id="recurring" checked={isRecurring} onCheckedChange={setIsRecurring} className="col-span-3" />
           </div>
         </div>
         <DialogFooter>

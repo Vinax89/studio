@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
+import { Repeat } from "lucide-react"
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -23,6 +24,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
               <TableHead>Date</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Recurring</TableHead>
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -33,6 +35,9 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                 <TableCell className="font-medium">{transaction.description}</TableCell>
                 <TableCell>
                     <Badge variant="outline">{transaction.category}</Badge>
+                </TableCell>
+                <TableCell>
+                  {transaction.isRecurring && <Repeat className="h-4 w-4 text-muted-foreground" />}
                 </TableCell>
                 <TableCell className={cn(
                     "text-right",

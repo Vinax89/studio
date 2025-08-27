@@ -5,6 +5,7 @@ export type Transaction = {
   amount: number;
   type: "Income" | "Expense";
   category: string;
+  isRecurring?: boolean;
 };
 
 export type Goal = {
