@@ -1,6 +1,5 @@
-import OverviewCards from "@/components/dashboard/overview-cards";
-import IncomeExpenseChart from "@/components/dashboard/income-expense-chart";
-import RecentTransactions from "@/components/dashboard/recent-transactions";
+import OverviewCards from "@/app/dashboard/overview-cards";
+import DashboardCharts from "@/app/dashboard/dashboard-charts";
 
 export default function DashboardPage() {
   return (
@@ -10,14 +9,7 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
       <OverviewCards />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-            <IncomeExpenseChart />
-        </div>
-        <div className="lg:col-span-1">
-            <RecentTransactions />
-        </div>
-      </div>
+      <DashboardCharts />
     </div>
   )
 }
