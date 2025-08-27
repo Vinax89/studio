@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
   // 2) the exact host from your log (helps if wildcard matching is finicky)
   allowedDevOrigins: [
     '*.cloudworkstations.dev',
+    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
     '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
   ],
 };
