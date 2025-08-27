@@ -1,7 +1,15 @@
-import DashboardCharts from "@/app/dashboard/dashboard-charts";
 import OverviewCards from "@/app/dashboard/overview-cards";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
+
+const DashboardCharts = dynamic(() => import('@/app/dashboard/dashboard-charts'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[436px] w-full" />,
+});
+
 
 // Simulate slow data fetching
 const getTransactions = async (): Promise<Transaction[]> => {
@@ -36,7 +44,9 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
-      <OverviewCards transactions={transactions} />
+      <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
+        <OverviewCards transactions={transactions} />
+      </Suspense>
       <DashboardCharts transactions={transactions} chartData={chartData} />
     </div>
   )
