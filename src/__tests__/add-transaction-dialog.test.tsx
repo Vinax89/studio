@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
+import { clearCategories } from '@/lib/categories';
 
 const onSave = jest.fn();
 const toastMock = jest.fn();
@@ -44,6 +45,7 @@ beforeEach(() => {
   onSave.mockClear();
   toastMock.mockClear();
   suggestCategoryActionMock.mockClear();
+  clearCategories();
 });
 
 async function openAndFill(amount: string) {

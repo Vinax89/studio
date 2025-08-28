@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { getCategories } from "@/lib/categories"
+import { addCategory, getCategories } from "@/lib/categories"
 import { suggestCategoryAction } from "@/app/actions"
 
 interface AddTransactionDialogProps {
@@ -54,7 +54,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             const suggested = await suggestCategoryAction(description)
             if (suggested) {
                 setCategory(suggested)
-                setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
+                setCategories(addCategory(suggested))
             }
         } catch (err) {
             console.error("suggestCategory failed", err)
@@ -77,6 +77,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             category,
             isRecurring
         })
+        setCategories(addCategory(category))
         setOpen(false)
         // Reset form
         setDescription("")
