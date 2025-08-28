@@ -28,7 +28,9 @@ import { Progress } from "@/components/ui/progress"
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan"
 
 export default function InsightsPage() {
-  const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
+  const [userDescription, setUserDescription] = useState(
+    "I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years."
+  )
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
