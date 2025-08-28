@@ -71,7 +71,7 @@ export default function TransactionsPage() {
     if (!file) return;
     try {
       const rows = await parseCsv<TransactionRowType>(file);
-      const parsed = validateTransactions(rows);
+      const parsed = validateTransactions(rows, getCategories());
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {

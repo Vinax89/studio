@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { collection, doc, writeBatch } from "firebase/firestore";
+import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Transaction } from "./types";
 
@@ -16,7 +16,7 @@ export const TransactionPayloadSchema = z.object({
 
 export type TransactionPayload = z.infer<typeof TransactionPayloadSchema>;
 
-const TransactionRow = z.object({
+const BaseTransactionRow = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   description: z.string(),
   amount: z.preprocess(
@@ -28,7 +28,15 @@ const TransactionRow = z.object({
   isRecurring: z.union([z.boolean(), z.string()]).optional(),
 });
 
-export type TransactionRowType = z.infer<typeof TransactionRow>;
+export type TransactionRowType = z.infer<typeof BaseTransactionRow>;
+
+function createTransactionRowSchema(validCategories: string[]) {
+  return BaseTransactionRow.extend({
+    category: z.string().refine((cat) => validCategories.includes(cat), {
+      message: "Unknown category",
+    }),
+  });
+}
 
 /**
  * Split an array of transactions into chunks of at most 500 items.
@@ -71,9 +79,13 @@ export function chunkTransactions<T>(
  * @remarks This function performs no external I/O but generates new UUIDs for
  *   each transaction.
  */
-export function validateTransactions(rows: TransactionRowType[]): Transaction[] {
+export function validateTransactions(
+  rows: TransactionRowType[],
+  validCategories: string[]
+): Transaction[] {
+  const schema = createTransactionRowSchema(validCategories);
   return rows.map((row, index) => {
-    const parsed = TransactionRow.safeParse(row);
+    const parsed = schema.safeParse(row);
     if (!parsed.success) {
       throw new Error(`Invalid row ${index + 1}: ${parsed.error.message}`);
     }
@@ -141,8 +153,14 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  *   error.
  * @remarks Generates UUIDs during validation and writes data to Firestore.
  */
+async function fetchCategories(): Promise<string[]> {
+  const snapshot = await getDocs(collection(db, "categories"));
+  return snapshot.docs.map((doc) => doc.id);
+}
+
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
-  const transactions = validateTransactions(rows);
+  const categories = await fetchCategories();
+  const transactions = validateTransactions(rows, categories);
   try {
     await saveTransactions(transactions);
   } catch (err) {
