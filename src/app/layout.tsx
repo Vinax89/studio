@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { ThemeProvider } from '@/components/layout/theme-provider';
+import { ErrorBoundary, SuspenseBoundary } from '@/components/layout/boundaries';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -27,7 +28,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-              {children}
+            <ErrorBoundary>
+              <SuspenseBoundary>
+                {children}
+              </SuspenseBoundary>
+            </ErrorBoundary>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

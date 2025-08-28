@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { Transaction } from '@/lib/types';
 
 const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
@@ -50,6 +49,9 @@ const analyzeReceiptFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from analyzeReceiptPrompt');
+    }
+    return output;
   }
 );
