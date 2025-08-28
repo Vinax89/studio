@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
+import { IDB_VERSION, IDB_SRI } from "@/lib/idb-info"
 
 export function ServiceWorker() {
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -37,6 +38,24 @@ export function ServiceWorker() {
     const registerAndListen = async () => {
       if ("serviceWorker" in navigator) {
         try {
+          const verifyIdb = async () => {
+            try {
+              const res = await fetch(`/vendor/idb-${IDB_VERSION}.min.js`)
+              const buf = await res.arrayBuffer()
+              const hashBuf = await crypto.subtle.digest("SHA-384", buf)
+              const hashArr = Array.from(new Uint8Array(hashBuf))
+              const hashBase64 = btoa(String.fromCharCode(...hashArr))
+              return `sha384-${hashBase64}` === IDB_SRI
+            } catch {
+              return false
+            }
+          }
+
+          if (!(await verifyIdb())) {
+            console.error("idb checksum verification failed")
+            return
+          }
+
           await navigator.serviceWorker.register("/sw.js")
         } catch (error) {
           console.error(error)
