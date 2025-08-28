@@ -45,6 +45,8 @@ export default function LoginPage() {
     } catch (error) {
       const authError = error as AuthError
       const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
+      // If we don't have a user-friendly message for this error, log it for debugging
+      // while showing a generic message to the user to avoid exposing raw error codes.
       if (!authErrorMessages[authError.code]) {
         // Log unexpected errors for debugging without exposing details to the user
         console.error(authError.code, authError.message)
