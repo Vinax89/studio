@@ -10,8 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import { Debt } from '@/lib/types';
+import {z} from 'zod';
 
 const DebtSchema = z.object({
     id: z.string(),
@@ -24,7 +23,7 @@ const DebtSchema = z.object({
     recurrence: z.enum(['once', 'monthly']),
 });
 
-const SuggestDebtStrategyInputSchema = z.object({
+export const SuggestDebtStrategyInputSchema = z.object({
   debts: z.array(DebtSchema).describe("The user's list of debts."),
 });
 export type SuggestDebtStrategyInput = z.infer<typeof SuggestDebtStrategyInputSchema>;
@@ -41,7 +40,8 @@ const SuggestDebtStrategyOutputSchema = z.object({
 export type SuggestDebtStrategyOutput = z.infer<typeof SuggestDebtStrategyOutputSchema>;
 
 export async function suggestDebtStrategy(input: SuggestDebtStrategyInput): Promise<SuggestDebtStrategyOutput> {
-  return suggestDebtStrategyFlow(input);
+  const parsed = SuggestDebtStrategyInputSchema.parse(input);
+  return suggestDebtStrategyFlow(parsed);
 }
 
 const prompt = ai.definePrompt({

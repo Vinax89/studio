@@ -12,7 +12,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const GoalSchema = z.object({
     id: z.string(),
@@ -23,7 +23,7 @@ const GoalSchema = z.object({
     importance: z.number().describe("User's importance rating for this goal, from 1 (not important) to 5 (very important)."),
 });
 
-const AnalyzeSpendingHabitsInputSchema = z.object({
+export const AnalyzeSpendingHabitsInputSchema = z.object({
   financialDocuments: z
     .array(z.string())
     .describe(
@@ -42,7 +42,8 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
 export async function analyzeSpendingHabits(input: AnalyzeSpendingHabitsInput): Promise<AnalyzeSpendingHabitsOutput> {
-  return analyzeSpendingHabitsFlow(input);
+  const parsed = AnalyzeSpendingHabitsInputSchema.parse(input);
+  return analyzeSpendingHabitsFlow(parsed);
 }
 
 const prompt = ai.definePrompt({
