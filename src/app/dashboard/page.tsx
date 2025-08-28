@@ -40,7 +40,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
-        <OverviewCards />
+        <OverviewCards transactions={transactions} />
       </Suspense>
       <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
         <DashboardCharts transactions={transactions} chartData={chartData} />
