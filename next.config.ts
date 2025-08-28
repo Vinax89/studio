@@ -1,3 +1,4 @@
+
 import type { NextConfig } from 'next'
 import crypto from 'crypto'
 
@@ -52,6 +53,7 @@ const nextConfig: NextConfig = {
     '*.cloudworkstations.dev',
     // Add the specific origin from the error log for stability
     '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
+    '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
   ],
 
   experimental: {},
