@@ -8,7 +8,7 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      `script-src 'self' 'nonce-${cspNonce}' 'unsafe-inline' 'unsafe-eval'`,
+      `script-src 'self' 'nonce-${cspNonce}'`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self'",
