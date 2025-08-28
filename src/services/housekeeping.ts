@@ -9,6 +9,7 @@ import {
   limit,
   startAfter,
   writeBatch,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -21,7 +22,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const cutoff = new Date(cutoffDate).toISOString();
   const transCol = collection(db, "transactions");
   const pageSize = 100;
-  let lastDoc: any | undefined;
+  let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
   while (true) {
     const q = lastDoc
@@ -62,7 +63,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
 export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const pageSize = 100;
-  let lastDoc: any | undefined;
+  let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
   while (true) {
     const q = lastDoc
@@ -134,7 +135,7 @@ export async function backupData(
     const col = collection(db, colName);
     const pageSize = 100;
     const items: T[] = [];
-    let lastDoc: any | undefined;
+    let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
     while (true) {
       const q = lastDoc
