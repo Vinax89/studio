@@ -1,6 +1,5 @@
 import { Worker } from "node:worker_threads"
 import os from "node:os"
-import path from "node:path"
 
 export async function parallelSquare(numbers: number[], threads = os.cpus().length): Promise<number[]> {
   const chunkSize = Math.ceil(numbers.length / threads)
@@ -19,17 +18,24 @@ export async function parallelSquare(numbers: number[], threads = os.cpus().leng
         return
       }
 
-      const worker = new Worker(path.join(__dirname, "mapWorker.js"), {
+      const worker = new Worker(new URL("./mapWorker.ts", import.meta.url), {
         workerData: chunk,
       })
 
-      worker.on("message", (data: number[]) => {
-        results.push(...data)
-        completed++
-        if (completed === chunks.length) {
-          resolve(results)
-        }
-      })
+      worker.on(
+        "message",
+        (data: number[] | { error: { message: string } }) => {
+          if (Array.isArray(data)) {
+            results.push(...data)
+            completed++
+            if (completed === chunks.length) {
+              resolve(results)
+            }
+          } else if (data && "error" in data) {
+            reject(new Error(data.error.message))
+          }
+        },
+      )
 
       worker.on("error", reject)
     })
