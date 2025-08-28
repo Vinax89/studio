@@ -42,7 +42,7 @@ export default function AppSidebar() {
   }, [router])
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background dark:border-r dark:bg-background sm:flex">
       <TooltipProvider>
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
