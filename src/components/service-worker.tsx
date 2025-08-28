@@ -9,20 +9,33 @@ export function ServiceWorker() {
       navigator.serviceWorker.register("/sw.js").catch(console.error)
     }
 
-    const handleOnline = async () => {
-      const queued = await getQueuedTransactions()
-      if (queued.length) {
-        await fetch("/api/transactions/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transactions: queued }),
-        })
-        await clearQueuedTransactions()
-      }
+    let debounceId: ReturnType<typeof setTimeout> | null = null
+
+    const handleOnline = () => {
+      if (debounceId) clearTimeout(debounceId)
+
+      debounceId = setTimeout(async () => {
+        const queued = await getQueuedTransactions()
+        if (queued.length) {
+          try {
+            await fetch("/api/transactions/sync", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ transactions: queued }),
+            })
+            await clearQueuedTransactions()
+          } catch (error) {
+            console.error("Failed to sync queued transactions", error)
+          }
+        }
+      }, 1000)
     }
 
     window.addEventListener("online", handleOnline)
-    return () => window.removeEventListener("online", handleOnline)
+    return () => {
+      window.removeEventListener("online", handleOnline)
+      if (debounceId) clearTimeout(debounceId)
+    }
   }, [])
 
   return null
