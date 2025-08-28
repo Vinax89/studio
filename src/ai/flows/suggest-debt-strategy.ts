@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Analyzes a user's debts and suggests a payoff strategy.
+ * @fileoverview Analyzes a user's debts and suggests a payoff strategy.
  *
  * - suggestDebtStrategy - A function that returns an AI-powered debt payoff plan.
  * - SuggestDebtStrategyInput - The input type for the suggestDebtStrategy function.

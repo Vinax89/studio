@@ -4,7 +4,7 @@
 'use server';
 
 /**
- * @fileOverview Analyzes user's spending habits based on uploaded financial documents.
+ * @fileoverview Analyzes user's spending habits based on uploaded financial documents.
  *
  * - analyzeSpendingHabits - A function that analyzes spending habits.
  * - AnalyzeSpendingHabitsInput - The input type for the analyzeSpendingHabits function.

@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Generates a spending forecast based on past transactions.
+ * @fileoverview Generates a spending forecast based on past transactions.
  *
  * - predictSpending - A function that predicts future spending.
  * - SpendingForecastInput - The input type for the predictSpending function.
