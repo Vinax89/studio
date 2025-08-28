@@ -1,16 +1,30 @@
 import os from "node:os"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { WorkerPool } from "./worker-pool"
 
-export async function parallelSquare(numbers: number[], threads = os.cpus().length): Promise<number[]> {
-  const chunkSize = Math.ceil(numbers.length / threads)
-  const chunks = Array.from({ length: threads }, (_, i) => numbers.slice(i * chunkSize, (i + 1) * chunkSize))
-    .filter(chunk => chunk.length > 0)
+export async function parallelSquare(
+  numbers: number[],
+  threads = Math.min(os.cpus().length, numbers.length)
+): Promise<number[]> {
+  if (numbers.length === 0) return []
 
-  const pool = new WorkerPool<number[], number[]>(path.join(__dirname, "mapWorker.js"), threads)
+  const actualThreads = Math.min(threads, numbers.length)
+  const chunkSize = Math.ceil(numbers.length / actualThreads)
+  const chunks = Array.from({ length: actualThreads }, (_, i) =>
+    numbers.slice(i * chunkSize, (i + 1) * chunkSize)
+  )
 
-  const promises = chunks.map(chunk => pool.run(chunk))
-  const results = await Promise.all(promises)
+  const pool = new WorkerPool<number[], number[]>(
+    path.join(fileURLToPath(new URL(".", import.meta.url)), "mapWorker.js"),
+    actualThreads
+  )
 
-  return results.flat()
+  try {
+    const promises = chunks.map(chunk => pool.run(chunk))
+    const results = await Promise.all(promises)
+    return results.flat()
+  } finally {
+    await pool.destroy()
+  }
 }
