@@ -14,13 +14,17 @@ export async function parallelSquare(
     numbers.slice(i * chunkSize, (i + 1) * chunkSize)
   )
 
-  const pool = new WorkerPool<number[], number[]>(
-    path.join(__dirname, "mapWorker.js"),
-    actualThreads
-  )
+  let pool: WorkerPool<number[], number[]> | undefined
+  try {
+    pool = new WorkerPool<number[], number[]>(
+      path.join(__dirname, "mapWorker.js"),
+      actualThreads
+    )
 
-  const promises = chunks.map(chunk => pool.run(chunk))
-  const results = await Promise.all(promises)
-  await pool.destroy()
-  return results.flat()
+    const promises = chunks.map(chunk => pool.run(chunk))
+    const results = await Promise.all(promises)
+    return results.flat()
+  } finally {
+    await pool?.destroy()
+  }
 }
