@@ -9,17 +9,17 @@ const dbPromise = openDB(DB_NAME, 1, {
   },
 })
 
-export async function queueTransaction(tx: unknown) {
+export async function queueTransaction(tx: unknown): Promise<void> {
   const db = await dbPromise
   await db.add(STORE_NAME, tx)
 }
 
-export async function getQueuedTransactions<T = unknown>() {
+export async function getQueuedTransactions<T = unknown>(): Promise<T[]> {
   const db = await dbPromise
   return db.getAll(STORE_NAME) as Promise<T[]>
 }
 
-export async function clearQueuedTransactions() {
+export async function clearQueuedTransactions(): Promise<void> {
   const db = await dbPromise
   await db.clear(STORE_NAME)
 }
