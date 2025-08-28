@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows/analyze-receipt"
+import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"

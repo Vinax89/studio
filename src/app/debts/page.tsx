@@ -8,10 +8,9 @@ const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { 
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
 import { Button } from "@/components/ui/button";
-import type { SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
+import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
-import { suggestDebtStrategy } from "@/ai/flows/suggest-debt-strategy";
 import { deleteDoc } from "firebase/firestore";
 import { debtDoc } from "@/lib/debts";
 
