@@ -32,6 +32,15 @@ jest.mock('@/components/ui/switch', () => ({
   ),
 }));
 
+jest.mock('@/lib/categoryService', () => ({
+  getCategories: () => [],
+  addCategory: jest.fn(),
+}));
+
+jest.mock('@/lib/category-feedback', () => ({
+  recordCategoryFeedback: jest.fn(),
+}));
+
 const fetchMock = jest.fn();
 
 beforeEach(() => {

@@ -1,11 +1,14 @@
-// Utility functions for managing transaction categories
-// Categories are compared in a case-insensitive manner while preserving
-// the original casing for display purposes.
+// Utility functions for managing transaction categories stored in Firestore
+// with a local cache for offline support. Categories are compared in a
+// case-insensitive manner while preserving their original casing for display.
+
+import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
+import { db, categoriesCollection } from "./firebase";
 
 const STORAGE_KEY = "categories";
 
 // In non-browser environments (e.g. during testing) `localStorage` is not
-// available.  We keep an in-memory fallback so the functions still work.
+// available. We keep an in-memory fallback so the functions still work.
 let memoryStore: string[] = [];
 
 const hasLocalStorage = () =>
@@ -34,12 +37,30 @@ function save(categories: string[]) {
   }
 }
 
+// Synchronize the local cache with Firestore in the background.
+async function syncFromServer() {
+  try {
+    const snap = await getDocs(categoriesCollection);
+    const list: string[] = [];
+    snap.forEach((d) => {
+      const data = d.data() as { name?: string };
+      if (data.name) list.push(data.name);
+    });
+    save(list);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 /**
  * Return the list of categories with duplicates removed in a
  * case-insensitive manner. The first occurrence of a category determines
  * the casing that will be preserved for display.
  */
 export function getCategories(): string[] {
+  if (typeof window !== "undefined") {
+    void syncFromServer();
+  }
   const categories = load();
   const map = new Map<string, string>();
   for (const cat of categories) {
@@ -57,7 +78,8 @@ export function getCategories(): string[] {
 
 /**
  * Add a category if it does not already exist (case-insensitive).
- * Returns the updated list of categories.
+ * Returns the updated list of categories. Firestore writes are performed in
+ * the background and failures are logged but do not interrupt the result.
  */
 export function addCategory(category: string): string[] {
   const categories = getCategories();
@@ -68,23 +90,36 @@ export function addCategory(category: string): string[] {
     categories.push(trimmed);
     save(categories);
   }
+  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+    console.error
+  );
   return categories;
 }
 
 /**
- * Remove a category regardless of casing. Returns the updated list.
+ * Remove a category regardless of casing. Returns the updated list. Firestore
+ * writes are performed in the background.
  */
 export function removeCategory(category: string): string[] {
   const key = normalize(category);
-  const categories = getCategories().filter(
-    (c) => normalize(c) !== key
-  );
+  const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
+  void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
   return categories;
 }
 
-/** Clear all categories. */
+/** Clear all categories locally and in Firestore. */
 export function clearCategories() {
   save([]);
+  void (async () => {
+    try {
+      const snap = await getDocs(categoriesCollection);
+      const batch = writeBatch(db);
+      snap.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+    }
+  })();
 }
 
