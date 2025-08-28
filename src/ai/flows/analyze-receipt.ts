@@ -15,6 +15,9 @@ import {z} from 'genkit';
 const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
+    .regex(/^data:[\w/-]+;base64,[A-Za-z0-9+/=]+$/, {
+      message: 'receiptImage must be a valid base64-encoded data URI.',
+    })
     .describe(
       "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),

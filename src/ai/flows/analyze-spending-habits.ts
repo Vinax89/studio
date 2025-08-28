@@ -25,7 +25,11 @@ const GoalSchema = z.object({
 
 const AnalyzeSpendingHabitsInputSchema = z.object({
   financialDocuments: z
-    .array(z.string())
+    .array(
+      z.string().regex(/^data:[\w/-]+;base64,[A-Za-z0-9+/=]+$/, {
+        message: 'Each document must be a valid base64-encoded data URI.',
+      })
+    )
     .describe(
       'An array of financial documents as data URIs that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
     ),
