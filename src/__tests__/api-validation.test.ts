@@ -30,6 +30,18 @@ describe("/api/bank/import", () => {
     const res = await bankImport(req)
     expect(res.status).toBe(400)
   })
+
+  it("returns decoded uid for valid payload", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ provider: "bank", transactions: [] }),
+    })
+    const res = await bankImport(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.uid).toBe("test-uid")
+  })
 })
 
 describe("/api/transactions/sync", () => {
@@ -57,5 +69,17 @@ describe("/api/transactions/sync", () => {
     })
     const res = await transactionsSync(req)
     expect(res.status).toBe(400)
+  })
+
+  it("returns decoded uid for valid payload", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ transactions: [] }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.uid).toBe("test-uid")
   })
 })

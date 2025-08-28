@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
+import type { DecodedIdToken } from "firebase-admin/auth"
 
 /**
  * Generic transaction syncing endpoint.
@@ -14,8 +15,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  let decodedToken: DecodedIdToken
   try {
-    await verifyFirebaseToken(req)
+    decodedToken = await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
     return NextResponse.json({ error: message }, { status: 401 })
@@ -46,7 +48,10 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    return NextResponse.json({ received: transactions.length })
+    return NextResponse.json({
+      received: transactions.length,
+      uid: decodedToken.uid,
+    })
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
