@@ -11,32 +11,18 @@ import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
 import { formatCurrency } from "@/lib/currency"
-import {
-  memo,
-  useMemo,
-  useState,
-  forwardRef,
-  type HTMLAttributes,
-  type ComponentType,
-} from "react"
-import { FixedSizeList, type ListChildComponentProps } from "react-window"
+import { memo, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
-  /** Height of the scrollable list in pixels */
-  height?: number
-  /** Height of each row in pixels */
-  rowHeight?: number
 }
 
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
-  height = 400,
-  rowHeight = 56,
 }: TransactionsTableProps) {
   const [page, setPage] = useState(0)
-  const [pageSize] = useState(20)
+  const pageSize = 20
 
   const currentTransactions = useMemo(
     () =>
@@ -52,47 +38,6 @@ export const TransactionsTable = memo(function TransactionsTable({
     [transactions, page, pageSize],
   )
 
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    const transaction = currentTransactions[index]
-    return (
-      <TableRow style={style} key={transaction.id}>
-        <TableCell>{transaction.formattedDate}</TableCell>
-        <TableCell className="font-medium">{transaction.description}</TableCell>
-        <TableCell>
-          <Badge variant="outline">{transaction.category}</Badge>
-        </TableCell>
-        <TableCell>
-          {transaction.isRecurring && (
-            <Repeat className="h-4 w-4 text-muted-foreground" />
-          )}
-        </TableCell>
-        <TableCell
-          className={cn(
-            "text-right",
-            transaction.type === "Income" ? "text-green-600" : "text-red-600",
-            "dark:text-inherit",
-          )}
-        >
-          {transaction.formattedAmount}
-        </TableCell>
-      </TableRow>
-    )
-  }
-
-  const Outer: ComponentType<HTMLAttributes<HTMLDivElement>> =
-    forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-      ({ style, children, ...props }, ref) => (
-        <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
-          <Table>{children}</Table>
-        </div>
-      ),
-    )
-
-  const Inner: ComponentType<HTMLAttributes<HTMLTableSectionElement>> =
-    forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
-      (props, ref) => <TableBody ref={ref} {...props} />,
-    )
-
   return (
     <div className="rounded-lg border">
       <Table>
@@ -105,18 +50,36 @@ export const TransactionsTable = memo(function TransactionsTable({
             <TableHead className="text-right">Amount</TableHead>
           </TableRow>
         </TableHeader>
+        <TableBody>
+          {currentTransactions.map((transaction) => (
+            <TableRow key={transaction.id}>
+              <TableCell>{transaction.formattedDate}</TableCell>
+              <TableCell className="font-medium">
+                {transaction.description}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{transaction.category}</Badge>
+              </TableCell>
+              <TableCell>
+                {transaction.isRecurring && (
+                  <Repeat className="h-4 w-4 text-muted-foreground" />
+                )}
+              </TableCell>
+              <TableCell
+                className={cn(
+                  "text-right",
+                  transaction.type === "Income"
+                    ? "text-green-600"
+                    : "text-red-600",
+                  "dark:text-inherit",
+                )}
+              >
+                {transaction.formattedAmount}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
       </Table>
-      <FixedSizeList
-        height={height}
-        itemCount={currentTransactions.length}
-        itemSize={rowHeight}
-        width="100%"
-        outerElementType={Outer}
-        innerElementType={Inner}
-        itemKey={(index) => currentTransactions[index].id}
-      >
-        {Row}
-      </FixedSizeList>
       <div className="flex justify-between p-4">
         <Button
           variant="outline"
