@@ -30,6 +30,7 @@ export function TransactionsFilter({
             <Input
             type="search"
             placeholder="Search by description..."
+            aria-label="Search transactions"
             className="pl-8"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
