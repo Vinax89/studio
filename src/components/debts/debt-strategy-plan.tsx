@@ -4,7 +4,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { type SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
+import { type SuggestDebtStrategyOutput } from "@/ai/flows";
 
 interface DebtStrategyPlanProps {
   strategy: SuggestDebtStrategyOutput;
@@ -12,7 +12,7 @@ interface DebtStrategyPlanProps {
 
 export function DebtStrategyPlan({ strategy }: DebtStrategyPlanProps) {
   return (
-    <Card className="bg-blueprint-accent/50 border-blueprint/20">
+    <Card className="bg-blueprintAccent/50 border-blueprint/20">
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div>

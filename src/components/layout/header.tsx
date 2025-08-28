@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sheet"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
-import { ThemeSwitcher } from "./theme-switcher"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 export default function AppHeader() {
   const router = useRouter()
@@ -52,7 +52,7 @@ export default function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 dark:bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button size="icon" variant="outline" className="sm:hidden">
@@ -119,10 +119,10 @@ export default function AppHeader() {
         <Input
           type="search"
           placeholder="Search..."
-          className="w-full rounded-lg bg-blueprint-light pl-8 md:w-[200px] lg:w-[336px]"
+          className="w-full rounded-lg bg-blueprintLight pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
-      <ThemeSwitcher />
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
