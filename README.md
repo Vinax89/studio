@@ -65,5 +65,5 @@ defaults to the pay period beginning on January 7, 2024.
 
 ## Tax Estimator
 
-The tax estimator uses 2025 federal brackets from the IRS and state brackets from individual state revenue departments.
+The deterministic tax estimator uses 2025 federal brackets from the IRS and state brackets from individual state revenue departments.
 _Last updated: Oct 2024._
