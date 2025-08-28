@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import {
   signInWithEmailAndPassword,
@@ -9,7 +10,7 @@ import {
   signInWithPopup,
   type AuthError,
 } from "firebase/auth"
-import { auth, googleProvider } from "@/lib/firebase"
+import { auth, createGoogleProvider } from "@/lib/firebase"
 import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
 
 import { Button } from "@/components/ui/button"
@@ -71,7 +72,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signInWithPopup(auth, googleProvider)
+      await signInWithPopup(auth, createGoogleProvider())
       router.push("/dashboard")
     } catch (error) {
       const authError = error as AuthError
@@ -96,126 +97,145 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <NurseFinAILogo className="h-12 w-12 text-primary" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-3xl font-bold tracking-tight">
-              {view === 'login'
-                ? "Welcome Back"
-                : view === 'signup'
-                  ? "Create an Account"
-                  : "Reset Your Password"}
-            </CardTitle>
-            <CardDescription>
-              {view === 'login'
-                ? "Sign in to access your financial dashboard."
-                : view === 'signup'
-                  ? "Your personal finance companion for a successful nursing career."
-                  : "Enter your email to receive password reset instructions."}
-            </CardDescription>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${view}-header`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-1"
+            >
+              <CardTitle className="text-3xl font-bold tracking-tight">
+                {view === 'login'
+                  ? "Welcome Back"
+                  : view === 'signup'
+                    ? "Create an Account"
+                    : "Reset Your Password"}
+              </CardTitle>
+              <CardDescription>
+                {view === 'login'
+                  ? "Sign in to access your financial dashboard."
+                  : view === 'signup'
+                    ? "Your personal finance companion for a successful nursing career."
+                    : "Enter your email to receive password reset instructions."}
+              </CardDescription>
+            </motion.div>
+          </AnimatePresence>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nurse@hospital.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            {view !== 'reset' && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            )}
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait...
-                </>
-              ) : view === 'login' ? (
-                "Sign In"
-              ) : view === 'signup' ? (
-                "Sign Up"
-              ) : (
-                "Send Reset Email"
-              )}
-            </Button>
-          </form>
-          {view !== 'reset' && (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-4"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${view}-form`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait...
-                </>
-              ) : (
-                "Continue with Google"
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="nurse@hospital.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                {view !== 'reset' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                )}
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait...
+                    </>
+                  ) : view === 'login' ? (
+                    "Sign In"
+                  ) : view === 'signup' ? (
+                    "Sign Up"
+                  ) : (
+                    "Send Reset Email"
+                  )}
+                </Button>
+              </form>
+              {view !== 'reset' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait...
+                    </>
+                  ) : (
+                    "Continue with Google"
+                  )}
+                </Button>
               )}
-            </Button>
-          )}
-          {view === 'login' && (
-            <div className="mt-2 text-right text-sm">
-              <button
-                onClick={() => setView('reset')}
-                className="underline font-semibold text-primary"
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
-          <div className="mt-6 text-center text-sm">
-            {view === 'login' && (
-              <>
-                Don't have an account?{' '}
-                <button
-                  onClick={() => setView('signup')}
-                  className="underline font-semibold text-primary"
-                >
-                  Sign up
-                </button>
-              </>
-            )}
-            {view === 'signup' && (
-              <>
-                Already have an account?{' '}
-                <button
-                  onClick={() => setView('login')}
-                  className="underline font-semibold text-primary"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-            {view === 'reset' && (
-              <>
-                Remembered your password?{' '}
-                <button
-                  onClick={() => setView('login')}
-                  className="underline font-semibold text-primary"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
+              {view === 'login' && (
+                <div className="mt-2 text-right text-sm">
+                  <button
+                    onClick={() => setView('reset')}
+                    className="underline font-semibold text-primary"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+              <div className="mt-6 text-center text-sm">
+                {view === 'login' && (
+                  <>
+                    Don't have an account?{' '}
+                    <button
+                      onClick={() => setView('signup')}
+                      className="underline font-semibold text-primary"
+                    >
+                      Sign up
+                    </button>
+                  </>
+                )}
+                {view === 'signup' && (
+                  <>
+                    Already have an account?{' '}
+                    <button
+                      onClick={() => setView('login')}
+                      className="underline font-semibold text-primary"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                )}
+                {view === 'reset' && (
+                  <>
+                    Remembered your password?{' '}
+                    <button
+                      onClick={() => setView('login')}
+                      className="underline font-semibold text-primary"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>
