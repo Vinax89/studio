@@ -31,26 +31,37 @@ export class WorkerPool<T = unknown, R = unknown> {
       const worker = this.idle.shift()!
       const task = this.queue.shift()!
 
-      const finalize = () => {
-        this.idle.push(worker)
+      let finalized = false
+      const finalize = (w: Worker) => {
+        if (finalized) return
+        finalized = true
+        worker.off("exit", onExit)
+        this.idle.push(w)
         this.process()
+      }
+
+      const onExit = (code: number) => {
+        let w: Worker = worker
+        if (code !== 0) {
+          console.warn(`Worker exited with code ${code}. Restarting.`)
+          const index = this.workers.indexOf(worker)
+          w = new Worker(this.file)
+          this.workers[index] = w
+        }
+        finalize(w)
       }
 
       worker.once("message", (result: R) => {
         task.resolve(result)
-        finalize()
+        finalize(worker)
       })
 
       worker.once("error", err => {
         task.reject(err)
-        finalize()
+        finalize(worker)
       })
 
-      worker.once("exit", code => {
-        if (code !== 0) {
-          task.reject(new Error(`Worker stopped with exit code ${code}`))
-        }
-      })
+      worker.once("exit", onExit)
 
       worker.postMessage(task.data)
     }
