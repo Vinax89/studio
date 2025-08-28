@@ -11,16 +11,17 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { RecurrenceValues } from '@/lib/types';
 
 const DebtSchema = z.object({
     id: z.string(),
     name: z.string(),
-    initialAmount: z.number(),
-    currentAmount: z.number(),
-    interestRate: z.number(),
-    minimumPayment: z.number(),
+    initialAmount: z.number().nonnegative(),
+    currentAmount: z.number().nonnegative(),
+    interestRate: z.number().nonnegative().max(100),
+    minimumPayment: z.number().nonnegative(),
     dueDate: z.string(),
-    recurrence: z.enum(['once', 'monthly']),
+    recurrence: z.enum(RecurrenceValues),
 });
 
 export const SuggestDebtStrategyInputSchema = z.object({
@@ -33,7 +34,7 @@ const SuggestDebtStrategyOutputSchema = z.object({
   strategyReasoning: z.string().describe("The reasoning behind the recommended strategy."),
   payoffOrder: z.array(z.object({
       debtName: z.string(),
-      priority: z.number(),
+      priority: z.number().int().min(1),
   })).describe("The recommended order to pay off the debts, starting with priority 1."),
   summary: z.string().describe("A brief, encouraging summary of the plan."),
 });
@@ -72,6 +73,9 @@ const suggestDebtStrategyFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from suggestDebtStrategyFlow');
+    }
+    return output;
   }
 );

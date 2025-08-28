@@ -12,6 +12,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'zod';
 
 const GoalSchema = z.object({
@@ -20,12 +21,19 @@ const GoalSchema = z.object({
     targetAmount: z.number(),
     currentAmount: z.number(),
     deadline: z.string(),
-    importance: z.number().describe("User's importance rating for this goal, from 1 (not important) to 5 (very important)."),
+    importance: z
+      .number()
+      .int()
+      .min(1)
+      .max(5)
+      .describe(
+        "User's importance rating for this goal, from 1 (not important) to 5 (very important)."
+      ),
 });
 
 export const AnalyzeSpendingHabitsInputSchema = z.object({
   financialDocuments: z
-    .array(z.string())
+    .array(z.string().regex(DATA_URI_REGEX))
     .describe(
       'An array of financial documents as data URIs that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
     ),

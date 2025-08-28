@@ -12,8 +12,25 @@ import {
   parseISO,
 } from "date-fns";
 
+// Maximum number of occurrences to generate for a single debt
+export const DEFAULT_MAX_OCCURRENCES = 400;
+
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
+/**
+ * Computes the next occurrence of a recurring debt on or after a target date.
+ *
+ * Supported recurrence modes are:
+ * - `"none"` – a one-time occurrence that must match the anchor date exactly.
+ * - `"weekly"` – repeats every seven days.
+ * - `"biweekly"` – repeats every fourteen days.
+ * - `"monthly"` – repeats on the same day of each month.
+ *
+ * @param anchorISO - ISO date string representing the first occurrence.
+ * @param recurrence - Recurrence frequency of the debt.
+ * @param onOrAfter - Date to search for the next occurrence from.
+ * @returns The first occurrence on or after `onOrAfter`, or `null` if none.
+ */
 function nextOccurrenceOnOrAfter(
   anchorISO: string,
   recurrence: Recurrence,
@@ -40,9 +57,26 @@ function nextOccurrenceOnOrAfter(
   return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate;
 }
 
-function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
+/**
+ * Generates all occurrences of a debt within the given date range.
+ *
+ * The iteration stops after `maxOccurrences` cycles; if more occurrences
+ * exist within the range after that point, a console warning is emitted to
+ * signal truncation.
+ *
+ * @param debt - Debt to expand into individual occurrences.
+ * @param from - Start of the date range (inclusive).
+ * @param to - End of the date range (inclusive).
+ * @param maxOccurrences - Maximum number of iterations to perform.
+ * @returns Array of occurrence dates within the specified range.
+ */
+function allOccurrencesInRange(
+  debt: Debt,
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+): Date[] {
   const out: Date[] = [];
-  const maxIter = 400; // Safety break
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
     if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
@@ -53,7 +87,7 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
   const stepDays =
     debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
 
-  while (cur && !isAfter(cur, to) && iter < maxIter) {
+  while (cur && !isAfter(cur, to) && iter < maxOccurrences) {
     out.push(cur);
     iter++;
     cur =
@@ -61,14 +95,24 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
         ? addMonths(cur, 1)
         : addDays(cur, stepDays);
   }
+  if (cur && !isAfter(cur, to)) {
+    console.warn(
+      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+    );
+  }
   return out;
 }
 
-function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
+function computeDebtOccurrences(
+  debts: Debt[],
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to);
+    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
     occ.forEach((dt) => {
       const oc = { date: iso(dt), debt: d };
       occurrences.push(oc);
@@ -83,18 +127,39 @@ function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
 
 export type Occurrence = { date: string; debt: Debt };
 
+/**
+ * React hook that expands debts into dated occurrences and groups them by day.
+ *
+ * The grouped map is filtered by `query`, which matches against a debt's name
+ * and optional notes. The returned `occurrences` list is unaffected by this
+ * filtering.
+ *
+ * @param debts - Debts to compute occurrences for.
+ * @param from - Start of the date range (inclusive).
+ * @param to - End of the date range (inclusive).
+ * @param query - Search string used to filter the grouped map by debt info.
+ * @param maxOccurrences - Maximum occurrences to generate per debt.
+ * @returns An object containing the flat `occurrences` list and a `grouped`
+ * map keyed by ISO date string after filtering.
+ */
 export function useDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  query: string
+  query: string,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
   const fromTime = from.getTime();
   const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
     () =>
-      computeDebtOccurrences(debts, new Date(fromTime), new Date(toTime)),
-    [debts, fromTime, toTime]
+      computeDebtOccurrences(
+        debts,
+        new Date(fromTime),
+        new Date(toTime),
+        maxOccurrences
+      ),
+    [debts, fromTime, toTime, maxOccurrences]
   );
 
   const filtered = useMemo(() => {
