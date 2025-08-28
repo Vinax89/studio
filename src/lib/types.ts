@@ -10,6 +10,12 @@ export type Transaction = {
   isRecurring?: boolean;
 };
 
+export interface ChartPoint {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
 export type Goal = {
   id: string;
   name: string;
