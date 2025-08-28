@@ -4,7 +4,7 @@
  * Consumers should import flows from this module rather than individual files:
  *
  * ```ts
- * import { analyzeReceipt, estimateTax } from '@/ai/flows';
+ * import { analyzeReceipt, estimateTax, calculateCostOfLiving } from '@/ai/flows';
  * ```
  */
 
