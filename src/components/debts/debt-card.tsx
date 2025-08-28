@@ -30,6 +30,16 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
   const progress = debt.initialAmount > 0 ? (debt.currentAmount / debt.initialAmount) * 100 : 0;
   const remainingAmount = debt.initialAmount - debt.currentAmount;
 
+  // Fix: Explicitly parse the date as UTC to prevent timezone shift issues
+  // that cause hydration errors. The '.split('T')[0]' ensures we only get the date part.
+  const displayDate = new Date(debt.dueDate).toLocaleDateString('en-US', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+
   const handleDelete = async () => {
     setIsDeleting(true);
     if (enableMockDelay) {
@@ -75,7 +85,7 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
              Next payment of{" "}
             <span className="font-bold text-foreground">
                 ${debt.minimumPayment.toLocaleString()}
-            </span> is due on {new Date(debt.dueDate).toLocaleDateString()}.
+            </span> is due on {displayDate}.
            </p>
         </div>
       </CardContent>
