@@ -5,6 +5,14 @@ To get started, take a look at src/app/page.tsx.
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
 
+## Color input
+When supplying colors to chart configuration, only the following formats are allowed:
+
+- Hex colors such as `#fff` or `#ffffff`
+- HSL references to CSS variables like `hsl(var(--chart-1))`
+
+Values outside these patterns are ignored to prevent unsafe CSS injection.
+
 ## Housekeeping service
 
 The housekeeping service removes outdated files from Cloud Storage to manage costs and data retention.
