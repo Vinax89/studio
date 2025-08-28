@@ -11,12 +11,13 @@ const dbPromise = openDB(DB_NAME, 1, {
 
 export async function queueTransaction(tx: unknown) {
   const db = await dbPromise
-  await db.add(STORE_NAME, tx)
+  await db.add(STORE_NAME, { data: tx, timestamp: Date.now() })
 }
 
 export async function getQueuedTransactions<T = unknown>() {
   const db = await dbPromise
-  return db.getAll(STORE_NAME) as Promise<T[]>
+  const entries = await db.getAll(STORE_NAME)
+  return entries.map((e: any) => ("data" in e ? e.data : e)) as T[]
 }
 
 export async function clearQueuedTransactions() {
