@@ -6,6 +6,7 @@ import { AuthProvider } from '@/components/auth/auth-provider';
 import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary, SuspenseBoundary } from '@/components/layout/boundaries';
 import { ServiceWorker } from '@/components/service-worker';
+import { getRequestNonce } from '@/lib/nonce';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,8 +20,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = getRequestNonce();
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: `window.__cspNonce="${nonce}"` }}
+        />
+      </head>
       <body
         className={`${inter.variable} min-h-screen bg-background text-foreground font-sans antialiased dark:bg-background dark:text-foreground`}
       >
