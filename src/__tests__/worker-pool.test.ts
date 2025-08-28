@@ -9,6 +9,9 @@ jest.mock("node:worker_threads", () => {
       postMessage(data: unknown) {
         if (data === "crash") {
           this.emit("error", new Error("boom"))
+        } else if (data === "exit") {
+          this.emit("message", 10)
+          this.emit("exit", 0)
         } else {
           this.emit("message", (data as number) * 2)
         }
@@ -31,6 +34,14 @@ describe("WorkerPool", () => {
 
     await expect(fail).rejects.toThrow("boom")
     await expect(success).resolves.toBe(10)
+
+    await pool.destroy()
+  })
+
+  it("does not reject when a worker exits cleanly", async () => {
+    const pool = new WorkerPool<number | string, number>("fake", 1)
+
+    await expect(pool.run("exit" as any)).resolves.toBe(10)
 
     await pool.destroy()
   })
