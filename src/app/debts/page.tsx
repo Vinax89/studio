@@ -34,13 +34,7 @@ export default function DebtsPage() {
     setStrategy(null);
     try {
       // The AI flow expects the full debt details, which our unified `Debt` type now provides.
-      // We need to ensure the recurrence maps correctly.
-      const strategyInput = debts.map(d => ({
-        ...d,
-        recurrence: d.recurrence === 'none' ? 'once' : 'monthly',
-      }));
-
-      const result = await suggestDebtStrategy({ debts: strategyInput });
+      const result = await suggestDebtStrategy({ debts });
       setStrategy(result);
 
     } catch (error) {

@@ -19,7 +19,8 @@ export type Goal = {
   importance: number; // New field: 1-5 rating
 };
 
-export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
+export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
+export type Recurrence = typeof RecurrenceValues[number];
 
 // This is the unified, authoritative Debt type used across the app.
 export type Debt = {
