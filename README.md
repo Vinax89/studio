@@ -35,10 +35,18 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 
 | Variable | Description |
 |----------|-------------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | API key for the Firebase project. |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Auth domain for the Firebase project. |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Cloud Messaging sender ID. |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID. |
+| `OPENAI_API_KEY` | API key from the OpenAI dashboard. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
+
+The Firebase variables are available in the Firebase console under **Project settings → General → Your apps**. Obtain
+`OPENAI_API_KEY` from the [OpenAI dashboard](https://platform.openai.com/). `RETENTION_DAYS` defaults to `30` when unset.
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
 
