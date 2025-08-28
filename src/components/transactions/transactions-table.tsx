@@ -10,51 +10,36 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
-import {
-  memo,
-  useMemo,
-  useState,
-  forwardRef,
-  type HTMLAttributes,
-  type ComponentType,
-} from "react"
-import { FixedSizeList, type ListChildComponentProps } from "react-window"
-import { Button } from "@/components/ui/button"
+import { formatCurrency } from "@/lib/currency"
+import { memo, useMemo, forwardRef } from "react"
+import { FixedSizeList as List, type ListChildComponentProps } from "react-window"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
-  /** Height of the scrollable list in pixels */
-  height?: number
-  /** Height of each row in pixels */
-  rowHeight?: number
 }
+
+const ROW_HEIGHT = 56
+const LIST_HEIGHT = 400
 
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
-  height = 400,
-  rowHeight = 56,
 }: TransactionsTableProps) {
-  const [page, setPage] = useState(0)
-  const [pageSize] = useState(20)
-
-  const currentTransactions = useMemo(
+  const formattedTransactions = useMemo(
     () =>
-      transactions
-        .slice(page * pageSize, page * pageSize + pageSize)
-        .map((transaction) => ({
-          ...transaction,
-          formattedDate: new Date(transaction.date).toLocaleDateString(),
-          formattedAmount: `${
-            transaction.type === "Income" ? "+" : "-"
-          }$${transaction.amount.toFixed(2)}`,
-        })),
-    [transactions, page, pageSize],
+      transactions.map((transaction) => ({
+        ...transaction,
+        formattedDate: new Date(transaction.date).toLocaleDateString(),
+        formattedAmount: `${
+          transaction.type === "Income" ? "+" : "-"
+        }${formatCurrency(transaction.amount, transaction.currency)}`,
+      })),
+    [transactions],
   )
 
   const Row = ({ index, style }: ListChildComponentProps) => {
-    const transaction = currentTransactions[index]
+    const transaction = formattedTransactions[index]
     return (
-      <TableRow style={style} key={transaction.id}>
+      <TableRow key={transaction.id} style={style}>
         <TableCell>{transaction.formattedDate}</TableCell>
         <TableCell className="font-medium">{transaction.description}</TableCell>
         <TableCell>
@@ -78,23 +63,12 @@ export const TransactionsTable = memo(function TransactionsTable({
     )
   }
 
-  const Outer: ComponentType<HTMLAttributes<HTMLDivElement>> =
-    forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-      ({ style, children, ...props }, ref) => (
-        <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
-          <Table>{children}</Table>
-        </div>
-      ),
-    )
-
-  const Inner: ComponentType<HTMLAttributes<HTMLTableSectionElement>> =
-    forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
-      (props, ref) => <TableBody ref={ref} {...props} />,
-    )
-
-  return (
-    <div className="rounded-lg border">
-      <Table>
+  const InnerTable = memo(
+    forwardRef<
+      HTMLTableSectionElement,
+      React.HTMLAttributes<HTMLTableSectionElement> & { children: React.ReactNode }
+    >(({ children, style, ...rest }, ref) => (
+      <table className="w-full caption-bottom text-sm">
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
@@ -104,38 +78,30 @@ export const TransactionsTable = memo(function TransactionsTable({
             <TableHead className="text-right">Amount</TableHead>
           </TableRow>
         </TableHeader>
-      </Table>
-      <FixedSizeList
-        height={height}
-        itemCount={currentTransactions.length}
-        itemSize={rowHeight}
+        <TableBody
+          ref={ref}
+          style={style}
+          className="[&_tr:last-child]:border-0"
+          {...rest}
+        >
+          {children}
+        </TableBody>
+      </table>
+    )),
+  )
+
+  return (
+    <div className="rounded-lg border">
+      <List
+        height={LIST_HEIGHT}
+        itemCount={formattedTransactions.length}
+        itemSize={ROW_HEIGHT}
         width="100%"
-        outerElementType={Outer}
-        innerElementType={Inner}
-        itemKey={(index) => currentTransactions[index].id}
+        innerElementType={InnerTable as any}
+        className="relative w-full overflow-auto"
       >
         {Row}
-      </FixedSizeList>
-      <div className="flex justify-between p-4">
-        <Button
-          variant="outline"
-          onClick={() => setPage((p) => Math.max(p - 1, 0))}
-          disabled={page === 0}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() =>
-            setPage((p) =>
-              (p + 1) * pageSize >= transactions.length ? p : p + 1,
-            )
-          }
-          disabled={(page + 1) * pageSize >= transactions.length}
-        >
-          Next
-        </Button>
-      </div>
+      </List>
     </div>
   )
 })

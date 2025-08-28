@@ -10,12 +10,13 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
-import { Transaction } from '@/lib/types';
 
-const AnalyzeReceiptInputSchema = z.object({
+export const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
+    .regex(DATA_URI_REGEX)
     .describe(
       "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
@@ -50,6 +51,9 @@ const analyzeReceiptFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from analyzeReceiptPrompt');
+    }
+    return output;
   }
 );
