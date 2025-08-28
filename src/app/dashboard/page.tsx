@@ -1,10 +1,36 @@
 
-import OverviewCards from "@/app/dashboard/overview-cards";
+import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
+import { mockTransactions } from "@/lib/data";
+import type { Transaction, ChartPoint } from "@/lib/types";
+
+// Server-side data fetching now happens in the page component.
+const getTransactions = async (): Promise<Transaction[]> => {
+  // Replace with real data fetching when an API is available
+  return mockTransactions;
+};
+
+const getChartData = async (): Promise<ChartPoint[]> => {
+  // Replace with real data fetching when an API is available
+  return [
+    { month: "Jan", income: 4000, expenses: 2400 },
+    { month: "Feb", income: 3000, expenses: 1398 },
+    { month: "Mar", income: 5000, expenses: 3800 },
+    { month: "Apr", income: 2780, expenses: 3908 },
+    { month: "May", income: 1890, expenses: 4800 },
+    { month: "Jun", income: 4390, expenses: 3800 },
+    { month: "Jul", income: 5100, expenses: 2550 },
+  ];
+};
 
 export default async function DashboardPage() {
+  const [transactions, chartData]: [Transaction[], ChartPoint[]] = await Promise.all([
+    getTransactions(),
+    getChartData(),
+  ]);
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
@@ -12,10 +38,10 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
-        <OverviewCards />
+        <OverviewCards transactions={transactions} />
       </Suspense>
       <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
-        <DashboardCharts />
+        <DashboardCharts transactions={transactions} chartData={chartData} />
       </Suspense>
     </div>
   )

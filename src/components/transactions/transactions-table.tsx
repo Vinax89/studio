@@ -7,46 +7,36 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
+import { formatCurrency } from "@/lib/currency"
 import { memo, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
-  pageSize?: number
 }
 
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
-  pageSize = 20,
 }: TransactionsTableProps) {
   const [page, setPage] = useState(0)
+  const pageSize = 20
 
-  const formattedTransactions = useMemo(
+  const currentTransactions = useMemo(
     () =>
-      transactions.map((transaction) => ({
-        ...transaction,
-        formattedDate: new Date(transaction.date).toLocaleDateString(),
-        formattedAmount: `${
-          transaction.type === "Income" ? "+" : "-"
-        }$${transaction.amount.toFixed(2)}`,
-      })),
-    [transactions],
+      transactions
+        .slice(page * pageSize, page * pageSize + pageSize)
+        .map((transaction) => ({
+          ...transaction,
+          formattedDate: new Date(transaction.date).toLocaleDateString(),
+          formattedAmount: `${
+            transaction.type === "Income" ? "+" : "-"
+          }${formatCurrency(transaction.amount, transaction.currency)}`,
+        })),
+    [transactions, page, pageSize],
   )
-
-  const pageCount = Math.max(
-    1,
-    Math.ceil(formattedTransactions.length / pageSize),
-  )
-  const currentTransactions = useMemo(() => {
-    const start = page * pageSize
-    return formattedTransactions.slice(start, start + pageSize)
-  }, [formattedTransactions, page, pageSize])
-
-  const previousPage = () => setPage((p) => Math.max(p - 1, 0))
-  const nextPage = () => setPage((p) => Math.min(p + 1, pageCount - 1))
 
   return (
     <div className="rounded-lg border">
@@ -90,23 +80,22 @@ export const TransactionsTable = memo(function TransactionsTable({
           ))}
         </TableBody>
       </Table>
-      <div className="flex items-center justify-between p-2">
+      <div className="flex justify-between p-4">
         <Button
           variant="outline"
-          size="sm"
-          onClick={previousPage}
+          onClick={() => setPage((p) => Math.max(p - 1, 0))}
           disabled={page === 0}
         >
           Previous
         </Button>
-        <span className="text-sm text-muted-foreground">
-          Page {page + 1} of {pageCount}
-        </span>
         <Button
           variant="outline"
-          size="sm"
-          onClick={nextPage}
-          disabled={page === pageCount - 1}
+          onClick={() =>
+            setPage((p) =>
+              (p + 1) * pageSize >= transactions.length ? p : p + 1,
+            )
+          }
+          disabled={(page + 1) * pageSize >= transactions.length}
         >
           Next
         </Button>
