@@ -15,8 +15,13 @@ export async function parallelSquare(
     numbers.slice(i * chunkSize, (i + 1) * chunkSize)
   )
 
+  const workerDir =
+    typeof __dirname !== "undefined"
+      ? __dirname
+      : fileURLToPath(new URL(".", (eval("import.meta") as any).url))
+
   const pool = new WorkerPool<number[], number[]>(
-    path.join(fileURLToPath(new URL(".", import.meta.url)), "mapWorker.js"),
+    path.join(workerDir, "mapWorker.js"),
     actualThreads
   )
 

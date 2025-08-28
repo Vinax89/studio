@@ -1,4 +1,8 @@
-describe.skip("parallelSquare", () => {
+/**
+ * @jest-environment node
+ */
+
+describe("parallelSquare", () => {
   it("computes squares in parallel", async () => {
     const { parallelSquare } = await import("../lib/parallel")
     const result = await parallelSquare([1, 2, 3, 4])
