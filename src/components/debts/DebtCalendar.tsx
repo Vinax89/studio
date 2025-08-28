@@ -2,9 +2,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { formatISO, parseISO, isSameDay } from "date-fns";
+import { parseISO, isSameDay } from "date-fns";
 import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
-import { monthMatrix } from "@/lib/calendar";
+import { monthMatrix, dateKey } from "@/lib/calendar";
 import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -150,7 +150,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
       <div className="grid grid-cols-7 gap-1 rounded-lg bg-muted/50 p-1">
         {grid.map((date, idx) => {
           const inMonth = date.getMonth() === cursor.getMonth();
-          const dateISO = formatISO(date, { representation: "date" });
+          const dateISO = dateKey(date);
           const dayEvents = grouped.get(dateISO) ?? [];
           const isToday = isSameDay(date, today);
           const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -211,7 +211,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
 
       {showForm && (
         <DebtForm
-          dateISO={formatISO(selectedDate ?? today, { representation: "date" })}
+          dateISO={dateKey(selectedDate ?? today)}
           initial={activeDebt}
           onClose={() => setShowForm(false)}
           onDelete={activeDebt ? () => { deleteDebt(activeDebt.id); setShowForm(false); } : undefined}
