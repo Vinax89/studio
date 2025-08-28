@@ -45,3 +45,11 @@ Adjust the retention threshold by setting `RETENTION_DAYS` before running the se
 ## Upgrading Next.js
 
 This project pins Next.js to a specific version. When upgrading, follow the steps in [docs/next-upgrade.md](docs/next-upgrade.md) to review releases, update the version, and verify the changes.
+
+## Payroll utilities
+
+The `getPayPeriodStart(date, anchor?)` helper returns the Sunday that starts a
+two-week pay period. It is used by the `PayPeriodSummary` utilities to group
+shifts into the correct pay cycle. A custom `anchor` date can be provided to
+align the cycle with organization-specific schedules. When omitted, the anchor
+defaults to the pay period beginning on January 7, 2024.
