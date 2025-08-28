@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Calculator, Percent, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { showNetworkErrorToast } from "@/lib/network-error"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type FilingStatus = 'single' | 'married_jointly' | 'married_separately' | 'head_of_household';
@@ -19,7 +20,7 @@ export default function TaxEstimatorPage() {
   const [filingStatus, setFilingStatus] = useState<FilingStatus>('single')
   const [isLoading, setIsLoading] = useState(false)
   const [taxResult, setTaxResult] = useState<TaxEstimationOutput | null>(null)
-  const { toast } = useToast();
+    const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -43,14 +44,9 @@ export default function TaxEstimatorPage() {
         filingStatus,
       })
       setTaxResult(result)
-    } catch (error) {
-      console.error("Error estimating tax:", error)
-      toast({
-        title: "Estimation Failed",
-        description: "There was an error estimating your taxes. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+      } catch (error) {
+        showNetworkErrorToast(error, "There was an error estimating your taxes. Please try again.");
+      } finally {
       setIsLoading(false)
     }
   }
