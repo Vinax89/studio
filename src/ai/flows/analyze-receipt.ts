@@ -12,9 +12,26 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const DATA_URI_REGEX = /^data:[\w.+-]+\/[\w.+-]+;base64,[A-Za-z0-9+/=]+$/;
+const MAX_DATA_URI_SIZE = 5 * 1024 * 1024; // 5MB
+
 const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
+    .regex(DATA_URI_REGEX, {
+      message:
+        "Invalid data URI format. Expected 'data:<mimetype>;base64,<encoded_data>'.",
+    })
+    .refine(
+      value => {
+        const base64 = value.split(',')[1];
+        if (!base64) return false;
+        return Buffer.from(base64, 'base64').length <= MAX_DATA_URI_SIZE;
+      },
+      {
+        message: `Encoded data must be <= ${MAX_DATA_URI_SIZE} bytes`,
+      }
+    )
     .describe(
       "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
@@ -48,7 +65,11 @@ const analyzeReceiptFlow = ai.defineFlow(
     outputSchema: AnalyzeReceiptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const parsed = AnalyzeReceiptInputSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues.map(i => i.message).join(', '));
+    }
+    const {output} = await prompt(parsed.data);
     if (!output) {
       throw new Error('No output returned from analyzeReceiptPrompt');
     }
