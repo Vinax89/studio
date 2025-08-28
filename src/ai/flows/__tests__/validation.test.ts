@@ -22,22 +22,11 @@ describe('calculateCashflow validation', () => {
 });
 
 describe('taxEstimation validation', () => {
-  it('rejects negative income', async () => {
-    jest.resetModules();
-    setupSuccessMocks({ estimatedTax: 0, taxRate: 10, breakdown: '' });
-    const { estimateTax } = await import('@/ai/flows/tax-estimation');
-    await expect(
-      estimateTax({ income: -1, deductions: 0, location: 'NY', filingStatus: 'single' })
-    ).rejects.toThrow();
-  });
-
-  it('rejects tax rate over 100', async () => {
-    jest.resetModules();
-    setupSuccessMocks({ estimatedTax: 1000, taxRate: 150, breakdown: '' });
-    const { estimateTax } = await import('@/ai/flows/tax-estimation');
-    await expect(
-      estimateTax({ income: 50000, deductions: 10000, location: 'NY', filingStatus: 'single' })
-    ).rejects.toThrow();
+  it('rejects negative income', () => {
+    const { TaxEstimationInputSchema } = require('../tax-estimation');
+    expect(() =>
+      TaxEstimationInputSchema.parse({ income: -1, deductions: 0, state: 'NY', filingStatus: 'single' })
+    ).toThrow();
   });
 });
 

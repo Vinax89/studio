@@ -30,18 +30,16 @@ describe('suggestDebtStrategyFlow', () => {
   });
 });
 
-describe('taxEstimationFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+describe('taxEstimation', () => {
+  it('returns deterministic output', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
-    await expect(
-      estimateTax({
-        income: 50000,
-        deductions: 10000,
-        location: 'NY',
-        filingStatus: 'single',
-      })
-    ).rejects.toThrow('No output returned from taxEstimationFlow');
+    const result = await estimateTax({
+      income: 50000,
+      deductions: 10000,
+      state: 'CA',
+      filingStatus: 'single',
+    });
+    expect(result.estimatedTax).toBeGreaterThan(0);
   });
 });
