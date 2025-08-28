@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
-import { addCategory, getCategories } from "@/lib/categories";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
+import { useCategories } from "@/components/categories/categories-context";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -33,22 +33,21 @@ export default function TransactionsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { categories: storedCategories, addCategory } = useCategories();
+
   const categories = useMemo(() => {
-    // Start with categories stored externally (e.g. in localStorage)
     const map = new Map<string, string>();
-    for (const cat of getCategories()) {
+    for (const cat of storedCategories) {
       const key = cat.toLowerCase();
       if (!map.has(key)) map.set(key, cat);
     }
-    // Merge in categories from current transactions
     for (const t of transactions) {
       const key = t.category.toLowerCase();
       if (!map.has(key)) map.set(key, t.category);
     }
     return ["all", ...Array.from(map.values())];
-  }, [transactions]);
+  }, [transactions, storedCategories]);
 
-<<<<<<< HEAD
   const addTransaction = useCallback(
     (transaction: Omit<Transaction, "id" | "date">) => {
       setTransactions((prev) => [
@@ -61,7 +60,7 @@ export default function TransactionsPage() {
       ]);
       addCategory(transaction.category);
     },
-    [setTransactions]
+    [addCategory]
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();
@@ -86,15 +85,6 @@ export default function TransactionsPage() {
       transactions.map(({ id, ...rest }) => rest),
       "transactions.csv"
     );
-=======
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    // Using a function with setTransactions ensures we get the latest state
-    // and correctly triggers re-renders for derived state like `categories`.
-    setTransactions(prev => [
-      { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
-      ...prev
-    ]);
->>>>>>> d96745a (code review)
   };
 
   const filteredTransactions = useMemo(() => {

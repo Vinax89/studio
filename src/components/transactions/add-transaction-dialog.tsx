@@ -24,6 +24,8 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
+import { useCategories } from "@/components/categories/categories-context"
+import { CategoryManager } from "@/components/categories/category-manager"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -38,6 +40,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [currency, setCurrency] = useState("USD")
     const [isRecurring, setIsRecurring] = useState(false)
     const { toast } = useToast()
+    const { categories } = useCategories()
+    const [managerOpen, setManagerOpen] = useState(false)
 
     const handleSave = () => {
         const numericAmount = Number(amount)
@@ -116,9 +120,32 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <Input id="category" placeholder="e.g. Uniforms, Salary" value={category} onChange={(e) => setCategory(e.target.value)} className="col-span-3" />
+            <Select
+              id="category"
+              data-testid="category"
+              onValueChange={(value) => {
+                if (value === "__add_new") {
+                  setManagerOpen(true);
+                  return;
+                }
+                setCategory(value);
+              }}
+              value={category}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+                <SelectItem value="__add_new">Add new category</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-           <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">Recurring</Label>
             <Switch id="recurring" checked={isRecurring} onCheckedChange={setIsRecurring} className="col-span-3" />
           </div>
@@ -126,6 +153,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         <DialogFooter>
           <Button type="submit" onClick={handleSave}>Save Transaction</Button>
         </DialogFooter>
+        <CategoryManager open={managerOpen} onOpenChange={setManagerOpen} />
       </DialogContent>
     </Dialog>
   )
