@@ -23,29 +23,111 @@ jest.mock('firebase/auth', () => ({
   getAuth: jest.fn(() => ({})),
 }));
 
-jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn(() => ({})),
-  collection: (_db: any, name: string) => ({ name }),
-  doc: (_db: any, name: string, id: string) => ({ name, id }),
-  getDocs: jest.fn(async (colRef: any) => ({
-    docs: Array.from(dataStore[colRef.name].entries()).map(([id, data]) => ({
+jest.mock('firebase/firestore', () => {
+  const where = (field: string, op: string, value: any) => ({
+    type: 'where',
+    field,
+    op,
+    value,
+  });
+  const orderBy = (field: string) => ({ type: 'orderBy', field });
+  const limit = (n: number) => ({ type: 'limit', n });
+  const startAfter = (doc: any) => ({ type: 'startAfter', doc });
+  const query = (colRef: any, ...constraints: any[]) => ({ ...colRef, constraints });
+
+  const getDocs = jest.fn(async (q: any) => {
+    const colName = q.name;
+    let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
       id,
       data: () => data,
-    })),
-  })),
-  setDoc: jest.fn(async (docRef: any, data: any) => {
-    dataStore[docRef.name].set(docRef.id, data);
-  }),
-  deleteDoc: jest.fn(async (docRef: any) => {
-    dataStore[docRef.name].delete(docRef.id);
-  }),
-  addDoc: jest.fn(async (colRef: any, data: any) => {
+    }));
+
+    const constraints = q.constraints || [];
+    for (const c of constraints) {
+      if (c.type === 'where') {
+        docs = docs.filter((d) => {
+          const val = d.data()[c.field];
+          switch (c.op) {
+            case '<':
+              return val < c.value;
+            case '<=':
+              return val <= c.value;
+            default:
+              return true;
+          }
+        });
+      }
+    }
+
+    const order = constraints.find((c: any) => c.type === 'orderBy');
+    if (order) {
+      docs.sort((a, b) => {
+        const av = a.data()[order.field];
+        const bv = b.data()[order.field];
+        if (av > bv) return 1;
+        if (av < bv) return -1;
+        return 0;
+      });
+    }
+
+    const start = constraints.find((c: any) => c.type === 'startAfter');
+    if (start && order) {
+      const startVal = start.doc.data()[order.field];
+      docs = docs.filter((d) => d.data()[order.field] > startVal);
+    }
+
+    const lim = constraints.find((c: any) => c.type === 'limit');
+    if (lim) {
+      docs = docs.slice(0, lim.n);
+    }
+
+    return { docs, size: docs.length, empty: docs.length === 0 };
+  });
+
+  const writeBatch = jest.fn(() => {
+    const ops: any[] = [];
+    const batch = {
+      set: (docRef: any, data: any) => {
+        ops.push({ type: 'set', docRef, data });
+      },
+      delete: (docRef: any) => {
+        ops.push({ type: 'delete', docRef });
+      },
+      commit: jest.fn(async () => {
+        for (const op of ops) {
+          if (op.type === 'set') {
+            dataStore[op.docRef.name].set(op.docRef.id, op.data);
+          } else if (op.type === 'delete') {
+            dataStore[op.docRef.name].delete(op.docRef.id);
+          }
+        }
+        ops.length = 0;
+      }),
+    };
+    return batch;
+  });
+
+  const addDoc = jest.fn(async (colRef: any, data: any) => {
     const id = Math.random().toString(36).slice(2);
     dataStore[colRef.name].set(id, data);
     return { id };
-  }),
-  __dataStore: dataStore,
-}));
+  });
+
+  return {
+    getFirestore: jest.fn(() => ({})),
+    collection: (_db: any, name: string) => ({ name }),
+    doc: (_db: any, name: string, id: string) => ({ name, id }),
+    getDocs,
+    addDoc,
+    query,
+    where,
+    orderBy,
+    limit,
+    startAfter,
+    writeBatch,
+    __dataStore: dataStore,
+  };
+});
 
 const { archiveOldTransactions, cleanupDebts, backupData, runWithRetry } = require('../services/housekeeping');
 const firestore = require('firebase/firestore');
@@ -55,6 +137,7 @@ beforeEach(() => {
   for (const col of Object.values(store)) {
     col.clear();
   }
+  jest.clearAllMocks();
 });
 
 describe('housekeeping services', () => {
@@ -148,6 +231,72 @@ describe('housekeeping services', () => {
     expect(backup.debts).toHaveLength(1);
     expect(backup.goals).toHaveLength(1);
     expect(store.backups.size).toBe(1);
+  });
+
+  test('archiveOldTransactions handles large datasets efficiently', async () => {
+    for (let i = 0; i < 250; i++) {
+      const date = new Date(2020, 0, i + 1).toISOString().slice(0, 10);
+      store.transactions.set(`o${i}`, {
+        id: `o${i}`,
+        date,
+        description: 'old',
+        amount: i,
+        type: 'Income',
+        category: 'Salary',
+      });
+    }
+    for (let i = 0; i < 50; i++) {
+      store.transactions.set(`n${i}`, {
+        id: `n${i}`,
+        date: '2024-01-01',
+        description: 'new',
+        amount: i,
+        type: 'Expense',
+        category: 'Food',
+      });
+    }
+
+    await archiveOldTransactions('2021-01-01');
+
+    expect(store.transactions.size).toBe(50);
+    expect(store.transactions_archive.size).toBe(250);
+    expect(firestore.writeBatch).toHaveBeenCalledTimes(3);
+    expect(firestore.getDocs.mock.calls.length).toBe(3);
+  });
+
+  test('cleanupDebts handles large datasets efficiently', async () => {
+    for (let i = 0; i < 250; i++) {
+      store.debts.set(`z${i}`, {
+        id: `z${i}`,
+        name: 'Paid',
+        initialAmount: 100,
+        currentAmount: -i,
+        interestRate: 0,
+        minimumPayment: 0,
+        dueDate: '2024-01-01',
+        recurrence: 'none',
+        autopay: false,
+      });
+    }
+    for (let i = 0; i < 50; i++) {
+      store.debts.set(`p${i}`, {
+        id: `p${i}`,
+        name: 'Active',
+        initialAmount: 100,
+        currentAmount: 50,
+        interestRate: 0,
+        minimumPayment: 0,
+        dueDate: '2024-01-01',
+        recurrence: 'none',
+        autopay: false,
+      });
+    }
+
+    await cleanupDebts();
+
+    expect(store.debts.size).toBe(50);
+    expect(firestore.writeBatch).toHaveBeenCalledTimes(3);
+    expect(firestore.getDocs.mock.calls.length).toBe(3);
   });
 });
 
