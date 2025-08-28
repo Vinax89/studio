@@ -15,9 +15,10 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
+import type { ChartPoint } from "@/lib/types";
 
 interface IncomeExpenseChartProps {
-  data: { month: string; income: number; expenses: number }[];
+  data: ChartPoint[];
 }
 
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {

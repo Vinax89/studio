@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
 import { mockTransactions } from "@/lib/data";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, ChartPoint } from "@/lib/types";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
@@ -12,7 +12,7 @@ const getTransactions = async (): Promise<Transaction[]> => {
   return mockTransactions;
 };
 
-const getChartData = async () => {
+const getChartData = async (): Promise<ChartPoint[]> => {
   // Replace with real data fetching when an API is available
   return [
     { month: "Jan", income: 4000, expenses: 2400 },
