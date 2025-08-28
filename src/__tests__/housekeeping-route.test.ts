@@ -8,12 +8,49 @@ jest.mock("@/lib/housekeeping", () => ({
   runHousekeeping: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock("@/lib/firebase", () => ({ db: {} }));
+
+jest.mock("firebase/firestore", () => {
+  const store: { lastRun?: number } = {};
+  return {
+    doc: (_db: any, _col: string, _id: string) => ({}),
+    runTransaction: jest.fn(async (_db: any, updateFn: any) => {
+      while (true) {
+        let write: any;
+        const lastBefore = store.lastRun;
+        const tx = {
+          get: async () => ({
+            exists: () => store.lastRun !== undefined,
+            data: () => ({ lastRun: store.lastRun }),
+          }),
+          set: (_ref: any, data: any) => {
+            write = data;
+          },
+        };
+        const result = await updateFn(tx);
+        if (write && lastBefore !== store.lastRun) {
+          // retry due to concurrent modification
+          continue;
+        }
+        if (write) {
+          store.lastRun = write.lastRun;
+        }
+        return result;
+      }
+    }),
+    setDoc: jest.fn(async (_ref: any, data: any) => {
+      store.lastRun = data.lastRun;
+    }),
+    __store: store,
+  };
+});
+
 describe("/api/cron/housekeeping", () => {
   const secret = "test-secret";
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.CRON_SECRET = secret;
-    resetRateLimit();
+    await resetRateLimit();
     (runHousekeeping as jest.Mock).mockClear();
   });
 
@@ -40,6 +77,17 @@ describe("/api/cron/housekeeping", () => {
 
     const res2 = await GET(req);
     expect(res2.status).toBe(429);
+    expect(runHousekeeping).toHaveBeenCalledTimes(1);
+  });
+
+  it("prevents concurrent invocations", async () => {
+    const req = new Request("http://localhost", {
+      headers: { "x-cron-secret": secret },
+    });
+
+    const [res1, res2] = await Promise.all([GET(req), GET(req)]);
+    const statuses = [res1.status, res2.status].sort();
+    expect(statuses).toEqual([200, 429]);
     expect(runHousekeeping).toHaveBeenCalledTimes(1);
   });
 });
