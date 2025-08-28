@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
+import { getCurrentTime } from "../lib/internet-time";
 
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
@@ -169,10 +170,10 @@ export async function backupData(
   };
 
   await runWithRetry(
-    () =>
+    async () =>
       addDoc(collection(db, "backups"), {
         ...data,
-        createdAt: new Date().toISOString(),
+        createdAt: (await getCurrentTime()).toISOString(),
       }),
     retries,
     delayMs

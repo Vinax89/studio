@@ -39,8 +39,17 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
+| `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
+
+## Internet time helper
+
+Use `fetchInternetTime(tz)` to query a trusted source for the current time and
+cache the offset between the device clock and network time. Subsequent calls to
+`getCurrentTime(tz?)` apply this offset and fall back to the local clock when
+the API is unreachable. The optional `tz` parameter accepts any IANA timezone
+string and defaults to `DEFAULT_TZ` or the runtime's resolved timezone.
 
 ## Upgrading Next.js
 

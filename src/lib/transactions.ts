@@ -31,6 +31,28 @@ const TransactionRow = z.object({
 export type TransactionRowType = z.infer<typeof TransactionRow>;
 
 /**
+ * Split an array of transactions into chunks of at most 500 items.
+ *
+ * Firestore limits batch writes to 500 operations. This helper ensures that
+ * transaction arrays are partitioned accordingly so they can be written in
+ * multiple batches if necessary.
+ *
+ * @param transactions - Transactions to split into chunks.
+ * @param chunkSize - Maximum size of each chunk. Defaults to 500.
+ * @returns Array of transaction chunks.
+ */
+export function chunkTransactions<T>(
+  transactions: T[],
+  chunkSize = 500
+): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < transactions.length; i += chunkSize) {
+    chunks.push(transactions.slice(i, i + chunkSize));
+  }
+  return chunks;
+}
+
+/**
  * Validate a list of raw transaction rows and normalize them into the
  * internal {@link Transaction} format.
  *
@@ -90,20 +112,23 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
  */
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
-  const batch = writeBatch(db);
-  transactions.forEach((tx) => {
-    const docRef = doc(colRef);
-    batch.set(docRef, tx);
-  });
+  const chunks = chunkTransactions(transactions);
+  for (const chunk of chunks) {
+    const batch = writeBatch(db);
+    chunk.forEach((tx) => {
+      const docRef = doc(colRef);
+      batch.set(docRef, tx);
+    });
 
-  try {
-    await batch.commit();
-  } catch (err) {
-    throw new Error(
-      `Failed to save transactions batch: ${
-        err instanceof Error ? err.message : String(err)
-      }`
-    );
+    try {
+      await batch.commit();
+    } catch (err) {
+      throw new Error(
+        `Failed to save transactions batch: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    }
   }
 }
 
