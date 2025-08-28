@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { useDebtOccurrences, DEFAULT_MAX_OCCURRENCES } from "../hooks/use-debt-occurrences";
+import { useDebtOccurrences } from "../hooks/use-debt-occurrences";
 import { Debt } from "../lib/types";
 
 type HookReturn = ReturnType<typeof useDebtOccurrences>;
@@ -11,7 +11,7 @@ function renderUseDebtOccurrences(
   from: Date,
   to: Date,
   query = "",
-  maxOccurrences = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences?: number
 ): HookReturn {
   let result: HookReturn = { occurrences: [], grouped: new Map() } as HookReturn;
   function TestComponent() {
