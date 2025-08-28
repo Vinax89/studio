@@ -31,7 +31,29 @@ export class WorkerPool<T = unknown, R = unknown> {
       const worker = this.idle.shift()!
       const task = this.queue.shift()!
 
+      let settled = false
+
+      const exitHandler = (code: number) => {
+        this.workers.splice(this.workers.indexOf(worker), 1)
+        const idleIndex = this.idle.indexOf(worker)
+        if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
+
+        if (!settled) {
+          task.reject(new Error(`Worker stopped with exit code ${code}`))
+        }
+
+        if (code !== 0) {
+          const replacement = new Worker(this.file)
+          this.workers.push(replacement)
+          this.idle.push(replacement)
+        }
+
+        this.process()
+      }
+
       const finalize = () => {
+        settled = true
+        worker.off("exit", exitHandler)
         this.idle.push(worker)
         this.process()
       }
@@ -46,20 +68,7 @@ export class WorkerPool<T = unknown, R = unknown> {
         finalize()
       })
 
-      worker.once("exit", code => {
-        this.workers.splice(this.workers.indexOf(worker), 1)
-        const idleIndex = this.idle.indexOf(worker)
-        if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
-
-        if (code !== 0) {
-          const replacement = new Worker(this.file)
-          this.workers.push(replacement)
-          this.idle.push(replacement)
-        }
-
-        this.process()
-        task.reject(new Error(`Worker stopped with exit code ${code}`))
-      })
+      worker.once("exit", exitHandler)
 
       worker.postMessage(task.data)
     }
