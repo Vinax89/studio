@@ -5,8 +5,10 @@ import { TransactionPayloadSchema } from "@/lib/transactions"
 
 /**
  * Generic transaction syncing endpoint.
- * Unlike `/api/bank/import`, this expects transactions already retrieved
- * from any source and persists them to the database.
+ * Unlike `/api/bank/import`, this expects transactions that have already
+ * been fetched from any source. The current implementation only validates
+ * and reports how many transactions were received without persisting them.
+ * TODO: Implement database persistence for received transactions.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
@@ -73,6 +75,7 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
+    // TODO: Persist transactions to the database.
     return NextResponse.json({ received: transactions.length })
   } catch {
     return NextResponse.json(
