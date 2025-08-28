@@ -14,6 +14,10 @@ export function ServiceWorker() {
   useEffect(() => {
     const syncQueued = async () => {
       const queued = await getQueuedTransactions()
+      if (queued === null) {
+        console.error("Failed to retrieve queued transactions")
+        return
+      }
       if (!queued.length) return
 
       try {
