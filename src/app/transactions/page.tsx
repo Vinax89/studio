@@ -1,7 +1,15 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useDeferredValue, useRef } from "react";
+import {
+  useState,
+  useMemo,
+  useTransition,
+  useDeferredValue,
+  useRef,
+  Profiler,
+  type ProfilerOnRenderCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -73,6 +81,12 @@ export default function TransactionsPage() {
     startTransition(() => setSearchTerm(value));
   };
 
+  const onRender: ProfilerOnRenderCallback = (...params) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(...params);
+    }
+  };
+
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between gap-4">
@@ -121,7 +135,9 @@ export default function TransactionsPage() {
         </p>
       )}
 
-      <TransactionsTable transactions={filteredTransactions} />
+      <Profiler id="transactions-table" onRender={onRender}>
+        <TransactionsTable transactions={filteredTransactions} />
+      </Profiler>
     </div>
   );
 }
