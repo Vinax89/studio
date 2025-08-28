@@ -1,4 +1,3 @@
-
 import type { Transaction, Goal, Debt, Account } from './types';
 
 export const mockAccounts: Account[] = [
@@ -7,14 +6,14 @@ export const mockAccounts: Account[] = [
 ];
 
 export const mockTransactions: Transaction[] = [
-  { id: '1', accountId: 'acc1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
-  { id: '2', accountId: 'acc1', date: '2024-07-14', description: 'Scrubs & Uniforms', amount: 120.50, type: 'Expense', category: 'Uniforms', currency: 'USD' },
-  { id: '3', accountId: 'acc1', date: '2024-07-12', description: 'Groceries', amount: 85.30, type: 'Expense', category: 'Food', currency: 'USD' },
-  { id: '4', accountId: 'acc1', date: '2024-07-10', description: 'BLS Certification Renewal', amount: 75.00, type: 'Expense', category: 'Certifications', currency: 'USD', isRecurring: true },
-  { id: '5', accountId: 'acc1', date: '2024-07-08', description: 'Student Loan Payment', amount: 350.00, type: 'Expense', category: 'Loans', currency: 'USD', isRecurring: true },
-  { id: '6', accountId: 'acc1', date: '2024-07-05', description: 'Gas', amount: 45.00, type: 'Expense', category: 'Transport', currency: 'USD' },
-  { id: '7', accountId: 'acc1', date: '2024-07-01', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
-  { id: '8', accountId: 'acc2', date: '2024-07-01', description: 'Rent', amount: 1200.00, type: 'Expense', category: 'Housing', currency: 'USD', isRecurring: true },
+  { id: '1', accountId: 'acc1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.0, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
+  { id: '2', accountId: 'acc1', date: '2024-07-14', description: 'Scrubs & Uniforms', amount: 120.5, type: 'Expense', category: 'Uniforms', currency: 'USD' },
+  { id: '3', accountId: 'acc1', date: '2024-07-12', description: 'Groceries', amount: 85.3, type: 'Expense', category: 'Food', currency: 'USD' },
+  { id: '4', accountId: 'acc1', date: '2024-07-10', description: 'BLS Certification Renewal', amount: 75.0, type: 'Expense', category: 'Certifications', currency: 'USD', isRecurring: true },
+  { id: '5', accountId: 'acc1', date: '2024-07-08', description: 'Student Loan Payment', amount: 350.0, type: 'Expense', category: 'Loans', currency: 'USD', isRecurring: true },
+  { id: '6', accountId: 'acc1', date: '2024-07-05', description: 'Gas', amount: 45.0, type: 'Expense', category: 'Transport', currency: 'USD' },
+  { id: '7', accountId: 'acc1', date: '2024-07-01', description: 'Bi-weekly Paycheck', amount: 2500.0, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
+  { id: '8', accountId: 'acc2', date: '2024-07-01', description: 'Rent', amount: 1200.0, type: 'Expense', category: 'Housing', currency: 'USD', isRecurring: true },
 ];
 
 export const mockGoals: Goal[] = [
@@ -26,52 +25,52 @@ export const mockGoals: Goal[] = [
 
 // This is the seed data for the interactive calendar, now using the unified Debt type.
 export const mockDebts: Debt[] = [
-    { 
-        id: "student-loan", 
-        name: "Student Loan", 
+    {
+        id: "student-loan",
+        name: "Student Loan",
         initialAmount: 25000,
         currentAmount: 18500,
         interestRate: 5.8,
-        minimumPayment: 350, 
-        dueDate: "2024-08-08", 
-        recurrence: "monthly", 
-        autopay: true, 
-        color: "#fca5a5" 
+        minimumPayment: 350,
+        dueDate: "2024-08-08",
+        recurrence: "monthly",
+        autopay: true,
+        color: "#fca5a5"
     },
-    { 
-        id: "car-loan", 
-        name: "Car Loan", 
+    {
+        id: "car-loan",
+        name: "Car Loan",
         initialAmount: 18000,
         currentAmount: 9800,
         interestRate: 4.2,
-        minimumPayment: 275, 
-        dueDate: "2024-08-20", 
-        recurrence: "monthly", 
-        autopay: true, 
-        color: "#fdba74" 
+        minimumPayment: 275,
+        dueDate: "2024-08-20",
+        recurrence: "monthly",
+        autopay: true,
+        color: "#fdba74"
     },
-    { 
-        id: "credit-card", 
-        name: "Credit Card", 
+    {
+        id: "credit-card",
+        name: "Credit Card",
         initialAmount: 5000,
         currentAmount: 2100,
         interestRate: 21.9,
-        minimumPayment: 100, 
-        dueDate: "2024-08-25", 
-        recurrence: "monthly", 
-        autopay: false, 
-        color: "#818cf8" 
+        minimumPayment: 100,
+        dueDate: "2024-08-25",
+        recurrence: "monthly",
+        autopay: false,
+        color: "#818cf8"
     },
-    { 
-        id: "hospital-bill", 
-        name: "Hospital Bill", 
+    {
+        id: "hospital-bill",
+        name: "Hospital Bill",
         initialAmount: 500,
         currentAmount: 500,
         interestRate: 0,
-        minimumPayment: 500, 
-        dueDate: new Date().toISOString().split('T')[0], 
-        recurrence: "none", 
-        autopay: false, 
-        color: "#a5b4fc" 
+        minimumPayment: 500,
+        dueDate: new Date().toISOString().split('T')[0],
+        recurrence: "none",
+        autopay: false,
+        color: "#a5b4fc"
     },
 ];

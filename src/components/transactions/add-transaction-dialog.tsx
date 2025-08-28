@@ -24,6 +24,7 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { mockAccounts } from "@/lib/data"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -36,30 +37,49 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
     const [accountId, setAccountId] = useState(mockAccounts[0]?.id || "")
-    const [currency, setCurrency] = useState(mockAccounts[0]?.currency || "")
+    const [currency, setCurrency] = useState(mockAccounts[0]?.currency || "USD")
     const [isRecurring, setIsRecurring] = useState(false)
+    const { toast } = useToast()
 
     const handleSave = () => {
-        if(description && amount && type && category && accountId) {
-            onSave({
-                description,
-                amount: parseFloat(amount),
-                type,
-                category,
-                accountId,
-                currency,
-                isRecurring
-            })
-            setOpen(false)
-            // Reset form
-            setDescription("")
-            setAmount("")
-            setType("Expense")
-            setCategory("")
-            setAccountId(mockAccounts[0]?.id || "")
-            setCurrency(mockAccounts[0]?.currency || "")
-            setIsRecurring(false)
+        const numericAmount = Number(amount)
+
+        if (!description || !amount || !type || !category || !accountId) {
+            toast({ title: "Missing fields", description: "Please complete all fields.", variant: "destructive" })
+            return
         }
+
+        if (!Number.isFinite(numericAmount)) {
+            toast({ title: "Invalid amount", description: "Please enter a valid amount.", variant: "destructive" })
+            return
+        }
+
+        const currencyCode = currency.trim().toUpperCase()
+        try {
+            new Intl.NumberFormat("en-US", { style: "currency", currency: currencyCode }).format(1)
+        } catch {
+            toast({ title: "Invalid currency", description: "Please enter a valid ISO currency code.", variant: "destructive" })
+            return
+        }
+
+        onSave({
+            description,
+            amount: numericAmount,
+            type,
+            category,
+            accountId,
+            currency: currencyCode,
+            isRecurring,
+        })
+        setOpen(false)
+        // Reset form
+        setDescription("")
+        setAmount("")
+        setType("Expense")
+        setCategory("")
+        setAccountId(mockAccounts[0]?.id || "")
+        setCurrency(mockAccounts[0]?.currency || "USD")
+        setIsRecurring(false)
     }
 
   return (
@@ -88,7 +108,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">Type</Label>
-             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} defaultValue={type}>
+             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} value={type}>
                 <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
                 </SelectTrigger>
