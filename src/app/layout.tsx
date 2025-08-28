@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary, SuspenseBoundary } from '@/components/layout/boundaries';
+import { ServiceWorker } from '@/components/service-worker';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             </ErrorBoundary>
           </AuthProvider>
           <Toaster />
+          <ServiceWorker />
         </ThemeProvider>
       </body>
     </html>
