@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <main className="flex min-h-screen items-center justify-center bg-background p-4" role="main">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
@@ -72,7 +72,7 @@ export default function LoginPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-label={isLoginView ? 'Sign in form' : 'Sign up form'}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -94,27 +94,38 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                {isLoading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Please wait...
-                    </>
-                ) : isLoginView ? (
-                    "Sign In"
-                ) : (
-                    "Sign Up"
-                )}
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isLoading}
+              aria-busy={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  Please wait...
+                </>
+              ) : isLoginView ? (
+                "Sign In"
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
             {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
+            <button
+              type="button"
+              onClick={() => setIsLoginView(!isLoginView)}
+              className="inline-block p-2 min-w-[44px] min-h-[44px] underline font-semibold text-primary"
+              aria-label={isLoginView ? "Switch to sign up form" : "Switch to sign in form"}
+            >
               {isLoginView ? "Sign up" : "Sign in"}
             </button>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }
