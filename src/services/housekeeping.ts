@@ -98,18 +98,25 @@ export async function cleanupDebts(): Promise<void> {
 export async function runWithRetry<T>(
   op: () => Promise<T>,
   retries = 1,
-  delayMs = 100
+  delayMs = 100,
+  maxDelayMs = Number.POSITIVE_INFINITY,
+  jitter = 0,
+  isRetryable: (err: unknown) => boolean = () => true
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await op();
     } catch (err) {
       console.error(`Attempt ${attempt + 1} failed:`, err);
-      if (attempt === retries) {
+      if (!isRetryable(err) || attempt === retries) {
         // Final failure after exhausting retries
         throw err;
       }
-      const delay = delayMs * 2 ** attempt;
+      const baseDelay = delayMs * 2 ** attempt;
+      const delay = Math.min(
+        baseDelay + Math.random() * jitter,
+        maxDelayMs
+      );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }

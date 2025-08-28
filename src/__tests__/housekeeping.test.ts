@@ -381,5 +381,46 @@ describe('runWithRetry', () => {
     consoleSpy.mockRestore();
     jest.useRealTimers();
   });
+
+  test('applies jitter and respects max delay', async () => {
+    jest.useFakeTimers();
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    const op = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fail1'))
+      .mockResolvedValue('ok');
+
+    const promise = runWithRetry(op, 1, 1000, 1050, 200);
+
+    await Promise.resolve();
+    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1050);
+
+    await jest.advanceTimersByTimeAsync(1050);
+    await expect(promise).resolves.toBe('ok');
+
+    randomSpy.mockRestore();
+    setTimeoutSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
+  test('throws immediately for non-retryable errors', async () => {
+    jest.useFakeTimers();
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+    const op = jest.fn().mockRejectedValue(new Error('fail'));
+    const isRetryable = jest.fn(() => false);
+
+    await expect(
+      runWithRetry(op, 3, 1000, 2000, 100, isRetryable)
+    ).rejects.toThrow('fail');
+    expect(op).toHaveBeenCalledTimes(1);
+    expect(isRetryable).toHaveBeenCalledWith(expect.any(Error));
+    expect(setTimeoutSpy).not.toHaveBeenCalled();
+
+    setTimeoutSpy.mockRestore();
+    jest.useRealTimers();
+  });
 });
 
