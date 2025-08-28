@@ -1,18 +1,21 @@
-
 import { useMemo } from "react";
 import { Debt } from "@/lib/types";
 import { computeDebtOccurrences, Occurrence } from "@/lib/calendar";
+
+export const DEFAULT_MAX_OCCURRENCES = 400;
 
 export function useDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  query: string
+  query: string,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
+  const fromTime = from.getTime();
+  const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
-    () => computeDebtOccurrences(debts, from, to),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debts, from.toISOString(), to.toISOString()]
+    () => computeDebtOccurrences(debts, new Date(fromTime), new Date(toTime), maxOccurrences),
+    [debts, fromTime, toTime, maxOccurrences]
   );
 
   const filtered = useMemo(() => {
