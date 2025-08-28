@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -36,26 +37,32 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [category, setCategory] = useState("")
     const [currency, setCurrency] = useState("USD")
     const [isRecurring, setIsRecurring] = useState(false)
+    const { toast } = useToast()
 
     const handleSave = () => {
-        if(description && amount && type && category) {
-            onSave({
-                description,
-                amount: parseFloat(amount),
-                currency,
-                type,
-                category,
-                isRecurring
-            })
-            setOpen(false)
-            // Reset form
-            setDescription("")
-            setAmount("")
-            setType("Expense")
-            setCategory("")
-            setCurrency("USD")
-            setIsRecurring(false)
+        const numericAmount = Number(amount)
+
+        if (!description || !amount || !type || !category || !Number.isFinite(numericAmount)) {
+            toast({ title: "Invalid amount", description: "Please enter a valid amount.", variant: "destructive" })
+            return
         }
+
+        onSave({
+            description,
+            amount: numericAmount,
+            currency,
+            type,
+            category,
+            isRecurring
+        })
+        setOpen(false)
+        // Reset form
+        setDescription("")
+        setAmount("")
+        setType("Expense")
+        setCategory("")
+        setCurrency("USD")
+        setIsRecurring(false)
     }
 
   return (
