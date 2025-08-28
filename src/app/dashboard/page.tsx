@@ -1,8 +1,7 @@
-
 import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardCharts from '@/app/dashboard/dashboard-charts';
+import DashboardCharts from "@/app/dashboard/dashboard-charts";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 
@@ -28,14 +27,16 @@ const getChartData = async () => {
 export default async function DashboardPage() {
   const [transactions, chartData] = await Promise.all([
     getTransactions(),
-    getChartData()
+    getChartData(),
   ]);
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
+        <p className="text-muted-foreground">
+          Here's a high-level overview of your finances.
+        </p>
       </div>
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
@@ -44,5 +45,5 @@ export default async function DashboardPage() {
         <DashboardCharts transactions={transactions} chartData={chartData} />
       </Suspense>
     </div>
-  )
+  );
 }

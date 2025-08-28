@@ -1,16 +1,12 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { auth } from "@/lib/firebase"
-import { signOut } from "firebase/auth"
-import {
-  CircleUser,
-  Menu,
-  Search,
-} from "lucide-react"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { CircleUser, Menu, Search } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,38 +14,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { NurseFinAILogo } from "@/components/icons"
-import { useToast } from "@/hooks/use-toast"
-import { ThemeToggle } from "@/components/ThemeToggle"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { NurseFinAILogo } from "@/components/icons";
+import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function AppHeader() {
-  const router = useRouter()
-  const { toast } = useToast()
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     try {
-      await signOut(auth)
-      router.push("/")
+      await signOut(auth);
+      router.push("/");
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
-      })
+      });
     } catch (error) {
-      console.error("Logout failed:", error)
-       toast({
+      console.error("Logout failed:", error);
+      toast({
         title: "Logout Failed",
         description: "Could not log you out. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 dark:bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -139,11 +131,9 @@ export default function AppHeader() {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            Logout
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
-  )
+  );
 }

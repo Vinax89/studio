@@ -7,8 +7,9 @@ const TransactionRow = z.object({
   date: z.string(),
   description: z.string(),
   amount: z.preprocess(
-    (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
-    z.string()
+    (val) =>
+      typeof val === "number" || typeof val === "string" ? String(val) : val,
+    z.string(),
   ),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
@@ -17,7 +18,9 @@ const TransactionRow = z.object({
 
 export type TransactionRowType = z.infer<typeof TransactionRow>;
 
-export function validateTransactions(rows: TransactionRowType[]): Transaction[] {
+export function validateTransactions(
+  rows: TransactionRowType[],
+): Transaction[] {
   return rows.map((row, index) => {
     const parsed = TransactionRow.safeParse(row);
     if (!parsed.success) {
@@ -28,7 +31,7 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
     const parsedAmount = parseFloat(amountString);
     if (isNaN(parsedAmount)) {
       throw new Error(
-        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`
+        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`,
       );
     }
 
@@ -49,7 +52,9 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
   });
 }
 
-export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+export async function saveTransactions(
+  transactions: Transaction[],
+): Promise<void> {
   const colRef = collection(db, "transactions");
   const batch = writeBatch(db);
   transactions.forEach((tx) => {
@@ -63,12 +68,14 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
     throw new Error(
       `Failed to save transactions batch: ${
         err instanceof Error ? err.message : String(err)
-      }`
+      }`,
     );
   }
 }
 
-export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
+export async function importTransactions(
+  rows: TransactionRowType[],
+): Promise<void> {
   const transactions = validateTransactions(rows);
   try {
     await saveTransactions(transactions);
@@ -76,7 +83,7 @@ export async function importTransactions(rows: TransactionRowType[]): Promise<vo
     throw new Error(
       `Failed to import transactions: ${
         err instanceof Error ? err.message : String(err)
-      }`
+      }`,
     );
   }
 }
@@ -92,4 +99,3 @@ export const transactionPersistence: TransactionPersistence = {
   saveTransactions,
   importTransactions,
 };
-

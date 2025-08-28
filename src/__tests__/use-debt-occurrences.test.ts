@@ -1,6 +1,9 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { useDebtOccurrences, DEFAULT_MAX_OCCURRENCES } from "../hooks/use-debt-occurrences";
+import {
+  useDebtOccurrences,
+  DEFAULT_MAX_OCCURRENCES,
+} from "../hooks/use-debt-occurrences";
 import { Debt } from "../lib/types";
 
 type HookReturn = ReturnType<typeof useDebtOccurrences>;
@@ -11,9 +14,12 @@ function renderUseDebtOccurrences(
   from: Date,
   to: Date,
   query = "",
-  maxOccurrences = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences = DEFAULT_MAX_OCCURRENCES,
 ): HookReturn {
-  let result: HookReturn = { occurrences: [], grouped: new Map() } as HookReturn;
+  let result: HookReturn = {
+    occurrences: [],
+    grouped: new Map(),
+  } as HookReturn;
   function TestComponent() {
     result = useDebtOccurrences(debts, from, to, query, maxOccurrences);
     return null;
@@ -22,12 +28,12 @@ function renderUseDebtOccurrences(
   return result;
 }
 
-const baseDebt: Omit<Debt, 'id' | 'name' | 'dueDate' | 'recurrence'> = {
-    initialAmount: 1000,
-    currentAmount: 500,
-    interestRate: 5,
-    minimumPayment: 100,
-    autopay: false,
+const baseDebt: Omit<Debt, "id" | "name" | "dueDate" | "recurrence"> = {
+  initialAmount: 1000,
+  currentAmount: 500,
+  interestRate: 5,
+  minimumPayment: 100,
+  autopay: false,
 };
 
 describe("useDebtOccurrences", () => {
@@ -42,7 +48,7 @@ describe("useDebtOccurrences", () => {
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
-      new Date("2024-01-31")
+      new Date("2024-01-31"),
     );
     expect(occurrences.map((o) => o.date)).toEqual([
       "2024-01-01",
@@ -64,7 +70,7 @@ describe("useDebtOccurrences", () => {
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
-      new Date("2024-02-01")
+      new Date("2024-02-01"),
     );
     expect(occurrences.map((o) => o.date)).toEqual([
       "2024-01-01",
@@ -84,7 +90,7 @@ describe("useDebtOccurrences", () => {
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
-      new Date("2024-04-30")
+      new Date("2024-04-30"),
     );
     expect(occurrences.map((o) => o.date)).toEqual([
       "2024-01-15",
@@ -105,7 +111,7 @@ describe("useDebtOccurrences", () => {
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
-      new Date("2024-01-31")
+      new Date("2024-01-31"),
     );
     expect(occurrences.map((o) => o.date)).toEqual(["2024-01-10"]);
   });
@@ -124,7 +130,7 @@ describe("useDebtOccurrences", () => {
       new Date("2024-01-01"),
       new Date("2024-03-01"),
       "",
-      3
+      3,
     );
     expect(occurrences.map((o) => o.date)).toEqual([
       "2024-01-01",

@@ -1,4 +1,4 @@
-import type { DateRange } from 'react-day-picker';
+import type { DateRange } from "react-day-picker";
 
 export interface Shift {
   date: Date;
@@ -23,8 +23,10 @@ export const getPayPeriodStart = (date: Date): Date => {
   d.setDate(d.getDate() - dayOfWeek);
 
   // Use a fixed anchor date to determine the "even" or "odd" week period.
-  const anchor = new Date('2024-01-07T00:00:00.000Z'); // A known Sunday
-  const diffWeeks = Math.floor((d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const anchor = new Date("2024-01-07T00:00:00.000Z"); // A known Sunday
+  const diffWeeks = Math.floor(
+    (d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7),
+  );
 
   if (diffWeeks % 2 !== 0) {
     // It's in the second week of a pay period, so the start was the *previous* Sunday
@@ -38,7 +40,7 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
   const weeklyShifts: Record<string, Shift[]> = {};
 
   // Group shifts by week
-  shifts.forEach(shift => {
+  shifts.forEach((shift) => {
     const shiftDay = shift.date.getDay(); // Sunday = 0
     const weekStart = new Date(shift.date);
     weekStart.setDate(shift.date.getDate() - shiftDay);
@@ -53,7 +55,9 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
   const overtimeDates: Date[] = [];
   for (const weekStartStr in weeklyShifts) {
-    const week = weeklyShifts[weekStartStr].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const week = weeklyShifts[weekStartStr].sort(
+      (a, b) => a.date.getTime() - b.date.getTime(),
+    );
 
     let weeklyHours = 0;
     for (const shift of week) {
@@ -71,7 +75,7 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
 export const calculatePayPeriodSummary = (
   shifts: Shift[],
-  payPeriod: DateRange | undefined
+  payPeriod: DateRange | undefined,
 ): PayPeriodSummary => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) {
     return { totalIncome: 0, regularHours: 0, overtimeHours: 0, totalHours: 0 };
@@ -90,7 +94,7 @@ export const calculatePayPeriodSummary = (
   let totalOvertimeHours = 0;
 
   const calculateWeekPay = (start: Date, end: Date) => {
-    const weekShifts = shifts.filter(s => s.date >= start && s.date <= end);
+    const weekShifts = shifts.filter((s) => s.date >= start && s.date <= end);
     if (weekShifts.length === 0) return 0;
 
     let weeklyHours = 0;
@@ -98,7 +102,7 @@ export const calculatePayPeriodSummary = (
     let weeklyPremiumPay = 0;
 
     // First pass: Calculate total hours and sum premium pay
-    weekShifts.forEach(shift => {
+    weekShifts.forEach((shift) => {
       weeklyHours += shift.hours;
       weeklyPremiumPay += shift.premiumPay || 0;
     });
@@ -113,7 +117,8 @@ export const calculatePayPeriodSummary = (
       return weeklyPremiumPay;
     }
 
-    const avgRate = weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
+    const avgRate =
+      weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
     const regularPay = regularHours * avgRate;
     const overtimePay = overtimeHours * avgRate * 1.5;
     weeklyIncome = regularPay + overtimePay + weeklyPremiumPay;
@@ -136,11 +141,12 @@ export const calculatePayPeriodSummary = (
 
 export const getShiftsInPayPeriod = (
   shifts: Shift[],
-  payPeriod: DateRange | undefined
+  payPeriod: DateRange | undefined,
 ): Shift[] => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
   return shifts
-    .filter(shift => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
+    .filter(
+      (shift) => shift.date >= payPeriod.from && shift.date <= payPeriod.to,
+    )
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };
-

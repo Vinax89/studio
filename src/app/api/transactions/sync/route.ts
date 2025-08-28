@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
-import { z } from "zod"
-import { verifyFirebaseToken } from "@/lib/server-auth"
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { verifyFirebaseToken } from "@/lib/server-auth";
 
 /**
  * Generic transaction syncing endpoint.
@@ -9,48 +9,48 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  */
 const bodySchema = z.object({
   transactions: z.array(z.any()),
-})
+});
 
-const MAX_BODY_SIZE = 1024 * 1024 // 1MB
+const MAX_BODY_SIZE = 1024 * 1024; // 1MB
 
 export async function POST(req: Request) {
   try {
-    await verifyFirebaseToken(req)
+    await verifyFirebaseToken(req);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unauthorized"
-    return NextResponse.json({ error: message }, { status: 401 })
+    const message = err instanceof Error ? err.message : "Unauthorized";
+    return NextResponse.json({ error: message }, { status: 401 });
   }
 
-  let text: string
+  let text: string;
   try {
-    text = await req.text()
+    text = await req.text();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   if (new TextEncoder().encode(text).byteLength > MAX_BODY_SIZE) {
-    return NextResponse.json({ error: "Payload too large" }, { status: 413 })
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }
 
-  let json: unknown
+  let json: unknown;
   try {
-    json = JSON.parse(text)
+    json = JSON.parse(text);
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(json)
+  const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const { transactions } = parsed.data
+  const { transactions } = parsed.data;
 
   try {
-    return NextResponse.json({ received: transactions.length })
+    return NextResponse.json({ received: transactions.length });
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
-    )
+    );
   }
 }

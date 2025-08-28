@@ -1,5 +1,5 @@
 // This file uses server-side code.
-'use server';
+"use server";
 
 /**
  * @fileOverview Generates a spending forecast based on past transactions.
@@ -9,40 +9,53 @@
  * - SpendingForecastOutput - The return type for the predictSpending function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const TransactionSchema = z.object({
-  date: z.string().describe('ISO date of the transaction.'),
-  amount: z.number().describe('Transaction amount in USD.'),
-  category: z.string().describe('Category for the transaction.'),
-  description: z.string().optional().describe('Optional description of the transaction.'),
+  date: z.string().describe("ISO date of the transaction."),
+  amount: z.number().describe("Transaction amount in USD."),
+  category: z.string().describe("Category for the transaction."),
+  description: z
+    .string()
+    .optional()
+    .describe("Optional description of the transaction."),
 });
 
 const SpendingForecastInputSchema = z.object({
-  transactions: z.array(TransactionSchema).describe('Historical transaction data to analyze.'),
+  transactions: z
+    .array(TransactionSchema)
+    .describe("Historical transaction data to analyze."),
 });
 export type SpendingForecastInput = z.infer<typeof SpendingForecastInputSchema>;
 
 const ForecastPointSchema = z.object({
-  month: z.string().describe('Month for the forecasted spending (e.g., 2024-08).'),
-  amount: z.number().describe('Predicted total spending for the month in USD.'),
+  month: z
+    .string()
+    .describe("Month for the forecasted spending (e.g., 2024-08)."),
+  amount: z.number().describe("Predicted total spending for the month in USD."),
 });
 
 const SpendingForecastOutputSchema = z.object({
-  forecast: z.array(ForecastPointSchema).describe('Predicted spending for upcoming months.'),
-  analysis: z.string().describe('Brief analysis of expected spending trends.'),
+  forecast: z
+    .array(ForecastPointSchema)
+    .describe("Predicted spending for upcoming months."),
+  analysis: z.string().describe("Brief analysis of expected spending trends."),
 });
-export type SpendingForecastOutput = z.infer<typeof SpendingForecastOutputSchema>;
+export type SpendingForecastOutput = z.infer<
+  typeof SpendingForecastOutputSchema
+>;
 
-export async function predictSpending(input: SpendingForecastInput): Promise<SpendingForecastOutput> {
+export async function predictSpending(
+  input: SpendingForecastInput,
+): Promise<SpendingForecastOutput> {
   return spendingForecastFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'spendingForecastPrompt',
-  input: {schema: SpendingForecastInputSchema},
-  output: {schema: SpendingForecastOutputSchema},
+  name: "spendingForecastPrompt",
+  input: { schema: SpendingForecastInputSchema },
+  output: { schema: SpendingForecastOutputSchema },
   prompt: `You are a financial analyst. Review the user's past transactions and predict the total spending for the next three months.
 
 Transactions:
@@ -57,15 +70,15 @@ Return:
 
 const spendingForecastFlow = ai.defineFlow(
   {
-    name: 'spendingForecastFlow',
+    name: "spendingForecastFlow",
     inputSchema: SpendingForecastInputSchema,
     outputSchema: SpendingForecastOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await prompt(input);
     if (!output) {
-      throw new Error('No output returned from spendingForecastPrompt');
+      throw new Error("No output returned from spendingForecastPrompt");
     }
     return output;
-  }
+  },
 );

@@ -76,9 +76,7 @@ export function addCategory(category: string): string[] {
  */
 export function removeCategory(category: string): string[] {
   const key = normalize(category);
-  const categories = getCategories().filter(
-    (c) => normalize(c) !== key
-  );
+  const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
   return categories;
 }
@@ -87,4 +85,3 @@ export function removeCategory(category: string): string[] {
 export function clearCategories() {
   save([]);
 }
-
