@@ -14,7 +14,13 @@ export default function SpendingByCategoryChart({ transactions, categories }: Sp
     .map((cat) => ({
       name: cat.name,
       value: transactions
-        .filter((t) => t.type === "Expense" && t.categoryId === cat.id)
+        .filter(
+          (t) =>
+            t.type === "Expense" &&
+            (t.categoryId === cat.id ||
+              (!t.categoryId &&
+                t.category.toLowerCase() === cat.name.toLowerCase()))
+        )
         .reduce((sum, t) => sum + t.amount, 0),
     }))
     .filter((d) => d.value > 0)
