@@ -41,3 +41,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
+
+## Upgrading Next.js
+
+This project pins Next.js to a specific version. When upgrading, follow the steps in [docs/next-upgrade.md](docs/next-upgrade.md) to review releases, update the version, and verify the changes.
