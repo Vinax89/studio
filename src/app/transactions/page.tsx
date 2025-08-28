@@ -107,34 +107,36 @@ export default function TransactionsPage() {
     [startTransition, setSearchTerm]
   );
 
+  const isSearching = deferredSearchTerm !== searchTerm;
+
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
-            <h1 className="text-3xl font-bold font-headline tracking-tight">Transactions</h1>
-            <p className="text-muted-foreground">Track and manage your income and expenses.</p>
+          <h1 className="text-3xl font-bold font-headline tracking-tight">Transactions</h1>
+          <p className="text-muted-foreground">Track and manage your income and expenses.</p>
         </div>
-         <div className="flex gap-2 items-center flex-wrap">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button variant="outline" onClick={handleUploadClick}>
-                <Upload className="mr-2 h-4 w-4" />
-                Import
-            </Button>
-            <Button variant="outline" onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-            </Button>
-             <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan Receipt
-            </Button>
-            <AddTransactionDialog onSave={addTransaction} />
+        <div className="flex gap-2 items-center flex-wrap">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button variant="outline" onClick={handleUploadClick}>
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button variant="outline" onClick={handleDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
+            <ScanLine className="mr-2 h-4 w-4" />
+            Scan Receipt
+          </Button>
+          <AddTransactionDialog onSave={addTransaction} />
         </div>
       </div>
 

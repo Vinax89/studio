@@ -36,7 +36,6 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
     day: 'numeric'
   });
 
-
   const handleDelete = async () => {
     setIsDeleting(true);
     if (shouldDelay()) {
@@ -60,7 +59,7 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: debt.color || 'hsl(var(--primary))' }}
             title={`Color: ${debt.color}`}
-           />
+          />
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -78,12 +77,12 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
             </span>{" "}
             remaining of ${debt.initialAmount.toLocaleString()}
           </p>
-           <p>
-             Next payment of{" "}
+          <p>
+            Next payment of{" "}
             <span className="font-bold text-foreground">
-                ${debt.minimumPayment.toLocaleString()}
+              ${debt.minimumPayment.toLocaleString()}
             </span> is due on {displayDate}.
-           </p>
+          </p>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2">

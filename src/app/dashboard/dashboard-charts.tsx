@@ -14,9 +14,7 @@ import type { Transaction, ChartPoint } from "@/lib/types";
 
 // This file is now a client component module.
 // The dynamic import for the chart component is defined here.
-const IncomeExpenseChartClient = dynamic<{
-  data: ChartPoint[];
-}>(
+const IncomeExpenseChartClient = dynamic<{ data: ChartPoint[] }>(
   () => import("@/components/dashboard/income-expense-chart"),
   {
     ssr: false,
@@ -41,7 +39,10 @@ interface DashboardChartsProps {
   chartData: ChartPoint[];
 }
 
-export default function DashboardCharts({ transactions, chartData }: DashboardChartsProps) {
+export default function DashboardCharts({
+  transactions,
+  chartData,
+}: DashboardChartsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div className="lg:col-span-2">
