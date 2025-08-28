@@ -90,20 +90,26 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
  */
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
-  const batch = writeBatch(db);
-  transactions.forEach((tx) => {
-    const docRef = doc(colRef);
-    batch.set(docRef, tx);
-  });
+  const BATCH_SIZE = 500;
 
-  try {
-    await batch.commit();
-  } catch (err) {
-    throw new Error(
-      `Failed to save transactions batch: ${
-        err instanceof Error ? err.message : String(err)
-      }`
-    );
+  for (let i = 0; i < transactions.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    const slice = transactions.slice(i, i + BATCH_SIZE);
+
+    slice.forEach((tx) => {
+      const docRef = doc(colRef);
+      batch.set(docRef, tx);
+    });
+
+    try {
+      await batch.commit();
+    } catch (err) {
+      throw new Error(
+        `Failed to save transactions batch: ${
+          err instanceof Error ? err.message : String(err)
+        }. Some transactions may have been saved from index ${i}.`
+      );
+    }
   }
 }
 
