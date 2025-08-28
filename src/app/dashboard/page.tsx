@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
+import RecurringList from "@/components/dashboard/recurring-list";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
@@ -42,8 +43,11 @@ export default async function DashboardPage() {
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
       </Suspense>
-      <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
+      <Suspense fallback={<Skeleton className="h-[436px] w-full" />}> 
         <DashboardCharts transactions={transactions} chartData={chartData} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-[260px] w-full" />}> 
+        <RecurringList transactions={transactions} />
       </Suspense>
     </div>
   )
