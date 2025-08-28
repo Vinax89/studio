@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
+import { TransactionPayloadSchema } from "@/lib/transactions"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -9,7 +10,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  */
 const bodySchema = z.object({
   provider: z.string(),
-  transactions: z.array(z.any()),
+  transactions: z.array(TransactionPayloadSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
@@ -41,7 +42,10 @@ export async function POST(req: Request) {
 
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Invalid payload", details: parsed.error.flatten() },
+      { status: 400 },
+    )
   }
 
   const { provider, transactions } = parsed.data
