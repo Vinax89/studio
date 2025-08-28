@@ -13,23 +13,29 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TransactionSchema = z.object({
-  date: z.string().describe('ISO date of the transaction.'),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .describe('ISO date of the transaction.'),
   amount: z.number().describe('Transaction amount in USD.'),
   category: z.string().describe('Category for the transaction.'),
   description: z.string().optional().describe('Optional description of the transaction.'),
 });
 
-const SpendingForecastInputSchema = z.object({
+export const SpendingForecastInputSchema = z.object({
   transactions: z.array(TransactionSchema).describe('Historical transaction data to analyze.'),
 });
 export type SpendingForecastInput = z.infer<typeof SpendingForecastInputSchema>;
 
 const ForecastPointSchema = z.object({
-  month: z.string().describe('Month for the forecasted spending (e.g., 2024-08).'),
+  month: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .describe('Month for the forecasted spending (e.g., 2024-08).'),
   amount: z.number().describe('Predicted total spending for the month in USD.'),
 });
 
-const SpendingForecastOutputSchema = z.object({
+export const SpendingForecastOutputSchema = z.object({
   forecast: z.array(ForecastPointSchema).describe('Predicted spending for upcoming months.'),
   analysis: z.string().describe('Brief analysis of expected spending trends.'),
 });

@@ -17,7 +17,7 @@ export const TransactionPayloadSchema = z.object({
 export type TransactionPayload = z.infer<typeof TransactionPayloadSchema>;
 
 const TransactionRow = z.object({
-  date: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   description: z.string(),
   amount: z.preprocess(
     (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
