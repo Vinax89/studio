@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "./firebase";
 import type { Transaction } from "./types";
 
 const TransactionRow = z.object({
@@ -23,9 +25,14 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
       id: crypto.randomUUID(),
       date: data.date,
       description: data.description,
-      amount: typeof data.amount === "number" ? data.amount : parseFloat(data.amount),
+      amount:
+        typeof data.amount === "number"
+          ? data.amount
+          : parseFloat(data.amount),
       type: data.type,
       category: data.category,
+      // Default to USD until currency is provided in import sources
+      currency: "USD",
       isRecurring:
         typeof data.isRecurring === "boolean"
           ? data.isRecurring
@@ -33,4 +40,26 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
     };
   });
 }
+
+export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+  const colRef = collection(db, "transactions");
+  await Promise.all(transactions.map((tx) => addDoc(colRef, tx)));
+}
+
+export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
+  const transactions = validateTransactions(rows);
+  await saveTransactions(transactions);
+}
+
+export interface TransactionPersistence {
+  validateTransactions: typeof validateTransactions;
+  saveTransactions: typeof saveTransactions;
+  importTransactions: typeof importTransactions;
+}
+
+export const transactionPersistence: TransactionPersistence = {
+  validateTransactions,
+  saveTransactions,
+  importTransactions,
+};
 
