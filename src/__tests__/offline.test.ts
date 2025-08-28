@@ -1,8 +1,8 @@
 jest.mock("idb", () => {
-  const store: unknown[] = []
+  const store: QueuedTransaction[] = []
   return {
     openDB: jest.fn(async () => ({
-      add: async (_store: string, value: unknown) => {
+      add: async (_store: string, value: QueuedTransaction) => {
         store.push(value)
       },
       getAll: async () => [...store],
@@ -17,6 +17,7 @@ import {
   queueTransaction,
   getQueuedTransactions,
   clearQueuedTransactions,
+  QueuedTransaction,
 } from "../lib/offline"
 
 describe("offline fallbacks", () => {
@@ -24,7 +25,7 @@ describe("offline fallbacks", () => {
     await queueTransaction({ id: 1 })
     await queueTransaction({ id: 2 })
 
-    const queued = await getQueuedTransactions<{ id: number }>()
+    const queued = await getQueuedTransactions()
     expect(queued).toEqual([{ id: 1 }, { id: 2 }])
 
     await clearQueuedTransactions()
