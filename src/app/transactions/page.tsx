@@ -1,15 +1,17 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useDeferredValue } from "react";
+import { useState, useMemo, useTransition, useDeferredValue, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File, ScanLine, Loader2 } from "lucide-react";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
+import { parseCsv, downloadCsv } from "@/lib/csv";
+import { validateTransactions, TransactionRowType } from "@/lib/transactions";
+import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -21,6 +23,7 @@ export default function TransactionsPage() {
   const isPending = isTransitionPending || deferredSearchTerm !== searchTerm;
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = useMemo(() => {
     const allCategories = transactions.map(t => t.category);
@@ -32,6 +35,29 @@ export default function TransactionsPage() {
       { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
+  };
+
+  const handleUploadClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const rows = await parseCsv<TransactionRowType>(file);
+      const parsed = validateTransactions(rows);
+      setTransactions(prev => [...parsed, ...prev]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const handleDownload = () => {
+    downloadCsv(
+      transactions.map(({ id, ...rest }) => rest),
+      "transactions.csv"
+    );
   };
 
   const filteredTransactions = useMemo(() => {
@@ -55,8 +81,19 @@ export default function TransactionsPage() {
             <p className="text-muted-foreground">Track and manage your income and expenses.</p>
         </div>
          <div className="flex gap-2 items-center flex-wrap">
-            <Button variant="outline">
-                <File className="mr-2 h-4 w-4" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <Button variant="outline" onClick={handleUploadClick}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+            </Button>
+            <Button variant="outline" onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4" />
                 Export
             </Button>
              <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
