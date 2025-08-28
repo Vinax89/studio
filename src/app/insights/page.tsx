@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput, predictSpending } from "@/ai/flows"
+import { useAuth } from "@/components/auth/auth-provider"
 import { mockGoals, mockTransactions } from "@/lib/data"; // Import mock data
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -20,21 +21,23 @@ export default function InsightsPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
   const [forecastData, setForecastData] = useState<{ month: string; amount: number }[]>([])
   const { toast } = useToast();
+  const { user } = useAuth()
 
   // For this demo, we'll use mock data. In a real app, this would be fetched.
   const goals = mockGoals;
 
-  useEffect(() => {
-    const loadForecast = async () => {
-      try {
-        const result = await predictSpending({ transactions: mockTransactions });
-        setForecastData(result.forecast);
-      } catch (error) {
-        console.error("Error predicting spending:", error);
-      }
-    };
-    loadForecast();
-  }, []);
+    useEffect(() => {
+      if (!user) return;
+      const loadForecast = async () => {
+        try {
+          const result = await predictSpending({ transactions: mockTransactions });
+          setForecastData(result.forecast);
+        } catch (error) {
+          console.error("Error predicting spending:", error);
+        }
+      };
+      loadForecast();
+    }, [user]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -51,39 +54,47 @@ export default function InsightsPage() {
     });
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (files.length === 0) {
-      toast({
-        title: "Missing Information",
-        description: "Please upload at least one financial document.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const handleSubmit = async (event: React.FormEvent) => {
+      event.preventDefault()
+      if (!user) {
+        toast({
+          title: "Unauthorized",
+          description: "Please sign in to generate insights.",
+          variant: "destructive",
+        })
+        return
+      }
+      if (files.length === 0) {
+        toast({
+          title: "Missing Information",
+          description: "Please upload at least one financial document.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setIsLoading(true)
-    setAnalysisResult(null)
+      setIsLoading(true)
+      setAnalysisResult(null)
 
-    try {
-      const financialDocuments = await Promise.all(files.map(fileToDataURI));
-      const result = await analyzeSpendingHabits({ 
-          userDescription, 
-          financialDocuments,
-          goals 
-      });
-      setAnalysisResult(result);
-    } catch (error) {
-      console.error("Error analyzing spending habits:", error);
-      toast({
-        title: "Analysis Failed",
-        description: "There was an error generating your financial insights. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false)
-    }
-  };
+      try {
+        const financialDocuments = await Promise.all(files.map(fileToDataURI));
+        const result = await analyzeSpendingHabits({
+            userDescription,
+            financialDocuments,
+            goals
+        });
+        setAnalysisResult(result);
+      } catch (error) {
+        console.error("Error analyzing spending habits:", error);
+        toast({
+          title: "Analysis Failed",
+          description: "There was an error generating your financial insights. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false)
+      }
+    };
 
   return (
     <div className="space-y-6">

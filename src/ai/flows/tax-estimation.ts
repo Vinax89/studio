@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { ensureAuth } from '@/ai/auth';
 
 const TaxEstimationInputSchema = z.object({
   income: z
@@ -41,6 +42,7 @@ const TaxEstimationOutputSchema = z.object({
 export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
 export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
+  await ensureAuth();
   return taxEstimationFlow(input);
 }
 

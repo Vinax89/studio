@@ -12,6 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { RecurrenceValues } from '@/lib/types';
+import { ensureAuth } from '@/ai/auth';
 
 const DebtSchema = z.object({
     id: z.string(),
@@ -41,6 +42,7 @@ const SuggestDebtStrategyOutputSchema = z.object({
 export type SuggestDebtStrategyOutput = z.infer<typeof SuggestDebtStrategyOutputSchema>;
 
 export async function suggestDebtStrategy(input: SuggestDebtStrategyInput): Promise<SuggestDebtStrategyOutput> {
+  await ensureAuth();
   return suggestDebtStrategyFlow(input);
 }
 
