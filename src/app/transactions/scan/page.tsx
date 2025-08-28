@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows/analyze-receipt"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorHandler } from "@/hooks/use-error-handler"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,6 +15,7 @@ import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
 export default function ScanReceiptPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const handleError = useErrorHandler()
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeReceiptOutput | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -51,13 +53,12 @@ export default function ScanReceiptPage() {
           videoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error("Error accessing camera:", error);
         setHasCameraPermission(false);
-        toast({
-          variant: "destructive",
+        handleError(error, {
+          context: "Accessing camera",
           title: "Camera Access Denied",
           description: "Please enable camera permissions in your browser settings.",
-        });
+        })
       }
   };
 
@@ -99,8 +100,11 @@ export default function ScanReceiptPage() {
       const result = await analyzeReceipt({ receiptImage: imagePreview });
       setAnalysisResult(result);
     } catch (error) {
-      console.error("Error analyzing receipt:", error);
-      toast({ title: "Analysis Failed", description: "Could not analyze the receipt. Please try again.", variant: "destructive" });
+      handleError(error, {
+        context: "Analyzing receipt",
+        title: "Analysis Failed",
+        description: "Could not analyze the receipt. Please try again.",
+      })
     } finally {
       setIsLoading(false);
     }

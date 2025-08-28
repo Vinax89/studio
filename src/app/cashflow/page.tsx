@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorHandler } from "@/hooks/use-error-handler"
 import { Calendar } from "@/components/ui/calendar"
 import type { DateRange } from "react-day-picker"
 import {
@@ -40,6 +41,7 @@ export default function CashflowPage() {
   const [lastEnteredShift, setLastEnteredShift] = useState<ShiftDetails | null>(null);
 
   const { toast } = useToast();
+  const handleError = useErrorHandler();
 
   const overtimeShifts = useMemo(() => calculateOvertimeDates(shifts), [shifts]);
 
@@ -128,12 +130,11 @@ export default function CashflowPage() {
       })
       setCashflowResult(result)
     } catch (error) {
-      console.error("Error calculating cashflow:", error)
-      toast({
+      handleError(error, {
+        context: "Calculating cashflow",
         title: "Calculation Failed",
         description: "There was an error calculating your cashflow. Please try again.",
-        variant: "destructive",
-      });
+      })
     } finally {
       setIsLoading(false)
     }
