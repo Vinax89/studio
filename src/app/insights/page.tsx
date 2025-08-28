@@ -2,25 +2,46 @@
 "use client"
 
 import { useState } from "react"
-import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput } from "@/ai/flows/analyze-spending-habits"
-import { mockGoals } from "@/lib/data"; // Import mock goals
+import {
+  analyzeSpendingHabits,
+  type AnalyzeSpendingHabitsOutput,
+} from "@/ai/flows/analyze-spending-habits"
+import {
+  suggestDebtStrategy,
+  type SuggestDebtStrategyOutput,
+} from "@/ai/flows/suggest-debt-strategy"
+import { mockGoals, mockDebts } from "@/lib/data"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Progress } from "@/components/ui/progress"
+import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan"
 
 export default function InsightsPage() {
   const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
+  const [debtStrategy, setDebtStrategy] = useState<SuggestDebtStrategyOutput | null>(null)
+  const [step, setStep] = useState(0)
+  const [showProgress, setShowProgress] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
+  const [debtError, setDebtError] = useState<string | null>(null)
   const { toast } = useToast();
-  
-  // For this demo, we'll use the mockGoals. In a real app, this would be fetched.
+
+  // For this demo, we'll use the mock data. In a real app, this would be fetched.
   const goals = mockGoals;
+  const debts = mockDebts;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -37,39 +58,90 @@ export default function InsightsPage() {
     });
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const runDebtStrategy = async () => {
+    setStep(1)
+    try {
+      const strategyInput = debts.map(d => ({
+        ...d,
+        recurrence: d.recurrence === 'none' ? 'once' : 'monthly',
+      }))
+      const result = await suggestDebtStrategy({ debts: strategyInput })
+      setDebtStrategy(result)
+      setStep(2)
+      return true
+    } catch (error) {
+      console.error("Error suggesting debt strategy:", error)
+      const description = error instanceof Error ? error.message : String(error)
+      toast({
+        title: "Debt Strategy Failed",
+        description,
+        variant: "destructive",
+      })
+      setDebtError(description)
+      return false
+    }
+  }
+
+  const runFlows = async () => {
     if (files.length === 0) {
       toast({
         title: "Missing Information",
         description: "Please upload at least one financial document.",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
     setIsLoading(true)
+    setShowProgress(true)
+    setStep(0)
     setAnalysisResult(null)
+    setDebtStrategy(null)
+    setAnalyzeError(null)
+    setDebtError(null)
 
     try {
-      const financialDocuments = await Promise.all(files.map(fileToDataURI));
-      const result = await analyzeSpendingHabits({ 
-          userDescription, 
-          financialDocuments,
-          goals 
-      });
-      setAnalysisResult(result);
+      const financialDocuments = await Promise.all(files.map(fileToDataURI))
+      const result = await analyzeSpendingHabits({
+        userDescription,
+        financialDocuments,
+        goals,
+      })
+      setAnalysisResult(result)
+      setStep(1)
     } catch (error) {
-      console.error("Error analyzing spending habits:", error);
+      console.error("Error analyzing spending habits:", error)
+      const description = error instanceof Error ? error.message : String(error)
       toast({
         title: "Analysis Failed",
-        description: "There was an error generating your financial insights. Please try again.",
+        description,
         variant: "destructive",
-      });
-    } finally {
+      })
+      setAnalyzeError(description)
       setIsLoading(false)
+      return
     }
-  };
+
+    await runDebtStrategy()
+    setIsLoading(false)
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    await runFlows()
+  }
+
+  const handleRetryAnalysis = async () => {
+    await runFlows()
+  }
+
+  const handleRetryDebtStrategy = async () => {
+    setIsLoading(true)
+    setShowProgress(true)
+    setDebtError(null)
+    await runDebtStrategy()
+    setIsLoading(false)
+  }
 
   return (
     <div className="space-y-6">
@@ -119,9 +191,29 @@ export default function InsightsPage() {
               )}
             </Button>
           </form>
+          {showProgress && (
+            <div className="mt-6 space-y-2">
+              <Progress value={(step / 2) * 100} />
+              <p className="text-sm text-muted-foreground">
+                {step < 2
+                  ? `Step ${step + 1} of 2: ${step === 0 ? 'Analyzing spending habits' : 'Generating debt strategy'}`
+                  : 'All steps completed'}
+              </p>
+            </div>
+          )}
+          {analyzeError && (
+            <Button onClick={handleRetryAnalysis} variant="outline" size="sm" className="mt-4">
+              Retry Analysis
+            </Button>
+          )}
+          {debtError && (
+            <Button onClick={handleRetryDebtStrategy} variant="outline" size="sm" className="mt-4">
+              Retry Debt Strategy
+            </Button>
+          )}
         </CardContent>
       </Card>
-      
+
       {analysisResult && (
         <div className="grid gap-6">
           <Card>
@@ -168,6 +260,8 @@ export default function InsightsPage() {
           </Card>
         </div>
       )}
+
+      {debtStrategy && <DebtStrategyPlan strategy={debtStrategy} />}
     </div>
   )
 }
