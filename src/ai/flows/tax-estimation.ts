@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Provides a tax estimation based on user's income, deductions, and location.
+ * @fileoverview Provides a tax estimation based on user's income, deductions, and location.
  *
  * - estimateTax - A function that estimates tax obligations.
  * - TaxEstimationInput - The input type for the estimateTax function.

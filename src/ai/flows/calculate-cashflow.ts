@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Provides a cashflow analysis based on income, taxes, and deductions.
+ * @fileoverview Provides a cashflow analysis based on income, taxes, and deductions.
  *
  * - calculateCashflow - A function that estimates monthly gross and net cashflow.
  * - CalculateCashflowInput - The input type for the calculateCashflow function.

@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Analyzes a receipt image and extracts transaction details.
+ * @fileoverview Analyzes a receipt image and extracts transaction details.
  *
  * - analyzeReceipt - A function that analyzes a receipt image.
  * - AnalyzeReceiptInput - The input type for the analyzeReceipt function.
