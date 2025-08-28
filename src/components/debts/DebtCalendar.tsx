@@ -2,7 +2,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { formatISO, parseISO, isSameDay } from "date-fns";
 import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
+import { monthMatrix } from "@/lib/calendar";
 import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -18,24 +20,7 @@ interface DebtCalendarProps {
 }
 
 // ---------- Helpers ----------
-const iso = (d: Date) => d.toISOString().slice(0, 10);
-const parseISO = (s: string) => {
-  const [y, m, dd] = s.split("-").map(Number);
-  return new Date(y, m - 1, dd);
-};
-const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
-const isSameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const currency = (n: number) => n.toLocaleString(undefined, { style: "currency", currency: "USD" });
-
-function monthMatrix(year: number, month: number, startOn: 0 | 1) {
-  const firstOfMonth = new Date(year, month, 1);
-  const firstDay = (firstOfMonth.getDay() - startOn + 7) % 7; 
-  const startDate = addDays(firstOfMonth, -firstDay);
-  const cells: Date[] = [];
-  for (let i = 0; i < 42; i++) cells.push(addDays(startDate, i));
-  return cells;
-}
 
 
 function useLocalStorage(key: string | undefined, value: Debt[] | undefined) {
@@ -165,7 +150,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
       <div className="grid grid-cols-7 gap-1 rounded-lg bg-muted/50 p-1">
         {grid.map((date, idx) => {
           const inMonth = date.getMonth() === cursor.getMonth();
-          const dateISO = iso(date);
+          const dateISO = formatISO(date, { representation: "date" });
           const dayEvents = grouped.get(dateISO) ?? [];
           const isToday = isSameDay(date, today);
           const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -226,7 +211,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
 
       {showForm && (
         <DebtForm
-          dateISO={selectedDate ? iso(selectedDate) : iso(today)}
+          dateISO={formatISO(selectedDate ?? today, { representation: "date" })}
           initial={activeDebt}
           onClose={() => setShowForm(false)}
           onDelete={activeDebt ? () => { deleteDebt(activeDebt.id); setShowForm(false); } : undefined}
