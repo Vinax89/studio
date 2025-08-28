@@ -8,6 +8,13 @@ import { cn } from "@/lib/utils"
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
+const COLOR_REGEX =
+  /^(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})|hsl\(var\(--[a-zA-Z0-9-]+\)\))$/
+
+function isValidColor(value: string): boolean {
+  return COLOR_REGEX.test(value.trim())
+}
+
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -76,28 +83,30 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+  const styles = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const vars = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color
+          return color && isValidColor(color)
+            ? `  --color-${key}: ${color};`
+            : null
+        })
+        .filter(Boolean)
+        .join("\n")
+
+      return vars ? `${prefix} [data-chart=${id}] {\n${vars}\n}` : null
+    })
+    .filter(Boolean)
+    .join("\n")
+
+  if (!styles) {
+    return null
+  }
+
+  return <style>{styles}</style>
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
