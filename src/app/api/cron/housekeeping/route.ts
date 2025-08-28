@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runHousekeeping } from "@/lib/housekeeping";
 import { db } from "@/lib/firebase";
+import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 
 const HEADER_NAME = "x-cron-secret";
@@ -19,10 +20,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const now = (await getCurrentTime()).getTime();
   const allowed = await runTransaction(db, async (tx) => {
     const snap = await tx.get(STATE_DOC);
     const last = snap.exists() ? snap.data().lastRun ?? 0 : 0;
-    const now = Date.now();
     if (now - last < WINDOW_MS) {
       return false;
     }

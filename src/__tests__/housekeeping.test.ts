@@ -23,6 +23,10 @@ jest.mock('firebase/auth', () => ({
   getAuth: jest.fn(() => ({})),
 }));
 
+jest.mock('../lib/internet-time', () => ({
+  getCurrentTime: jest.fn(async () => new Date(0)),
+}));
+
 jest.mock('firebase/firestore', () => {
   const where = (field: string, op: string, value: any) => ({
     type: 'where',
