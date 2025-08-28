@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useDeferredValue, useRef } from "react";
+import { useState, useMemo, useTransition, useDeferredValue, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -30,12 +30,19 @@ export default function TransactionsPage() {
     return ['all', ...Array.from(new Set(allCategories))];
   }, [transactions]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    setTransactions(prev => [
-      { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
-      ...prev
-    ]);
-  };
+  const addTransaction = useCallback(
+    (transaction: Omit<Transaction, "id" | "date">) => {
+      setTransactions(prev => [
+        {
+          ...transaction,
+          id: crypto.randomUUID(),
+          date: new Date().toISOString().split("T")[0],
+        },
+        ...prev,
+      ]);
+    },
+    [setTransactions]
+  );
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
@@ -69,9 +76,12 @@ export default function TransactionsPage() {
     });
   }, [transactions, deferredSearchTerm, filterType, filterCategory]);
 
-  const handleSearchChange = (value: string) => {
-    startTransition(() => setSearchTerm(value));
-  };
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      startTransition(() => setSearchTerm(value));
+    },
+    [startTransition, setSearchTerm]
+  );
 
   return (
     <div className="space-y-6">
