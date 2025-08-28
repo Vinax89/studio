@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types";
@@ -24,7 +24,11 @@ export default function RecentTransactions({ transactions }: RecentTransactionsP
                 <AvatarFallback className={cn(
                     transaction.type === 'Income' ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400',
                 )}>
-                    {transaction.type === 'Income' ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
+                    {transaction.type === 'Income' ? (
+                      <Icon name="arrowUpRight" size={20} />
+                    ) : (
+                      <Icon name="arrowDownLeft" size={20} />
+                    )}
                 </AvatarFallback>
             </Avatar>
             <div className="grid gap-1">

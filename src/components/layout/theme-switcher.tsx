@@ -2,7 +2,7 @@
 'use client'
 
 import * as React from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 
@@ -16,14 +16,14 @@ export function ThemeSwitcher() {
         aria-label="Use light theme"
         onClick={() => setTheme('light')}
       >
-        <Sun className="h-4 w-4" />
+        <Icon name="sun" size={16} />
       </Button>
       <Button
         variant="ghost"
         aria-label="Use dark theme"
         onClick={() => setTheme('dark')}
       >
-        <Moon className="h-4 w-4" />
+        <Icon name="moon" size={16} />
       </Button>
     </div>
   )

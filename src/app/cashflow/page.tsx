@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Wallet, TrendingUp, Scale, Calendar as CalendarIcon, DollarSign, Clock } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar } from "@/components/ui/calendar"
 import type { DateRange } from "react-day-picker"
@@ -350,9 +350,19 @@ export default function CashflowPage() {
               </div>
               <Button type="submit" disabled={isLoading} size="lg">
                 {isLoading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Calculating...</>
+                  <>
+                    <Icon
+                      name="loader2"
+                      size={16}
+                      className="mr-2 animate-spin"
+                    />
+                    Calculating...
+                  </>
                 ) : (
-                  <><Wallet className="mr-2 h-4 w-4" /> Calculate Cashflow</>
+                  <>
+                    <Icon name="wallet" size={16} className="mr-2" />
+                    Calculate Cashflow
+                  </>
                 )}
               </Button>
             </form>
@@ -366,7 +376,11 @@ export default function CashflowPage() {
                   <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">Gross Monthly Income</CardTitle>
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                          <Icon
+                            name="trendingUp"
+                            size={16}
+                            className="text-muted-foreground"
+                          />
                       </CardHeader>
                       <CardContent>
                           <div className="text-2xl font-bold">${cashflowResult.grossMonthlyIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -376,7 +390,11 @@ export default function CashflowPage() {
                   <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">Net Monthly Cashflow</CardTitle>
-                          <Scale className="h-4 w-4 text-muted-foreground" />
+                          <Icon
+                            name="scale"
+                            size={16}
+                            className="text-muted-foreground"
+                          />
                       </CardHeader>
                       <CardContent>
                           <div className="text-2xl font-bold">${cashflowResult.netMonthlyIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -386,7 +404,7 @@ export default function CashflowPage() {
               </div>
                <Card>
                   <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" /> Analysis</CardTitle>
+                      <CardTitle className="flex items-center gap-2"><Icon name="wallet" size={20} /> Analysis</CardTitle>
                   </CardHeader>
                   <CardContent>
                       <p className="leading-relaxed">{cashflowResult.analysis}</p>
@@ -399,7 +417,7 @@ export default function CashflowPage() {
       <div className="space-y-6">
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5" /> Shift Planner</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Icon name="calendar" size={20} /> Shift Planner</CardTitle>
                 <CardDescription>Select a date to highlight a pay period and add shifts.</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
@@ -493,7 +511,11 @@ export default function CashflowPage() {
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Estimated Income</CardTitle>
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                <Icon
+                                  name="dollarSign"
+                                  size={16}
+                                  className="text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">${payPeriodCalculation.totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -503,7 +525,11 @@ export default function CashflowPage() {
                         <Card>
                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Hours Breakdown</CardTitle>
-                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <Icon
+                                  name="clock"
+                                  size={16}
+                                  className="text-muted-foreground"
+                                />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-sm space-y-1">

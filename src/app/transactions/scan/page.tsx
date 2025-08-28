@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 
 export default function ScanReceiptPage() {
   const router = useRouter()
@@ -138,7 +138,7 @@ export default function ScanReceiptPage() {
                 <Label>Use Camera</Label>
                 <div className="space-y-2">
                     <Button onClick={requestCamera} variant="outline" className="w-full">
-                        <Camera className="mr-2 h-4 w-4" />
+                        <Icon name="camera" size={16} className="mr-2" />
                         {hasCameraPermission ? "Turn Off Camera" : "Turn On Camera"}
                     </Button>
                     <div className="relative aspect-video w-full bg-muted rounded-md overflow-hidden border">
@@ -178,9 +178,19 @@ export default function ScanReceiptPage() {
                   </div>
                   <Button onClick={analyzeImage} disabled={isLoading} className="w-full">
                     {isLoading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                        <>
+                          <Icon
+                            name="loader2"
+                            size={16}
+                            className="mr-2 animate-spin"
+                          />
+                          Analyzing...
+                        </>
                     ) : (
-                        <><Wand2 className="mr-2 h-4 w-4" />Analyze Receipt</>
+                        <>
+                          <Icon name="wand2" size={16} className="mr-2" />
+                          Analyze Receipt
+                        </>
                     )}
                 </Button>
               </div>
@@ -206,7 +216,7 @@ export default function ScanReceiptPage() {
 
             {!imagePreview && !analysisResult && (
                  <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-6 rounded-md border-2 border-dashed h-full">
-                    <Sparkles className="h-10 w-10 mb-4" />
+                    <Icon name="sparkles" size={40} className="mb-4" />
                     <p className="font-semibold">Analysis will appear here</p>
                     <p className="text-sm">First, provide an image to get started.</p>
                 </div>

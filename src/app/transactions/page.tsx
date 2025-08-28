@@ -8,7 +8,7 @@ import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File, ScanLine, Loader2 } from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 
 export default function TransactionsPage() {
@@ -56,11 +56,11 @@ export default function TransactionsPage() {
         </div>
          <div className="flex gap-2 items-center flex-wrap">
             <Button variant="outline">
-                <File className="mr-2 h-4 w-4" />
+                <Icon name="file" size={16} className="mr-2" />
                 Export
             </Button>
              <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
-                <ScanLine className="mr-2 h-4 w-4" />
+                <Icon name="scanLine" size={16} className="mr-2" />
                 Scan Receipt
             </Button>
             <AddTransactionDialog onSave={addTransaction} />
@@ -79,7 +79,11 @@ export default function TransactionsPage() {
 
       {isPending && (
         <p className="flex items-center text-sm text-muted-foreground">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Icon
+            name="loader2"
+            size={16}
+            className="mr-2 animate-spin"
+          />
           Filtering…
         </p>
       )}

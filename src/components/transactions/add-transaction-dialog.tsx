@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { PlusCircle } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import type { Transaction } from "@/lib/types"
 
 interface AddTransactionDialogProps {
@@ -59,7 +59,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
+          <Icon name="plusCircle" size={16} className="mr-2" />
           Add Transaction
         </Button>
       </DialogTrigger>

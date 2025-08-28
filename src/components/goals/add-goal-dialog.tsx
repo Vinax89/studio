@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { PlusCircle } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import type { Goal } from "@/lib/types"
 
 interface AddGoalDialogProps {
@@ -53,7 +53,7 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
+          <Icon name="plusCircle" size={16} className="mr-2" />
           Add New Goal
         </Button>
       </DialogTrigger>
