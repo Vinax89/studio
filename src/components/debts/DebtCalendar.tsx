@@ -4,7 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { formatISO, parseISO, isSameDay } from "date-fns";
 import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
-import { monthMatrix } from "@/lib/calendar";
+import { monthMatrix, legacyDateKey } from "@/lib/calendar";
 import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -92,10 +92,18 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     setDebts((prev) => prev.filter((d) => d.id !== id));
   }
   function markPaid(dateISO: string, id: string) {
-    setDebts((prev) => prev.map((d) => d.id !== id ? d : { ...d, paidDates: Array.from(new Set([...(d.paidDates ?? []), dateISO])) }));
+    const legacy = legacyDateKey(parseISO(dateISO));
+    setDebts((prev) => prev.map((d) => d.id !== id ? d : {
+      ...d,
+      paidDates: Array.from(new Set([...(d.paidDates ?? []).filter((x) => x !== legacy), dateISO]))
+    }));
   }
   function unmarkPaid(dateISO: string, id: string) {
-    setDebts((prev) => prev.map((d) => d.id !== id ? d : { ...d, paidDates: (d.paidDates ?? []).filter((x) => x !== dateISO) }));
+    const legacy = legacyDateKey(parseISO(dateISO));
+    setDebts((prev) => prev.map((d) => d.id !== id ? d : {
+      ...d,
+      paidDates: (d.paidDates ?? []).filter((x) => x !== dateISO && x !== legacy)
+    }));
   }
 
   const monthTotals = useMemo(() => {
@@ -107,7 +115,8 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
       if (dt.getMonth() !== cursor.getMonth()) continue;
       total += oc.debt.minimumPayment;
       if (oc.debt.autopay) autopay += oc.debt.minimumPayment;
-      if (oc.debt.paidDates?.includes(oc.date)) paid += oc.debt.minimumPayment;
+      if (oc.debt.paidDates?.some((p) => p === oc.date || p === legacyDateKey(parseISO(oc.date))))
+        paid += oc.debt.minimumPayment;
     }
     return { total, paid, autopay };
   }, [occurrences, cursor]);
@@ -151,6 +160,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
         {grid.map((date, idx) => {
           const inMonth = date.getMonth() === cursor.getMonth();
           const dateISO = formatISO(date, { representation: "date" });
+          const legacyISO = legacyDateKey(date);
           const dayEvents = grouped.get(dateISO) ?? [];
           const isToday = isSameDay(date, today);
           const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -184,7 +194,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
 
               <div className="mt-2 flex flex-col gap-1">
                 {dayEvents.map(({ debt }) => {
-                  const paid = debt.paidDates?.includes(dateISO);
+                  const paid = debt.paidDates?.some((p) => p === dateISO || p === legacyISO);
                   const chipStyle: React.CSSProperties = {
                     backgroundColor: debt.color ?? (paid ? "#d1fae5" : "#e5e7eb"),
                   };
@@ -268,7 +278,8 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
 
   useEffect(() => { ref.current?.focus(); }, []);
 
-  const paidToday = initial?.paidDates?.includes(dateISO) ?? false;
+  const legacy = legacyDateKey(parseISO(dateISO));
+  const paidToday = initial?.paidDates?.some((p) => p === dateISO || p === legacy) ?? false;
 
   function handleSave() {
     const initAmt = Number.parseFloat(initialAmount);

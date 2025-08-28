@@ -1,6 +1,10 @@
 import { addDays, formatISO, isSameDay, parseISO } from "date-fns";
 import type { Debt, Recurrence } from "./types";
 
+export function legacyDateKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
 export function monthMatrix(year: number, month: number, startOn: 0 | 1): Date[] {
   const firstOfMonth = new Date(year, month, 1);
   const firstDay = (firstOfMonth.getDay() - startOn + 7) % 7;
