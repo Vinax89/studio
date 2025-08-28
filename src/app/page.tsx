@@ -52,6 +52,8 @@ export default function LoginPage() {
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
         description: errorMessage,
         variant: "destructive",
+        role: "alert",
+        "aria-live": "assertive",
       })
     } finally {
       setIsLoading(false)
@@ -102,6 +104,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="nurse@hospital.com"
                     required
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -112,6 +115,7 @@ export default function LoginPage() {
                     id="password"
                     type="password"
                     required
+                    autoComplete={isLoginView ? "current-password" : "new-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
