@@ -47,7 +47,7 @@ jest.mock('firebase/firestore', () => ({
   __dataStore: dataStore,
 }));
 
-const { archiveOldTransactions, cleanupDebts, backupData } = require('../services/housekeeping');
+const { archiveOldTransactions, cleanupDebts, backupData, runWithRetry } = require('../services/housekeeping');
 const firestore = require('firebase/firestore');
 const store = firestore.__dataStore as typeof dataStore;
 
@@ -148,6 +148,55 @@ describe('housekeeping services', () => {
     expect(backup.debts).toHaveLength(1);
     expect(backup.goals).toHaveLength(1);
     expect(store.backups.size).toBe(1);
+  });
+});
+
+describe('runWithRetry', () => {
+  test('retries with exponential backoff and logs errors', async () => {
+    jest.useFakeTimers();
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+    const op = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fail1'))
+      .mockRejectedValueOnce(new Error('fail2'))
+      .mockResolvedValue('ok');
+
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const promise = runWithRetry(op, 2, 1000);
+
+    // allow first rejection to be processed
+    await Promise.resolve();
+
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 1000);
+    expect(consoleSpy).toHaveBeenNthCalledWith(
+      1,
+      'Attempt 1 failed:',
+      expect.any(Error)
+    );
+
+    await jest.advanceTimersByTimeAsync(1000);
+    await Promise.resolve();
+
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 2000);
+    expect(consoleSpy).toHaveBeenNthCalledWith(
+      2,
+      'Attempt 2 failed:',
+      expect.any(Error)
+    );
+
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expect(promise).resolves.toBe('ok');
+    expect(op).toHaveBeenCalledTimes(3);
+    expect(consoleSpy).toHaveBeenCalledTimes(2);
+
+    setTimeoutSpy.mockRestore();
+    consoleSpy.mockRestore();
+    jest.useRealTimers();
   });
 });
 
