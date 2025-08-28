@@ -40,8 +40,17 @@ const SuggestDebtStrategyOutputSchema = z.object({
 });
 export type SuggestDebtStrategyOutput = z.infer<typeof SuggestDebtStrategyOutputSchema>;
 
-export async function suggestDebtStrategy(input: SuggestDebtStrategyInput): Promise<SuggestDebtStrategyOutput> {
-  return suggestDebtStrategyFlow(input);
+type SuggestDebtStrategyError = { error: string };
+
+export async function suggestDebtStrategy(
+  input: SuggestDebtStrategyInput
+): Promise<SuggestDebtStrategyOutput | SuggestDebtStrategyError> {
+  try {
+    return await suggestDebtStrategyFlow(input);
+  } catch (err) {
+    console.error('suggestDebtStrategyFlow failed:', err);
+    return { error: 'Unable to suggest debt strategy. Please try again later.' };
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -71,10 +80,15 @@ const suggestDebtStrategyFlow = ai.defineFlow(
     outputSchema: SuggestDebtStrategyOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from suggestDebtStrategyFlow');
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('No output returned from suggestDebtStrategyFlow');
+      }
+      return output;
+    } catch (err) {
+      console.error('suggestDebtStrategyFlow prompt error:', err);
+      throw new Error('suggestDebtStrategyFlow prompt failed');
     }
-    return output;
   }
 );

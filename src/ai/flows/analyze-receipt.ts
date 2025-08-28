@@ -30,8 +30,17 @@ const AnalyzeReceiptOutputSchema = z.object({
 });
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
-export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
-  return analyzeReceiptFlow(input);
+type AnalyzeReceiptError = { error: string };
+
+export async function analyzeReceipt(
+  input: AnalyzeReceiptInput
+): Promise<AnalyzeReceiptOutput | AnalyzeReceiptError> {
+  try {
+    return await analyzeReceiptFlow(input);
+  } catch (err) {
+    console.error('analyzeReceiptFlow failed:', err);
+    return { error: 'Unable to analyze receipt. Please try again later.' };
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -50,10 +59,15 @@ const analyzeReceiptFlow = ai.defineFlow(
     outputSchema: AnalyzeReceiptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from analyzeReceiptPrompt');
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('No output returned from analyzeReceiptPrompt');
+      }
+      return output;
+    } catch (err) {
+      console.error('analyzeReceiptFlow prompt error:', err);
+      throw new Error('analyzeReceiptFlow prompt failed');
     }
-    return output;
   }
 );

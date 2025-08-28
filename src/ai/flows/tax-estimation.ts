@@ -45,8 +45,17 @@ const TaxEstimationOutputSchema = z.object({
 });
 export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
-export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
-  return taxEstimationFlow(input);
+type TaxEstimationError = { error: string };
+
+export async function estimateTax(
+  input: TaxEstimationInput
+): Promise<TaxEstimationOutput | TaxEstimationError> {
+  try {
+    return await taxEstimationFlow(input);
+  } catch (err) {
+    console.error('taxEstimationFlow failed:', err);
+    return { error: 'Unable to estimate tax. Please try again later.' };
+  }
 }
 
 const taxEstimationPrompt = ai.definePrompt({
@@ -76,10 +85,15 @@ const taxEstimationFlow = ai.defineFlow(
     outputSchema: TaxEstimationOutputSchema,
   },
   async input => {
-    const {output} = await taxEstimationPrompt(input);
-    if (!output) {
-      throw new Error('No output returned from taxEstimationFlow');
+    try {
+      const {output} = await taxEstimationPrompt(input);
+      if (!output) {
+        throw new Error('No output returned from taxEstimationFlow');
+      }
+      return output;
+    } catch (err) {
+      console.error('taxEstimationFlow prompt error:', err);
+      throw new Error('taxEstimationFlow prompt failed');
     }
-    return output;
   }
 );

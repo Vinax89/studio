@@ -41,8 +41,17 @@ export const SpendingForecastOutputSchema = z.object({
 });
 export type SpendingForecastOutput = z.infer<typeof SpendingForecastOutputSchema>;
 
-export async function predictSpending(input: SpendingForecastInput): Promise<SpendingForecastOutput> {
-  return spendingForecastFlow(input);
+type SpendingForecastError = { error: string };
+
+export async function predictSpending(
+  input: SpendingForecastInput
+): Promise<SpendingForecastOutput | SpendingForecastError> {
+  try {
+    return await spendingForecastFlow(input);
+  } catch (err) {
+    console.error('spendingForecastFlow failed:', err);
+    return { error: 'Unable to generate spending forecast. Please try again later.' };
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -68,10 +77,15 @@ const spendingForecastFlow = ai.defineFlow(
     outputSchema: SpendingForecastOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from spendingForecastPrompt');
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('No output returned from spendingForecastPrompt');
+      }
+      return output;
+    } catch (err) {
+      console.error('spendingForecastFlow prompt error:', err);
+      throw new Error('spendingForecastFlow prompt failed');
     }
-    return output;
   }
 );
