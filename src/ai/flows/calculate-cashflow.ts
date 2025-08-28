@@ -10,9 +10,9 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
-const CalculateCashflowInputSchema = z.object({
+export const CalculateCashflowInputSchema = z.object({
   annualIncome: z
     .number()
     .describe('Total annual gross income from all sources.'),
@@ -39,7 +39,8 @@ const CalculateCashflowOutputSchema = z.object({
 export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
 
 export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
-  return calculateCashflowFlow(input);
+  const parsed = CalculateCashflowInputSchema.parse(input);
+  return calculateCashflowFlow(parsed);
 }
 
 const prompt = ai.definePrompt({

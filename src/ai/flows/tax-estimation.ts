@@ -10,9 +10,9 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
-const TaxEstimationInputSchema = z.object({
+export const TaxEstimationInputSchema = z.object({
   income: z
     .number()
     .describe('Annual income in USD.'),
@@ -41,7 +41,8 @@ const TaxEstimationOutputSchema = z.object({
 export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
 export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
-  return taxEstimationFlow(input);
+  const parsed = TaxEstimationInputSchema.parse(input);
+  return taxEstimationFlow(parsed);
 }
 
 const taxEstimationPrompt = ai.definePrompt({

@@ -10,9 +10,9 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
-const AnalyzeReceiptInputSchema = z.object({
+export const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
     .describe(
@@ -29,7 +29,8 @@ const AnalyzeReceiptOutputSchema = z.object({
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
 export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
-  return analyzeReceiptFlow(input);
+  const parsed = AnalyzeReceiptInputSchema.parse(input);
+  return analyzeReceiptFlow(parsed);
 }
 
 const prompt = ai.definePrompt({
