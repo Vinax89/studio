@@ -28,12 +28,16 @@ export async function queueTransaction(
     const db = await dbPromise
     await db.add(STORE_NAME, tx)
 
-    const keys = await db.getAllKeys(STORE_NAME)
-    const overflow = keys.length - maxQueueSize
+    const total = await db.count(STORE_NAME)
+    const overflow = total - maxQueueSize
     if (overflow > 0) {
-      for (const key of keys.slice(0, overflow)) {
-        await db.delete(STORE_NAME, key)
+      const txDelete = db.transaction(STORE_NAME, "readwrite")
+      let cursor = await txDelete.store.openKeyCursor()
+      for (let i = 0; cursor && i < overflow; i++) {
+        await cursor.delete()
+        cursor = await cursor.continue()
       }
+      await txDelete.done
     }
     return true
   } catch (error) {

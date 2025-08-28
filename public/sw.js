@@ -26,10 +26,16 @@ self.addEventListener("fetch", event => {
           const body = await clone.json()
           const db = await dbPromise
           await db.add(STORE_NAME, body)
-          const keys = await db.getAllKeys(STORE_NAME)
-          if (keys.length > MAX_QUEUE_LENGTH) {
-            const excess = keys.slice(0, keys.length - MAX_QUEUE_LENGTH)
-            await Promise.all(excess.map((key) => db.delete(STORE_NAME, key)))
+          const total = await db.count(STORE_NAME)
+          const overflow = total - MAX_QUEUE_LENGTH
+          if (overflow > 0) {
+            const tx = db.transaction(STORE_NAME, "readwrite")
+            let cursor = await tx.store.openKeyCursor()
+            for (let i = 0; cursor && i < overflow; i++) {
+              await cursor.delete()
+              cursor = await cursor.continue()
+            }
+            await tx.done
           }
           return new Response(JSON.stringify({ offline: true }), {
             status: 202,
