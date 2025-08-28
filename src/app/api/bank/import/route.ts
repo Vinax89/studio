@@ -2,6 +2,16 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 
+const transactionSchema = z.object({
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional(),
+})
+
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
  * This endpoint deals with provider-specific payloads and is distinct from the
@@ -9,7 +19,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  */
 const bodySchema = z.object({
   provider: z.string(),
-  transactions: z.array(z.any()),
+  transactions: z.array(transactionSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
