@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react"
 import en from "../../public/locales/en.json"
 import es from "../../public/locales/es.json"
 
@@ -8,17 +9,15 @@ const dictionaries: Record<Locale, Record<string, string>> = {
   es,
 }
 
-let currentLocale: Locale = "en"
-
-export const setLocale = (locale: Locale) => {
-  currentLocale = locale
+export function useTranslation(initialLocale: Locale = "en") {
+  const [locale, setLocale] = useState<Locale>(initialLocale)
+  const t = useCallback(
+    (key: string) => dictionaries[locale][key] || key,
+    [locale],
+  )
+  return { t, locale, setLocale }
 }
 
-export function useTranslation() {
-  const t = (key: string) => dictionaries[currentLocale][key] || key
-  return { t, locale: currentLocale }
-}
-
-export function getTranslation(locale: Locale = currentLocale) {
+export function getTranslation(locale: Locale) {
   return (key: string) => dictionaries[locale][key] || key
 }
