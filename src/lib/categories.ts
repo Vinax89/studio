@@ -43,9 +43,10 @@ export function getCategories(): string[] {
   const categories = load();
   const map = new Map<string, string>();
   for (const cat of categories) {
-    const key = normalize(cat);
+    const trimmed = cat.trim();
+    const key = normalize(trimmed);
     if (!map.has(key)) {
-      map.set(key, cat);
+      map.set(key, trimmed);
     }
   }
   const unique = Array.from(map.values());
@@ -60,10 +61,11 @@ export function getCategories(): string[] {
  */
 export function addCategory(category: string): string[] {
   const categories = getCategories();
-  const key = normalize(category);
+  const trimmed = category.trim();
+  const key = normalize(trimmed);
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
-    categories.push(category);
+    categories.push(trimmed);
     save(categories);
   }
   return categories;
