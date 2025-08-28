@@ -23,6 +23,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 401 })
   }
 
+  const contentLength = req.headers.get("content-length")
+  if (contentLength && Number(contentLength) > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 })
+  }
+
   let text: string
   try {
     text = await req.text()
