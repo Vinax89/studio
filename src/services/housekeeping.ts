@@ -52,12 +52,19 @@ export async function cleanupDebts(): Promise<void> {
   await runWithRetry(() => Promise.all(deletions));
 }
 
-async function runWithRetry<T>(op: () => Promise<T>, retries = 1): Promise<T> {
+export async function runWithRetry<T>(
+  op: () => Promise<T>,
+  retries = 1,
+  delayMs = 100
+): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await op();
     } catch (err) {
       if (attempt === retries) throw err;
+      console.error(`Attempt ${attempt + 1} failed:`, err);
+      const delay = delayMs * 2 ** attempt;
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   // Should be unreachable
