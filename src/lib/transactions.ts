@@ -1,0 +1,143 @@
+import { z } from "zod";
+import { collection, doc, writeBatch } from "firebase/firestore";
+import { db } from "./firebase";
+import type { Transaction } from "./types";
+
+export const TransactionPayloadSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional(),
+});
+
+export type TransactionPayload = z.infer<typeof TransactionPayloadSchema>;
+
+const TransactionRow = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  description: z.string(),
+  amount: z.preprocess(
+    (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
+    z.string()
+  ),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.union([z.boolean(), z.string()]).optional(),
+});
+
+export type TransactionRowType = z.infer<typeof TransactionRow>;
+
+/**
+ * Validate a list of raw transaction rows and normalize them into the
+ * internal {@link Transaction} format.
+ *
+ * Each row should contain a `date` in `YYYY-MM-DD` format, a `description`,
+ * an `amount` that can be parsed into a number, a `type` of either
+ * "Income" or "Expense", a `category`, and an optional `isRecurring` flag
+ * (boolean or string).
+ *
+ * A new UUID is generated for every transaction and the `currency` field is
+ * set to the default of `"USD"` until import sources supply currency data.
+ *
+ * @param rows - Array of transaction-like objects to validate and normalize.
+ * @returns Array of validated transactions ready for persistence.
+ * @throws {Error} If any row fails validation or if an amount cannot be
+ *   parsed into a number.
+ * @remarks This function performs no external I/O but generates new UUIDs for
+ *   each transaction.
+ */
+export function validateTransactions(rows: TransactionRowType[]): Transaction[] {
+  return rows.map((row, index) => {
+    const parsed = TransactionRow.safeParse(row);
+    if (!parsed.success) {
+      throw new Error(`Invalid row ${index + 1}: ${parsed.error.message}`);
+    }
+    const data = parsed.data;
+    const amountString = data.amount.trim();
+    const parsedAmount = parseFloat(amountString);
+    if (isNaN(parsedAmount)) {
+      throw new Error(
+        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`
+      );
+    }
+
+    return {
+      id: crypto.randomUUID(),
+      date: data.date,
+      description: data.description,
+      amount: parsedAmount,
+      type: data.type,
+      category: data.category,
+      // Default to USD until currency is provided in import sources
+      currency: "USD",
+      isRecurring:
+        typeof data.isRecurring === "boolean"
+          ? data.isRecurring
+          : data.isRecurring === "true",
+    };
+  });
+}
+
+/**
+ * Persist a collection of transactions to Firestore using a batch write.
+ *
+ * @param transactions - Validated transaction objects to be written.
+ * @throws {Error} If the Firestore batch commit fails.
+ * @remarks Writes to Firestore and performs network I/O.
+ */
+export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+  const colRef = collection(db, "transactions");
+  const batch = writeBatch(db);
+  transactions.forEach((tx) => {
+    const docRef = doc(colRef);
+    batch.set(docRef, tx);
+  });
+
+  try {
+    await batch.commit();
+  } catch (err) {
+    throw new Error(
+      `Failed to save transactions batch: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
+}
+
+/**
+ * Validate raw transaction rows and persist the resulting transactions to
+ * Firestore.
+ *
+ * @param rows - Raw transaction rows to validate and import.
+ * @throws {Error} If validation fails or if saving to Firestore encounters an
+ *   error.
+ * @remarks Generates UUIDs during validation and writes data to Firestore.
+ */
+export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
+  const transactions = validateTransactions(rows);
+  try {
+    await saveTransactions(transactions);
+  } catch (err) {
+    throw new Error(
+      `Failed to import transactions: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
+}
+
+export interface TransactionPersistence {
+  validateTransactions: typeof validateTransactions;
+  saveTransactions: typeof saveTransactions;
+  importTransactions: typeof importTransactions;
+}
+
+export const transactionPersistence: TransactionPersistence = {
+  validateTransactions,
+  saveTransactions,
+  importTransactions,
+};
+

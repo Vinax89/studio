@@ -4,19 +4,25 @@
 import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types"
+import { useMemo } from "react"
 
 interface OverviewCardsProps {
   transactions: Transaction[];
 }
 
 export default function OverviewCards({ transactions }: OverviewCardsProps) {
-  const totalIncome = transactions
-    .filter(t => t.type === 'Income')
-    .reduce((acc, t) => acc + t.amount, 0);
-
-  const totalExpenses = transactions
-    .filter(t => t.type === 'Expense')
-    .reduce((acc, t) => acc + t.amount, 0);
+  const { totalIncome, totalExpenses } = useMemo(
+    () =>
+      transactions.reduce(
+        (acc, t) => {
+          if (t.type === "Income") acc.totalIncome += t.amount
+          else if (t.type === "Expense") acc.totalExpenses += t.amount
+          return acc
+        },
+        { totalIncome: 0, totalExpenses: 0 }
+      ),
+    [transactions]
+  );
 
   const savings = totalIncome - totalExpenses;
 

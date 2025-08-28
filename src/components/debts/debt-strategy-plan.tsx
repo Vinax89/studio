@@ -4,7 +4,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { type SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
+import { type SuggestDebtStrategyOutput } from "@/ai/flows";
 
 interface DebtStrategyPlanProps {
   strategy: SuggestDebtStrategyOutput;
