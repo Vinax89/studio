@@ -119,6 +119,7 @@ export default function AppHeader() {
         <Input
           type="search"
           placeholder="Search..."
+          aria-label="Search"
           className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px] dark:bg-secondary"
         />
       </div>
