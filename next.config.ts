@@ -28,6 +28,15 @@ const securityHeaders = [
   },
 ]
 
+// In development, allow connections from the preview environments
+if (process.env.NODE_ENV === 'development') {
+    securityHeaders.push({
+        key: 'Access-Control-Allow-Origin',
+        value: 'https://*-firebase-studio-*.cloudworkstations.dev',
+    })
+}
+
+
 const nextConfig: NextConfig = {
   // Enforce type checking and linting during builds
   typescript: { ignoreBuildErrors: false },
@@ -47,14 +56,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-
-  // Allow Firebase Studio / Cloud Workstations preview host to fetch /_next/*
-  allowedDevOrigins: [
-    '*.cloudworkstations.dev',
-    // Add the specific origin from the error log for stability
-    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-    '9000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-  ],
 
   experimental: {},
   webpack: (config, { isServer, webpack }) => {
