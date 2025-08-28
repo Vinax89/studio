@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
+import { formatCurrency } from "@/lib/currency"
 import {
   memo,
   useMemo,
@@ -46,7 +47,7 @@ export const TransactionsTable = memo(function TransactionsTable({
           formattedDate: new Date(transaction.date).toLocaleDateString(),
           formattedAmount: `${
             transaction.type === "Income" ? "+" : "-"
-          }$${transaction.amount.toFixed(2)}`,
+          }${formatCurrency(transaction.amount, transaction.currency)}`,
         })),
     [transactions, visibleRange],
   )
@@ -62,7 +63,7 @@ export const TransactionsTable = memo(function TransactionsTable({
             formattedDate: new Date(fallback.date).toLocaleDateString(),
             formattedAmount: `${
               fallback.type === "Income" ? "+" : "-"
-            }$${fallback.amount.toFixed(2)}`,
+            }${formatCurrency(fallback.amount, fallback.currency)}`,
           }
     return (
       <TableRow style={style} key={transaction.id}>
