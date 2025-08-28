@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
-import { useDebtOccurrences, DEFAULT_MAX_OCCURRENCES } from "@/hooks/use-debt-occurrences";
+import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -69,8 +69,7 @@ export default function DebtCalendar({ onChange, startOn = 0 }: DebtCalendarProp
     debts,
     gridFrom,
     gridTo,
-    query,
-    DEFAULT_MAX_OCCURRENCES
+    query
   );
 
   useEffect(() => {

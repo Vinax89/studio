@@ -12,7 +12,7 @@ import {
   parseISO,
 } from "date-fns";
 
-// Maximum number of occurrences to generate for a single debt
+// Hard cap to avoid infinite loops if data is malformed.
 export const DEFAULT_MAX_OCCURRENCES = 400;
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -43,25 +43,44 @@ function nextOccurrenceOnOrAfter(
   return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate;
 }
 
-function allOccurrencesInRange(
+// Dynamically compute a reasonable maximum number of iterations for the
+// recurrence based on the date span requested. This prevents runaway loops
+// while still allowing longer ranges to be fully evaluated.
+function dynamicMaxOccurrences(
+  recurrence: Recurrence,
+  from: Date,
+  to: Date
+): number {
+  if (recurrence === "none") return 1;
+  if (recurrence === "monthly") {
+    return Math.min(differenceInMonths(to, from) + 2, DEFAULT_MAX_OCCURRENCES);
+  }
+  const step = recurrence === "weekly" ? 7 : 14;
+  const span = differenceInCalendarDays(to, from);
+  return Math.min(Math.ceil(span / step) + 2, DEFAULT_MAX_OCCURRENCES);
+}
+
+// Yield occurrences lazily instead of constructing a full array.
+function* allOccurrencesInRange(
   debt: Debt,
   from: Date,
   to: Date,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
-): Date[] {
-  const out: Date[] = [];
+  maxOccurrences?: number
+): Generator<Date> {
+  const limit =
+    maxOccurrences ?? dynamicMaxOccurrences(debt.recurrence, from, to);
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
-    if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
-    return out;
+    if (!isBefore(d, from) && !isAfter(d, to)) yield d;
+    return;
   }
   let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
   let iter = 0;
   const stepDays =
     debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
 
-  while (cur && !isAfter(cur, to) && iter < maxOccurrences) {
-    out.push(cur);
+  while (cur && !isAfter(cur, to) && iter < limit) {
+    yield cur;
     iter++;
     cur =
       debt.recurrence === "monthly"
@@ -70,22 +89,48 @@ function allOccurrencesInRange(
   }
   if (cur && !isAfter(cur, to)) {
     console.warn(
-      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+      `Debt occurrences truncated at ${limit} iterations for debt ${debt.name}`
     );
   }
-  return out;
+}
+
+// Cache occurrences per debt and range so subsequent renders do not recompute
+// the same values. Cache key is based on debt id and the requested range.
+const occurrenceCache = new Map<string, Map<string, Date[]>>();
+
+function rangeKey(from: Date, to: Date, max?: number) {
+  return `${iso(from)}|${iso(to)}|${max ?? "auto"}`;
+}
+
+function cachedOccurrences(
+  debt: Debt,
+  from: Date,
+  to: Date,
+  maxOccurrences?: number
+): Date[] {
+  const key = rangeKey(from, to, maxOccurrences);
+  let debtMap = occurrenceCache.get(debt.id);
+  if (!debtMap) {
+    debtMap = new Map();
+    occurrenceCache.set(debt.id, debtMap);
+  }
+  const cached = debtMap.get(key);
+  if (cached) return cached;
+  const arr = Array.from(allOccurrencesInRange(debt, from, to, maxOccurrences));
+  debtMap.set(key, arr);
+  return arr;
 }
 
 function computeDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences?: number
 ) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
+    const occ = cachedOccurrences(d, from, to, maxOccurrences);
     occ.forEach((dt) => {
       const oc = { date: iso(dt), debt: d };
       occurrences.push(oc);
@@ -105,7 +150,7 @@ export function useDebtOccurrences(
   from: Date,
   to: Date,
   query: string,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences?: number
 ) {
   const fromTime = from.getTime();
   const toTime = to.getTime();
