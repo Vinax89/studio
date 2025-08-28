@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,10 +19,12 @@ import { PlusCircle } from "lucide-react"
 import type { Goal } from "@/lib/types"
 
 interface AddGoalDialogProps {
-  onSave: (goal: Omit<Goal, 'id'>) => void;
+  onSave: (goal: Goal) => void;
+  goal?: Goal;
+  trigger?: ReactNode;
 }
 
-export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
+export function AddGoalDialog({ onSave, goal, trigger }: AddGoalDialogProps) {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState("")
     const [targetAmount, setTargetAmount] = useState("")
@@ -30,9 +32,20 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
     const [deadline, setDeadline] = useState("")
     const [importance, setImportance] = useState([3]) // Default importance
 
+    useEffect(() => {
+        if (open) {
+            setName(goal?.name ?? "")
+            setTargetAmount(goal?.targetAmount?.toString() ?? "")
+            setCurrentAmount(goal?.currentAmount?.toString() ?? "")
+            setDeadline(goal?.deadline ?? "")
+            setImportance([goal?.importance ?? 3])
+        }
+    }, [goal, open])
+
     const handleSave = () => {
         if(name && targetAmount && currentAmount && deadline) {
             onSave({
+                id: goal?.id ?? "",
                 name,
                 targetAmount: parseFloat(targetAmount),
                 currentAmount: parseFloat(currentAmount),
@@ -40,28 +53,24 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
                 importance: importance[0]
             })
             setOpen(false)
-            // Reset form
-            setName("")
-            setTargetAmount("")
-            setCurrentAmount("")
-            setDeadline("")
-            setImportance([3])
         }
     }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Goal
-        </Button>
+        {trigger ?? (
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New Goal
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Financial Goal</DialogTitle>
+          <DialogTitle>{goal ? "Edit Goal" : "Add New Financial Goal"}</DialogTitle>
           <DialogDescription>
-            What financial milestone are you aiming for?
+            {goal ? "Update your goal details" : "What financial milestone are you aiming for?"}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -97,7 +106,7 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit" onClick={handleSave}>Save Goal</Button>
+          <Button type="submit" onClick={handleSave}>{goal ? "Save Changes" : "Save Goal"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

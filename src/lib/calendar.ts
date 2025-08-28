@@ -16,6 +16,10 @@ export function dateKey(date: Date): string {
   });
 }
 
+export function legacyDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
 export function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOrAfter: Date): Date | null {
   const anchor = parseISO(anchorISO);
   if (recurrence === "none") return isSameDay(anchor, onOrAfter) || anchor > onOrAfter ? anchor : null;
@@ -40,9 +44,13 @@ export function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrenc
   return candidate < onOrAfter ? addDays(candidate, step) : candidate;
 }
 
-export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
+export function allOccurrencesInRange(
+  debt: Debt,
+  from: Date,
+  to: Date,
+  maxOccurrences = 400
+): Date[] {
   const out: Date[] = [];
-  const maxIter = 400;
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
     if (d >= from && d <= to) out.push(d);
@@ -52,14 +60,18 @@ export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] 
   let iter = 0;
   const stepDays = debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
 
-  while (cur && cur <= to && iter < maxIter) {
+  while (cur && cur <= to && iter < maxOccurrences) {
     out.push(new Date(cur));
     iter++;
     if (debt.recurrence === "monthly") {
       const nextDate = new Date(cur.getFullYear(), cur.getMonth() + 1, cur.getDate());
       if (nextDate <= cur) {
         cur.setDate(cur.getDate() + 1);
-        cur = new Date(cur.getFullYear(), cur.getMonth() + 1, debt.dueDate ? parseISO(debt.dueDate).getDate() : cur.getDate());
+        cur = new Date(
+          cur.getFullYear(),
+          cur.getMonth() + 1,
+          debt.dueDate ? parseISO(debt.dueDate).getDate() : cur.getDate()
+        );
       } else {
         cur = nextDate;
       }
@@ -67,16 +79,26 @@ export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] 
       cur = addDays(cur, stepDays);
     }
   }
+  if (cur && cur <= to) {
+    console.warn(
+      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+    );
+  }
   return out;
 }
 
 export type Occurrence = { date: string; debt: Debt };
 
-export function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
+export function computeDebtOccurrences(
+  debts: Debt[],
+  from: Date,
+  to: Date,
+  maxOccurrences = 400
+) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to);
+    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
     occ.forEach((dt) => {
       const oc = { date: dateKey(dt), debt: d };
       occurrences.push(oc);

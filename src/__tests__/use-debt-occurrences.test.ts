@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { useDebtOccurrences } from "../hooks/use-debt-occurrences";
+import { useDebtOccurrences, DEFAULT_MAX_OCCURRENCES } from "../hooks/use-debt-occurrences";
 import { Debt } from "../lib/types";
 
 type HookReturn = ReturnType<typeof useDebtOccurrences>;
@@ -10,11 +10,12 @@ function renderUseDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  query = ""
+  query = "",
+  maxOccurrences = DEFAULT_MAX_OCCURRENCES
 ): HookReturn {
   let result: HookReturn = { occurrences: [], grouped: new Map() } as HookReturn;
   function TestComponent() {
-    result = useDebtOccurrences(debts, from, to, query);
+    result = useDebtOccurrences(debts, from, to, query, maxOccurrences);
     return null;
   }
   renderToString(React.createElement(TestComponent));
@@ -107,5 +108,30 @@ describe("useDebtOccurrences", () => {
       new Date("2024-01-31")
     );
     expect(occurrences.map((o) => o.date)).toEqual(["2024-01-10"]);
+  });
+
+  it("warns and truncates when exceeding max occurrences", () => {
+    const debt: Debt = {
+      ...baseDebt,
+      id: "w2",
+      name: "Weekly", // many occurrences
+      dueDate: "2024-01-01",
+      recurrence: "weekly",
+    };
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const { occurrences } = renderUseDebtOccurrences(
+      [debt],
+      new Date("2024-01-01"),
+      new Date("2024-03-01"),
+      "",
+      3
+    );
+    expect(occurrences.map((o) => o.date)).toEqual([
+      "2024-01-01",
+      "2024-01-08",
+      "2024-01-15",
+    ]);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });
