@@ -7,9 +7,20 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  * This endpoint deals with provider-specific payloads and is distinct from the
  * generic transaction syncing endpoint at `/api/transactions/sync`.
  */
+const transactionSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional(),
+})
+
 const bodySchema = z.object({
   provider: z.string(),
-  transactions: z.array(z.any()),
+  transactions: z.array(transactionSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
