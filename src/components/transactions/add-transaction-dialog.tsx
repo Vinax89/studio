@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,6 +24,8 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
+import { getCategories } from "@/lib/categories"
+import { suggestCategory } from "@/ai/flows/categorize-transaction"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -35,9 +37,29 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [amount, setAmount] = useState("")
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
+    const [categories, setCategories] = useState<string[]>([])
     const [currency, setCurrency] = useState("USD")
     const [isRecurring, setIsRecurring] = useState(false)
     const { toast } = useToast()
+
+    useEffect(() => {
+        if (open) {
+            setCategories(getCategories())
+        }
+    }, [open])
+
+    const handleDescriptionBlur = async () => {
+        if (!description.trim()) return
+        try {
+            const suggested = await suggestCategory(description)
+            if (suggested) {
+                setCategory(suggested)
+                setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
+            }
+        } catch (err) {
+            console.error("suggestCategory failed", err)
+        }
+    }
 
     const handleSave = () => {
         const numericAmount = Number(amount)
@@ -83,7 +105,13 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
-            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleDescriptionBlur}
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="amount" className="text-right">Amount</Label>
@@ -116,7 +144,18 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <Input id="category" placeholder="e.g. Uniforms, Salary" value={category} onChange={(e) => setCategory(e.target.value)} className="col-span-3" />
+            <Select onValueChange={setCategory} value={category}>
+              <SelectTrigger id="category" className="col-span-3">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat} className="capitalize">
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">Recurring</Label>
