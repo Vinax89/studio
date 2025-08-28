@@ -1,39 +1,44 @@
-import { GET } from '@/app/api/hello/route';
-import { resetRateLimiters } from '@/lib/rate-limit';
+import { checkRateLimit, resetRateLimiters, SimpleLimiter } from '@/lib/rate-limit';
 
 describe('rate limiting', () => {
   beforeEach(() => {
     resetRateLimiters();
   });
 
-  it('limits requests per IP', async () => {
-    const makeReq = () =>
-      new Request('http://localhost/api/hello', {
-        headers: { 'x-forwarded-for': '1.1.1.1' },
-      });
-
+  it('limits requests per IP', () => {
+    const req = { headers: new Headers({ 'x-forwarded-for': '1.1.1.1' }) } as Request;
     for (let i = 0; i < 5; i++) {
-      const res = await GET(makeReq());
-      expect(res.status).toBe(200);
+      expect(checkRateLimit(req).allowed).toBe(true);
     }
-    const blocked = await GET(makeReq());
-    expect(blocked.status).toBe(429);
+    expect(checkRateLimit(req).allowed).toBe(false);
   });
 
-  it('limits requests per user', async () => {
+  it('limits requests per user', () => {
     const makeReq = (ip: string) =>
-      new Request('http://localhost/api/hello', {
-        headers: {
+      ({
+        headers: new Headers({
           'x-forwarded-for': ip,
           'x-user-id': 'user-1',
-        },
-      });
+        }),
+      } as Request);
 
     for (let i = 0; i < 10; i++) {
-      const res = await GET(makeReq(`2.2.2.${i}`));
-      expect(res.status).toBe(200);
+      expect(checkRateLimit(makeReq(`2.2.2.${i}`)).allowed).toBe(true);
     }
-    const blocked = await GET(makeReq('2.2.2.100'));
-    expect(blocked.status).toBe(429);
+    expect(checkRateLimit(makeReq('2.2.2.100')).allowed).toBe(false);
+  });
+
+  it('prunes expired entries to bound memory', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-01-01T00:00:00Z'));
+    const limiter = new SimpleLimiter({ limit: 1, windowMs: 1000 });
+    for (let i = 0; i < 50; i++) {
+      expect(limiter.check(`key-${i}`)).toBe(true);
+    }
+    expect(limiter.size).toBe(50);
+    jest.advanceTimersByTime(1000);
+    expect(limiter.check('another')).toBe(true);
+    expect(limiter.size).toBe(1);
+    jest.useRealTimers();
   });
 });
