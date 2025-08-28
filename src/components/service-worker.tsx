@@ -15,18 +15,29 @@ export function ServiceWorker() {
       if (debounceId) clearTimeout(debounceId)
 
       debounceId = setTimeout(async () => {
-        const queued = await getQueuedTransactions()
-        if (queued.length) {
+        const queuedResult = await getQueuedTransactions()
+        if (queuedResult.ok && queuedResult.value.length) {
           try {
             await fetch("/api/transactions/sync", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ transactions: queued }),
+              body: JSON.stringify({ transactions: queuedResult.value }),
             })
-            await clearQueuedTransactions()
+            const clearResult = await clearQueuedTransactions()
+            if (!clearResult.ok) {
+              console.error(
+                "Failed to clear queued transactions",
+                clearResult.error,
+              )
+            }
           } catch (error) {
             console.error("Failed to sync queued transactions", error)
           }
+        } else if (!queuedResult.ok) {
+          console.error(
+            "Failed to get queued transactions",
+            queuedResult.error,
+          )
         }
       }, 1000)
     }
