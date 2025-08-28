@@ -18,19 +18,21 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const transCol = collection(db, "transactions");
   const snapshot = await getDocs(transCol);
 
-  const ops: Promise<void>[] = [];
+  const ops: Array<() => Promise<void>> = [];
 
   for (const snap of snapshot.docs) {
     const data = snap.data() as Transaction;
     if (new Date(data.date) < cutoff) {
       ops.push(
-        setDoc(doc(db, "transactions_archive", snap.id), data),
-        deleteDoc(doc(db, "transactions", snap.id))
+        () => setDoc(doc(db, "transactions_archive", snap.id), data),
+        () => deleteDoc(doc(db, "transactions", snap.id))
       );
     }
   }
 
-  await runWithRetry(() => Promise.all(ops));
+  await runWithRetry(async () => {
+    await Promise.all(ops.map((op) => op()));
+  });
 }
 
 /**
@@ -40,16 +42,18 @@ export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const snapshot = await getDocs(debtsCol);
 
-  const deletions: Promise<void>[] = [];
+  const deletions: Array<() => Promise<void>> = [];
 
   for (const snap of snapshot.docs) {
     const data = snap.data() as Debt;
     if (data.currentAmount <= 0) {
-      deletions.push(deleteDoc(doc(db, "debts", snap.id)));
+      deletions.push(() => deleteDoc(doc(db, "debts", snap.id)));
     }
   }
 
-  await runWithRetry(() => Promise.all(deletions));
+  await runWithRetry(async () => {
+    await Promise.all(deletions.map((del) => del()));
+  });
 }
 
 export async function runWithRetry<T>(
