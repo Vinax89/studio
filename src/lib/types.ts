@@ -1,14 +1,17 @@
+import { z } from "zod";
 
-export type Transaction = {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  currency: string; // ISO currency code
-  type: "Income" | "Expense";
-  category: string;
-  isRecurring?: boolean;
-};
+export const TransactionSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  currency: z.string(), // ISO currency code
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional(),
+});
+
+export type Transaction = z.infer<typeof TransactionSchema>;
 
 export type Goal = {
   id: string;

@@ -30,6 +30,16 @@ describe("/api/bank/import", () => {
     const res = await bankImport(req)
     expect(res.status).toBe(400)
   })
+
+  it("returns 400 when transactions are invalid", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ provider: "bank", transactions: [{ id: "1" }] }),
+    })
+    const res = await bankImport(req)
+    expect(res.status).toBe(400)
+  })
 })
 
 describe("/api/transactions/sync", () => {
@@ -54,6 +64,16 @@ describe("/api/transactions/sync", () => {
       method: "POST",
       headers: { Authorization: "Bearer test-token" },
       body: JSON.stringify({ transactions: "not-array" }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(400)
+  })
+
+  it("returns 400 when transactions are invalid", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ transactions: [{ id: "1" }] }),
     })
     const res = await transactionsSync(req)
     expect(res.status).toBe(400)
