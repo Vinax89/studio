@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from "react"
-import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows/calculate-cashflow"
+import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,36 +11,18 @@ import { useToast } from "@/hooks/use-toast"
 import { showNetworkErrorToast } from "@/lib/network-error"
 import { Calendar } from "@/components/ui/calendar"
 import type { DateRange } from "react-day-picker"
-
-interface Shift {
-  date: Date;
-  hours: number;
-  rate: number;
-  premiumPay?: number;
-  differentials?: string;
-}
+import {
+  getPayPeriodStart,
+  calculateOvertimeDates,
+  calculatePayPeriodSummary,
+  getShiftsInPayPeriod,
+  type Shift,
+} from "@/lib/payroll"
 
 type ShiftDetails = Omit<Shift, 'date'>;
 
-// Helper to find the start of a 2-week pay period (a Sunday) for any given date.
-const getPayPeriodStart = (date: Date) => {
-    const d = new Date(date);
-    const dayOfWeek = d.getDay(); // Sunday = 0, Saturday = 6
-    const daysSinceLastSunday = dayOfWeek;
-    const lastSunday = new Date(d.setDate(d.getDate() - daysSinceLastSunday));
-    lastSunday.setHours(0,0,0,0);
-
-    // Use a fixed anchor date to determine the "even" or "odd" week period.
-    const anchor = new Date('2024-01-07T00:00:00.000Z'); // A known Sunday
-    const diffWeeks = Math.floor((lastSunday.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
-
-    if (diffWeeks % 2 !== 0) {
-        // It's in the second week of a pay period, so the start was the *previous* Sunday
-        lastSunday.setDate(lastSunday.getDate() - 7);
-    }
-    
-    return lastSunday;
-};
+// Anchor date used to align bi-weekly pay periods for this organization
+const payPeriodAnchor = new Date('2024-01-07T00:00:00.000Z');
 
 
 export default function CashflowPage() {
@@ -63,103 +45,12 @@ export default function CashflowPage() {
 
     const { toast } = useToast();
 
-   const overtimeShifts = useMemo(() => {
-    const weeklyShifts: { [weekStart: string]: Shift[] } = {};
+  const overtimeShifts = useMemo(() => calculateOvertimeDates(shifts), [shifts]);
 
-    // Group shifts by week
-    shifts.forEach(shift => {
-        const shiftDay = shift.date.getDay(); // Sunday = 0
-        const weekStart = new Date(shift.date);
-        weekStart.setDate(shift.date.getDate() - shiftDay);
-        weekStart.setHours(0, 0, 0, 0);
-        const weekStartStr = weekStart.toISOString();
-        
-        if (!weeklyShifts[weekStartStr]) {
-            weeklyShifts[weekStartStr] = [];
-        }
-        weeklyShifts[weekStartStr].push(shift);
-    });
-
-    const overtimeDates: Date[] = [];
-    for (const weekStartStr in weeklyShifts) {
-        const week = weeklyShifts[weekStartStr];
-        // Sort shifts chronologically to calculate running total
-        week.sort((a,b) => a.date.getTime() - b.date.getTime());
-
-        let weeklyHours = 0;
-        for (const shift of week) {
-            const previousHours = weeklyHours;
-            weeklyHours += shift.hours;
-            // If the hours *before* this shift were already over 40, this is an extra shift.
-            // Or, if this shift is the one that *crosses* the 40-hour threshold.
-            if (previousHours >= 40 || (previousHours < 40 && weeklyHours > 40)) {
-                 overtimeDates.push(shift.date);
-            }
-        }
-    }
-    return overtimeDates;
-  }, [shifts]);
-  
-  const payPeriodCalculation = useMemo(() => {
-    if (!payPeriod || !payPeriod.from || !payPeriod.to) {
-        return { totalIncome: 0, regularHours: 0, overtimeHours: 0, totalHours: 0 };
-    }
-
-    const week1Start = payPeriod.from;
-    const week1End = new Date(week1Start);
-    week1End.setDate(week1End.getDate() + 6);
-
-    const week2Start = new Date(week1Start);
-    week2Start.setDate(week1Start.getDate() + 7);
-    const week2End = payPeriod.to;
-
-    let totalIncome = 0;
-    let totalRegularHours = 0;
-    let totalOvertimeHours = 0;
-
-    const calculateWeekPay = (start: Date, end: Date) => {
-        const weekShifts = shifts.filter(s => s.date >= start && s.date <= end);
-        let weeklyHours = 0;
-        let weeklyIncome = 0;
-        let weeklyPremiumPay = 0;
-
-        // First pass: Calculate total hours and sum premium pay
-        weekShifts.forEach(shift => {
-            weeklyHours += shift.hours;
-            weeklyPremiumPay += shift.premiumPay || 0;
-        });
-        
-        let regularHours = Math.min(weeklyHours, 40);
-        let overtimeHours = Math.max(0, weeklyHours - 40);
-        
-        totalRegularHours += regularHours;
-        totalOvertimeHours += overtimeHours;
-
-        // Second pass: Apportion pay based on averaged rate if needed, or use a single rate
-        // This simple model assumes rate is consistent across shifts for OT calculation.
-        // A more complex model might need to decide which shift's rate to use for OT.
-        if (weekShifts.length > 0) {
-           const avgRate = weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
-           const regularPay = regularHours * avgRate;
-           const overtimePay = overtimeHours * avgRate * 1.5;
-           weeklyIncome = regularPay + overtimePay + weeklyPremiumPay;
-        }
-
-        return weeklyIncome;
-    };
-    
-    const week1Pay = calculateWeekPay(week1Start, week1End);
-    const week2Pay = calculateWeekPay(week2Start, week2End);
-    
-    totalIncome = week1Pay + week2Pay;
-
-    return { 
-        totalIncome, 
-        regularHours: totalRegularHours,
-        overtimeHours: totalOvertimeHours,
-        totalHours: totalRegularHours + totalOvertimeHours
-    };
-  }, [shifts, payPeriod]);
+  const payPeriodCalculation = useMemo(
+    () => calculatePayPeriodSummary(shifts, payPeriod),
+    [shifts, payPeriod]
+  );
 
   const monthlyStats = useMemo(() => {
     const month = cursorDate.getMonth();
@@ -214,12 +105,10 @@ export default function CashflowPage() {
   }, [shifts, cursorDate]);
 
 
-  const shiftsInPayPeriod = useMemo(() => {
-      if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
-      return shifts
-        .filter(shift => shift.date >= payPeriod!.from! && shift.date <= payPeriod!.to!)
-        .sort((a,b) => a.date.getTime() - b.date.getTime());
-  }, [shifts, payPeriod]);
+  const shiftsInPayPeriod = useMemo(
+    () => getShiftsInPayPeriod(shifts, payPeriod),
+    [shifts, payPeriod]
+  );
 
   const handleCashflowSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -286,7 +175,7 @@ export default function CashflowPage() {
       setSelectedDate(date);
       
       if (date) {
-        const start = getPayPeriodStart(date);
+        const start = getPayPeriodStart(date, payPeriodAnchor);
         const end = new Date(start);
         end.setDate(start.getDate() + 13);
         setPayPeriod({ from: start, to: end });

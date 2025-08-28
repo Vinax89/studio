@@ -1,15 +1,27 @@
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import type { Goal } from "@/lib/types"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import type { Goal } from "@/lib/types";
 import { Badge } from "../ui/badge";
+import { AddGoalDialog } from "./add-goal-dialog";
 
 interface GoalCardProps {
   goal: Goal;
+  onDelete: (id: string) => Promise<void> | void;
+  onUpdate: (goal: Goal) => Promise<void> | void;
 }
 
-export function GoalCard({ goal }: GoalCardProps) {
-  const progress = (goal.currentAmount / goal.targetAmount) * 100;
+export function GoalCard({ goal, onDelete, onUpdate }: GoalCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    await onDelete(goal.id);
+    setIsDeleting(false);
+  };
 
   const importanceMap: {[key: number]: string} = {
       1: "Very Low",
@@ -39,10 +51,20 @@ export function GoalCard({ goal }: GoalCardProps) {
         </div>
         <Progress value={progress} aria-label={`${goal.name} progress`} />
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex items-center justify-between">
         <p className="text-muted-foreground">
             <span className="font-bold text-foreground">${goal.currentAmount.toLocaleString()}</span> of ${goal.targetAmount.toLocaleString()}
         </p>
+        <div className="flex gap-2">
+          <AddGoalDialog
+            goal={goal}
+            onSave={onUpdate}
+            trigger={<Button variant="ghost" size="sm">Edit</Button>}
+          />
+          <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )
