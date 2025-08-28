@@ -130,45 +130,56 @@ export async function backupData(
   debts: Debt[];
   goals: Goal[];
 }> {
-  async function fetchAll<T>(colName: string, orderField: string): Promise<T[]> {
-    const col = collection(db, colName);
+  const backupRef = await runWithRetry(
+    () =>
+      addDoc(collection(db, "backups"), {
+        createdAt: new Date().toISOString(),
+      }),
+    retries,
+    delayMs
+  );
+
+  async function backupCollection<T>(
+    colName: string,
+    orderField: string
+  ): Promise<T[]> {
+    const sourceCol = collection(db, colName);
     const pageSize = 100;
     const items: T[] = [];
     let lastDoc: any | undefined;
 
     while (true) {
       const q = lastDoc
-        ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
-        : query(col, orderBy(orderField), limit(pageSize));
+        ? query(sourceCol, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
+        : query(sourceCol, orderBy(orderField), limit(pageSize));
 
       const snap = await getDocs(q);
       if (snap.empty) break;
 
+      const batch = writeBatch(db);
       for (const d of snap.docs) {
-        items.push(d.data() as T);
+        const data = d.data() as T;
+        items.push(data);
+        batch.set(
+          doc(db, "backups", backupRef.id, colName, d.id),
+          data
+        );
       }
+
+      await runWithRetry(() => batch.commit());
 
       lastDoc = snap.docs[snap.docs.length - 1];
       if (snap.size < pageSize) break;
     }
+
     return items;
   }
 
   const data = {
-    transactions: await fetchAll<Transaction>("transactions", "id"),
-    debts: await fetchAll<Debt>("debts", "id"),
-    goals: await fetchAll<Goal>("goals", "id"),
+    transactions: await backupCollection<Transaction>("transactions", "id"),
+    debts: await backupCollection<Debt>("debts", "id"),
+    goals: await backupCollection<Goal>("goals", "id"),
   };
-
-  await runWithRetry(
-    () =>
-      addDoc(collection(db, "backups"), {
-        ...data,
-        createdAt: new Date().toISOString(),
-      }),
-    retries,
-    delayMs
-  );
 
   return data;
 }
