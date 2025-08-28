@@ -72,6 +72,9 @@ const suggestDebtStrategyFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from suggestDebtStrategyFlow');
+    }
+    return output;
   }
 );
