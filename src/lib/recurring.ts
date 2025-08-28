@@ -1,4 +1,4 @@
-import { addWeeks, addMonths, isAfter } from 'date-fns';
+import { addWeeks, addMonths, isAfter, format } from 'date-fns';
 import type { Transaction, Recurrence } from './types';
 
 function getNextDate(date: Date, recurrence: Recurrence): Date {
@@ -31,10 +31,11 @@ export function generateUpcomingRecurringTransactions(
 
     for (let i = 0; i < occurrencesPerTransaction; i++) {
       const occurrenceDate = i === 0 ? next : (next = getNextDate(next, tx.recurrence));
+      const formattedDate = format(occurrenceDate, 'yyyy-MM-dd');
       upcoming.push({
         ...tx,
-        id: `${tx.id}-${occurrenceDate.toISOString().split('T')[0]}`,
-        date: occurrenceDate.toISOString().split('T')[0],
+        id: `${tx.id}-${formattedDate}`,
+        date: formattedDate,
       });
     }
   });
