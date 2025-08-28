@@ -11,6 +11,7 @@ import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
 import { Button } from "@/components/ui/button";
 import type { SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
 import { useToast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/hooks/use-error-handler";
 import type { Debt } from "@/lib/types";
 import { suggestDebtStrategy } from "@/ai/flows/suggest-debt-strategy";
 
@@ -19,6 +20,7 @@ export default function DebtsPage() {
   const [strategy, setStrategy] = useState<SuggestDebtStrategyOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const handleError = useErrorHandler();
 
   const handleGetStrategy = async () => {
     if (debts.length === 0) {
@@ -43,12 +45,12 @@ export default function DebtsPage() {
       setStrategy(result);
 
     } catch (error) {
-      console.error("Error suggesting debt strategy:", error);
-      toast({
+      handleError(error, {
+        context: "Generating debt strategy",
         title: "Strategy Failed",
-        description: "There was an error generating your debt strategy. Please try again.",
-       variant: "destructive"
-      });
+        description:
+          "There was an error generating your debt strategy. Please try again.",
+      })
     } finally {
       setIsLoading(false);
     }

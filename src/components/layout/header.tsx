@@ -27,11 +27,13 @@ import {
 } from "@/components/ui/sheet"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorHandler } from "@/hooks/use-error-handler"
 import { ThemeSwitcher } from "./theme-switcher"
 
 export default function AppHeader() {
   const router = useRouter()
   const { toast } = useToast()
+  const handleError = useErrorHandler()
 
   const handleLogout = async () => {
     try {
@@ -42,11 +44,10 @@ export default function AppHeader() {
         description: "You have been successfully logged out.",
       })
     } catch (error) {
-      console.error("Logout failed:", error)
-       toast({
+      handleError(error, {
+        context: "Logout",
         title: "Logout Failed",
         description: "Could not log you out. Please try again.",
-        variant: "destructive",
       })
     }
   }

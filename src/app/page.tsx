@@ -15,12 +15,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NurseFinAILogo } from "@/components/icons"
-import { useToast } from "@/hooks/use-toast"
+import { useErrorHandler } from "@/hooks/use-error-handler"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const handleError = useErrorHandler()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoginView, setIsLoginView] = useState(true)
@@ -40,13 +40,10 @@ export default function LoginPage() {
     } catch (error) {
       const authError = error as AuthError
       const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
-      if (!authErrorMessages[authError.code]) {
-        console.error(authError.code, authError.message)
-      }
-      toast({
+      handleError(authError, {
+        context: isLoginView ? "Sign In" : "Sign Up",
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
         description: errorMessage,
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)

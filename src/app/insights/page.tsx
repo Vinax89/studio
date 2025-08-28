@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorHandler } from "@/hooks/use-error-handler"
 
 export default function InsightsPage() {
   const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
@@ -18,6 +19,7 @@ export default function InsightsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
   const { toast } = useToast();
+  const handleError = useErrorHandler();
   
   // For this demo, we'll use the mockGoals. In a real app, this would be fetched.
   const goals = mockGoals;
@@ -60,12 +62,12 @@ export default function InsightsPage() {
       });
       setAnalysisResult(result);
     } catch (error) {
-      console.error("Error analyzing spending habits:", error);
-      toast({
+      handleError(error, {
+        context: "Analyzing spending habits",
         title: "Analysis Failed",
-        description: "There was an error generating your financial insights. Please try again.",
-        variant: "destructive",
-      });
+        description:
+          "There was an error generating your financial insights. Please try again.",
+      })
     } finally {
       setIsLoading(false)
     }
