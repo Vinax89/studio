@@ -28,3 +28,7 @@ The housekeeping service removes outdated files from Cloud Storage to manage cos
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
+
+## Upgrading Next.js
+
+This project pins Next.js to a specific version. When upgrading, follow the steps in [docs/next-upgrade.md](docs/next-upgrade.md) to review releases, update the version, and verify the changes.
