@@ -4,6 +4,16 @@
 import { POST as bankImport } from "@/app/api/bank/import/route"
 import { POST as transactionsSync } from "@/app/api/transactions/sync/route"
 
+const validTransaction = {
+  id: "1",
+  date: "2024-01-01",
+  description: "Test",
+  amount: 100,
+  currency: "USD",
+  type: "Income" as const,
+  category: "Misc",
+}
+
 describe("/api/bank/import", () => {
   it("returns 401 when auth is missing", async () => {
     const req = new Request("http://localhost", { method: "POST" })
@@ -29,6 +39,28 @@ describe("/api/bank/import", () => {
     })
     const res = await bankImport(req)
     expect(res.status).toBe(400)
+  })
+
+  it("returns 400 when transactions fail schema", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ provider: "plaid", transactions: [{ id: "1" }] }),
+    })
+    const res = await bankImport(req)
+    expect(res.status).toBe(400)
+  })
+
+  it("returns 200 for valid payload", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ provider: "plaid", transactions: [validTransaction] }),
+    })
+    const res = await bankImport(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json).toEqual({ provider: "plaid", imported: 1 })
   })
 })
 
@@ -57,5 +89,27 @@ describe("/api/transactions/sync", () => {
     })
     const res = await transactionsSync(req)
     expect(res.status).toBe(400)
+  })
+
+  it("returns 400 when transactions fail schema", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ transactions: [{ id: "1" }] }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(400)
+  })
+
+  it("returns 200 for valid payload", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ transactions: [validTransaction] }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json).toEqual({ received: 1 })
   })
 })
