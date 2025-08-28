@@ -16,10 +16,10 @@ import { RecurrenceValues } from '@/lib/types';
 const DebtSchema = z.object({
     id: z.string(),
     name: z.string(),
-    initialAmount: z.number(),
-    currentAmount: z.number(),
-    interestRate: z.number(),
-    minimumPayment: z.number(),
+    initialAmount: z.number().min(0),
+    currentAmount: z.number().min(0),
+    interestRate: z.number().min(0).max(100),
+    minimumPayment: z.number().min(0),
     dueDate: z.string(),
     recurrence: z.enum(RecurrenceValues),
 });
@@ -34,7 +34,7 @@ const SuggestDebtStrategyOutputSchema = z.object({
   strategyReasoning: z.string().describe("The reasoning behind the recommended strategy."),
   payoffOrder: z.array(z.object({
       debtName: z.string(),
-      priority: z.number(),
+      priority: z.number().min(0),
   })).describe("The recommended order to pay off the debts, starting with priority 1."),
   summary: z.string().describe("A brief, encouraging summary of the plan."),
 });

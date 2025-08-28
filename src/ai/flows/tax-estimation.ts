@@ -15,9 +15,11 @@ import {z} from 'genkit';
 const TaxEstimationInputSchema = z.object({
   income: z
     .number()
+    .min(0)
     .describe('Annual income in USD.'),
   deductions: z
     .number()
+    .min(0)
     .describe('Total deductions in USD.'),
   location: z
     .string()
@@ -30,9 +32,12 @@ export type TaxEstimationInput = z.infer<typeof TaxEstimationInputSchema>;
 const TaxEstimationOutputSchema = z.object({
   estimatedTax: z
     .number()
+    .min(0)
     .describe('Estimated total tax amount in USD.'),
   taxRate: z
     .number()
+    .min(0)
+    .max(100)
     .describe('Estimated effective tax rate as a percentage.'),
   breakdown: z
     .string()
