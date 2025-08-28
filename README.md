@@ -25,7 +25,9 @@ The housekeeping service removes outdated files from Cloud Storage to manage cos
 ### Scheduled deployment
 - Deploy the service with `firebase deploy --only run.housekeeping`.
 - A Cloud Scheduler job triggers the service nightly at 03:00 UTC.
+- Include an `X-CRON-SECRET` header in the job using the `CRON_SECRET` value to authenticate requests.
 - Update the schedule in the Firebase console if a different cadence is required.
+- The endpoint enforces a rate limit and rejects rapid repeated calls with HTTP 429.
 
 ## Environment variables
 
@@ -34,5 +36,6 @@ The housekeeping service removes outdated files from Cloud Storage to manage cos
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
+| `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
