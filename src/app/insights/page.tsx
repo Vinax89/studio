@@ -115,8 +115,18 @@ export default function InsightsPage() {
                 id="financial-documents"
                 type="file"
                 multiple
+                accept=".pdf,.jpg,.png"
                 onChange={handleFileChange}
               />
+              {files.length > 0 && (
+                <ul className="list-disc pl-5 text-sm">
+                  {files.map((file) => (
+                    <li key={file.name}>
+                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p className="text-sm text-muted-foreground">Upload documents like pay stubs or bank statements.</p>
             </div>
             <Button type="submit" disabled={isLoading} size="lg">
