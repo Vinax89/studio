@@ -110,4 +110,3 @@ export class WorkerPool<T = unknown, R = unknown> {
     this.idle.length = 0
   }
 }
-

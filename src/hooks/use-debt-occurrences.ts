@@ -1,5 +1,6 @@
-import { useMemo } from "react"
-import { Recurrence, Debt } from "@/lib/types"
+
+import { useMemo } from "react";
+import { Recurrence, Debt } from "@/lib/types";
 import {
   addDays,
   addMonths,
@@ -9,12 +10,12 @@ import {
   isBefore,
   isSameDay,
   parseISO,
-} from "date-fns"
+} from "date-fns";
 
 // Maximum number of occurrences to generate for a single debt
-export const DEFAULT_MAX_OCCURRENCES = 400
+export const DEFAULT_MAX_OCCURRENCES = 400;
 
-const iso = (d: Date) => d.toISOString().slice(0, 10)
+const iso = (d: Date) => d.toISOString().slice(0, 10);
 
 /**
  * Computes the next occurrence of a recurring debt on or after a target date.
@@ -35,25 +36,25 @@ function nextOccurrenceOnOrAfter(
   recurrence: Recurrence,
   onOrAfter: Date
 ): Date | null {
-  const anchor = parseISO(anchorISO)
+  const anchor = parseISO(anchorISO);
   if (recurrence === "none")
     return isSameDay(anchor, onOrAfter) || isAfter(anchor, onOrAfter)
       ? anchor
-      : null
+      : null;
   if (recurrence === "monthly") {
-    if (isBefore(onOrAfter, anchor)) return anchor
-    const monthsDiff = differenceInMonths(onOrAfter, anchor)
-    let candidate = addMonths(anchor, monthsDiff)
+    if (isBefore(onOrAfter, anchor)) return anchor;
+    const monthsDiff = differenceInMonths(onOrAfter, anchor);
+    let candidate = addMonths(anchor, monthsDiff);
     if (isBefore(candidate, onOrAfter)) {
-      candidate = addMonths(candidate, 1)
+      candidate = addMonths(candidate, 1);
     }
-    return candidate
+    return candidate;
   }
-  const step = recurrence === "weekly" ? 7 : 14
-  const diffDays = differenceInCalendarDays(onOrAfter, anchor)
-  const k = diffDays <= 0 ? 0 : Math.ceil(diffDays / step)
-  const candidate = addDays(anchor, k * step)
-  return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate
+  const step = recurrence === "weekly" ? 7 : 14;
+  const diffDays = differenceInCalendarDays(onOrAfter, anchor);
+  const k = diffDays <= 0 ? 0 : Math.ceil(diffDays / step);
+  const candidate = addDays(anchor, k * step);
+  return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate;
 }
 
 /**
@@ -75,31 +76,31 @@ function allOccurrencesInRange(
   to: Date,
   maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ): Date[] {
-  const out: Date[] = []
+  const out: Date[] = [];
   if (debt.recurrence === "none") {
-    const d = parseISO(debt.dueDate)
-    if (!isBefore(d, from) && !isAfter(d, to)) out.push(d)
-    return out
+    const d = parseISO(debt.dueDate);
+    if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
+    return out;
   }
-  let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from)
-  let iter = 0
+  let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
+  let iter = 0;
   const stepDays =
-    debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0
+    debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
 
   while (cur && !isAfter(cur, to) && iter < maxOccurrences) {
-    out.push(cur)
-    iter++
+    out.push(cur);
+    iter++;
     cur =
       debt.recurrence === "monthly"
         ? addMonths(cur, 1)
-        : addDays(cur, stepDays)
+        : addDays(cur, stepDays);
   }
   if (cur && !isAfter(cur, to)) {
     console.warn(
       `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
-    )
+    );
   }
-  return out
+  return out;
 }
 
 function computeDebtOccurrences(
@@ -108,23 +109,23 @@ function computeDebtOccurrences(
   to: Date,
   maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
-  const occurrences: Occurrence[] = []
-  const grouped = new Map<string, Occurrence[]>()
-  debts.forEach(d => {
-    const occ = allOccurrencesInRange(d, from, to, maxOccurrences)
-    occ.forEach(dt => {
-      const oc = { date: iso(dt), debt: d }
-      occurrences.push(oc)
-      const arr = grouped.get(oc.date) ?? []
-      arr.push(oc)
-      grouped.set(oc.date, arr)
-    })
-  })
-  occurrences.sort((a, b) => a.date.localeCompare(b.date))
-  return { occurrences, grouped } as const
+  const occurrences: Occurrence[] = [];
+  const grouped = new Map<string, Occurrence[]>();
+  debts.forEach((d) => {
+    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
+    occ.forEach((dt) => {
+      const oc = { date: iso(dt), debt: d };
+      occurrences.push(oc);
+      const arr = grouped.get(oc.date) ?? [];
+      arr.push(oc);
+      grouped.set(oc.date, arr);
+    });
+  });
+  occurrences.sort((a, b) => a.date.localeCompare(b.date));
+  return { occurrences, grouped } as const;
 }
 
-export type Occurrence = { date: string; debt: Debt }
+export type Occurrence = { date: string; debt: Debt };
 
 /**
  * React hook that expands debts into dated occurrences and groups them by day.
@@ -148,8 +149,8 @@ export function useDebtOccurrences(
   query: string,
   maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
-  const fromTime = from.getTime()
-  const toTime = to.getTime()
+  const fromTime = from.getTime();
+  const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
     () =>
       computeDebtOccurrences(
@@ -159,22 +160,21 @@ export function useDebtOccurrences(
         maxOccurrences
       ),
     [debts, fromTime, toTime, maxOccurrences]
-  )
+  );
 
   const filtered = useMemo(() => {
-    if (!query) return grouped
-    const map = new Map<string, Occurrence[]>()
+    if (!query) return grouped;
+    const map = new Map<string, Occurrence[]>();
     grouped.forEach((arr, date) => {
-      const filteredArr = arr.filter(oc =>
+      const filteredArr = arr.filter((oc) =>
         `${oc.debt.name} ${oc.debt.notes ?? ""}`
           .toLowerCase()
           .includes(query.toLowerCase())
-      )
-      if (filteredArr.length) map.set(date, filteredArr)
-    })
-    return map
-  }, [grouped, query])
+      );
+      if (filteredArr.length) map.set(date, filteredArr);
+    });
+    return map;
+  }, [grouped, query]);
 
-  return { occurrences, grouped: filtered } as const
+  return { occurrences, grouped: filtered } as const;
 }
-

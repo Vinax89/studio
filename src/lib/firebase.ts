@@ -1,17 +1,39 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { z } from "zod";
+
+const nonPlaceholder = z
+  .string()
+  .min(1)
+  .refine(
+    (v) => v !== "REPLACE_WITH_VALUE",
+    "Set this Firebase env var in .env.local"
+  );
+
+const envSchema = z.object({
+  NEXT_PUBLIC_FIREBASE_API_KEY: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_APP_ID: nonPlaceholder,
+});
+
+const env = envSchema.parse(process.env);
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDkQ_CcJgWzojHkPOA-2hbO6zD_EH39CuY",
-  authDomain: "nursefinai.firebaseapp.com",
-  projectId: "nursefinai",
-  storageBucket: "nursefinai.appspot.com",
-  messagingSenderId: "18157000551",
-  appId: "1:18157000551:web:a565b5d1ff4537deb141c2"
+  apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-export { app, auth };
+export { app, auth, db };
