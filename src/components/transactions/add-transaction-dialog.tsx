@@ -34,6 +34,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [amount, setAmount] = useState("")
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
+    const [currency, setCurrency] = useState("USD")
     const [isRecurring, setIsRecurring] = useState(false)
 
     const handleSave = () => {
@@ -41,6 +42,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             onSave({
                 description,
                 amount: parseFloat(amount),
+                currency,
                 type,
                 category,
                 isRecurring
@@ -51,6 +53,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             setAmount("")
             setType("Expense")
             setCategory("")
+            setCurrency("USD")
             setIsRecurring(false)
         }
     }
@@ -81,7 +84,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">Type</Label>
-             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} defaultValue={type}>
+             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} value={type}>
                 <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -89,6 +92,19 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                     <SelectItem value="Income">Income</SelectItem>
                     <SelectItem value="Expense">Expense</SelectItem>
                 </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="currency" className="text-right">Currency</Label>
+            <Select onValueChange={setCurrency} value={currency}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD</SelectItem>
+                <SelectItem value="EUR">EUR</SelectItem>
+                <SelectItem value="GBP">GBP</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
