@@ -43,10 +43,30 @@ describe("saveTransactions", () => {
     mockCommit.mockResolvedValue(undefined);
   });
 
-  it("adds all transactions in a single batch and commits once", async () => {
+  it("adds all transactions in a single batch and commits once when within limit", async () => {
     await saveTransactions(transactions);
     expect(mockSet).toHaveBeenCalledTimes(transactions.length);
+    expect(mockWriteBatch).toHaveBeenCalledTimes(1);
     expect(mockCommit).toHaveBeenCalledTimes(1);
+  });
+
+  it("splits transactions into multiple batches when over 500", async () => {
+    const manyTransactions = Array.from({ length: 501 }, (_, i) => ({
+      id: String(i),
+      date: "2024-01-01",
+      description: `Test${i}`,
+      amount: i,
+      type: "Income" as const,
+      category: "Misc",
+      currency: "USD",
+      isRecurring: false,
+    }));
+
+    await saveTransactions(manyTransactions);
+    expect(mockSet).toHaveBeenCalledTimes(manyTransactions.length);
+    // Should create and commit two batches for 501 items
+    expect(mockWriteBatch).toHaveBeenCalledTimes(2);
+    expect(mockCommit).toHaveBeenCalledTimes(2);
   });
 
   it("throws detailed error when commit fails", async () => {

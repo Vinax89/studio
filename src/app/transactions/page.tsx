@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -83,7 +82,7 @@ export default function TransactionsPage() {
   const handleDownload = () => {
     downloadCsv(
       transactions.map(({ id, ...rest }) => rest),
-      "transactions.csv"
+      "transactions.csv",
     );
   };
 
