@@ -5,6 +5,7 @@ import {
   addDoc,
   setDoc,
   deleteDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -18,19 +19,29 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const transCol = collection(db, "transactions");
   const snapshot = await getDocs(transCol);
 
-  const ops: Promise<void>[] = [];
+  const batch = writeBatch(db);
+  const affected: string[] = [];
 
   for (const snap of snapshot.docs) {
     const data = snap.data() as Transaction;
     if (new Date(data.date) < cutoff) {
-      ops.push(
-        setDoc(doc(db, "transactions_archive", snap.id), data),
-        deleteDoc(doc(db, "transactions", snap.id))
-      );
+      batch.set(doc(db, "transactions_archive", snap.id), data);
+      batch.delete(doc(db, "transactions", snap.id));
+      affected.push(snap.id);
     }
   }
 
-  await runWithRetry(() => Promise.all(ops));
+  try {
+    await runWithRetry(() => batch.commit());
+  } catch (err) {
+    if (affected.length) {
+      console.error(
+        `Failed to archive transactions: ${affected.join(", ")}`,
+        err
+      );
+    }
+    throw err;
+  }
 }
 
 /**
@@ -40,16 +51,28 @@ export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const snapshot = await getDocs(debtsCol);
 
-  const deletions: Promise<void>[] = [];
+  const batch = writeBatch(db);
+  const affected: string[] = [];
 
   for (const snap of snapshot.docs) {
     const data = snap.data() as Debt;
     if (data.currentAmount <= 0) {
-      deletions.push(deleteDoc(doc(db, "debts", snap.id)));
+      batch.delete(doc(db, "debts", snap.id));
+      affected.push(snap.id);
     }
   }
 
-  await runWithRetry(() => Promise.all(deletions));
+  try {
+    await runWithRetry(() => batch.commit());
+  } catch (err) {
+    if (affected.length) {
+      console.error(
+        `Failed to clean up debts: ${affected.join(", ")}`,
+        err
+      );
+    }
+    throw err;
+  }
 }
 
 export async function runWithRetry<T>(

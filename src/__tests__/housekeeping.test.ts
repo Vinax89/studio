@@ -44,6 +44,20 @@ jest.mock('firebase/firestore', () => ({
     dataStore[colRef.name].set(id, data);
     return { id };
   }),
+  writeBatch: (_db: any) => {
+    const ops: (() => void)[] = [];
+    return {
+      set: (docRef: any, data: any) => {
+        ops.push(() => dataStore[docRef.name].set(docRef.id, data));
+      },
+      delete: (docRef: any) => {
+        ops.push(() => dataStore[docRef.name].delete(docRef.id));
+      },
+      commit: jest.fn(async () => {
+        ops.forEach((op) => op());
+      }),
+    };
+  },
   __dataStore: dataStore,
 }));
 
