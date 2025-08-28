@@ -34,13 +34,11 @@ export default function TransactionsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = useMemo(() => {
-    // Start with categories stored externally (e.g. in localStorage)
     const map = new Map<string, string>();
     for (const cat of getCategories()) {
       const key = cat.toLowerCase();
       if (!map.has(key)) map.set(key, cat);
     }
-    // Merge in categories from current transactions
     for (const t of transactions) {
       const key = t.category.toLowerCase();
       if (!map.has(key)) map.set(key, t.category);
@@ -60,7 +58,7 @@ export default function TransactionsPage() {
       ]);
       addCategory(transaction.category);
     },
-    [setTransactions]
+    [] 
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();

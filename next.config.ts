@@ -39,11 +39,10 @@ const nextConfig: NextConfig = {
       },
     ]
     
-    // In development, allow connections from the preview environments
     if (process.env.NODE_ENV === 'development') {
         securityHeaders.push({
             key: 'Access-Control-Allow-Origin',
-            value: 'https://*-firebase-studio-*.cloudworkstations.dev',
+            value: 'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
         })
     }
 
