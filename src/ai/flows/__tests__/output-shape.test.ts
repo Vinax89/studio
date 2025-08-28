@@ -1,39 +1,56 @@
-function setupNoOutputMocks() {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
+function setupOutputMocks(output: any) {
+  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
   const defineFlowMock = jest.fn((_config: any, handler: any) => handler);
   jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  return { definePromptMock, defineFlowMock };
 }
 
 describe('calculateCashflowFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      grossMonthlyIncome: 5000,
+      netMonthlyIncome: 3000,
+      analysis: 'surplus',
+    };
+    setupOutputMocks(mockOutput);
     const { calculateCashflow } = await import('@/ai/flows/calculate-cashflow');
     await expect(
       calculateCashflow({
-        annualIncome: 50000,
-        estimatedAnnualTaxes: 10000,
-        totalMonthlyDeductions: 2000,
+        annualIncome: 60000,
+        estimatedAnnualTaxes: 12000,
+        totalMonthlyDeductions: 1000,
       })
-    ).rejects.toThrow('No output returned from calculateCashflowFlow');
+    ).resolves.toEqual(mockOutput);
   });
 });
 
 describe('suggestDebtStrategyFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      recommendedStrategy: 'avalanche',
+      strategyReasoning: 'because',
+      payoffOrder: [{ debtName: 'Loan', priority: 1 }],
+      summary: 'summary',
+    };
+    setupOutputMocks(mockOutput);
     const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
     await expect(
       suggestDebtStrategy({ debts: [] })
-    ).rejects.toThrow('No output returned from suggestDebtStrategyFlow');
+    ).resolves.toEqual(mockOutput);
   });
 });
 
 describe('taxEstimationFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      estimatedTax: 5000,
+      taxRate: 20,
+      breakdown: 'details',
+    };
+    setupOutputMocks(mockOutput);
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     await expect(
       estimateTax({
@@ -42,25 +59,35 @@ describe('taxEstimationFlow', () => {
         location: 'NY',
         filingStatus: 'single',
       })
-    ).rejects.toThrow('No output returned from taxEstimationFlow');
+    ).resolves.toEqual(mockOutput);
   });
 });
 
 describe('analyzeReceiptFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      description: 'Vendor',
+      amount: 12.34,
+      category: 'Food',
+    };
+    setupOutputMocks(mockOutput);
     const { analyzeReceipt } = await import('@/ai/flows/analyze-receipt');
     await expect(
       analyzeReceipt({ receiptImage: 'data:image/png;base64,abc' })
-    ).rejects.toThrow('No output returned from analyzeReceiptPrompt');
+    ).resolves.toEqual(mockOutput);
   });
 });
 
 describe('analyzeSpendingHabitsFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      spendingAnalysis: 'analysis',
+      savingsOpportunities: 'savings',
+      recommendations: 'recs',
+    };
+    setupOutputMocks(mockOutput);
     const { analyzeSpendingHabits } = await import('@/ai/flows/analyze-spending-habits');
     await expect(
       analyzeSpendingHabits({
@@ -77,14 +104,18 @@ describe('analyzeSpendingHabitsFlow', () => {
           },
         ],
       })
-    ).rejects.toThrow('No output returned from analyzeSpendingHabitsPrompt');
+    ).resolves.toEqual(mockOutput);
   });
 });
 
 describe('spendingForecastFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+  it('returns expected output shape', async () => {
     jest.resetModules();
-    setupNoOutputMocks();
+    const mockOutput = {
+      forecast: [{ month: '2024-08', amount: 300 }],
+      analysis: 'trend',
+    };
+    setupOutputMocks(mockOutput);
     const { predictSpending } = await import('@/ai/flows/spendingForecast');
     await expect(
       predictSpending({
@@ -92,6 +123,6 @@ describe('spendingForecastFlow', () => {
           { date: '2024-01-01', amount: 100, category: 'Food' },
         ],
       })
-    ).rejects.toThrow('No output returned from spendingForecastPrompt');
+    ).resolves.toEqual(mockOutput);
   });
 });
