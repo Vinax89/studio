@@ -40,3 +40,16 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: CRON_SECRET
+    value: ${CRON_SECRET}
+    availability:
+      - RUNTIME
+scheduler:
+  jobs:
+    - name: housekeeping
+      schedule: "0 0 * * *"  # daily at midnight
+      httpTarget:
+        uri: /api/cron/housekeeping
+        httpMethod: GET
+        headers:
+          X-CRON-SECRET: ${CRON_SECRET}
