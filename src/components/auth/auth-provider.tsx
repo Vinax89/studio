@@ -10,6 +10,7 @@ import {
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
+import { z } from "zod";
 
 interface AuthContextType {
   user: User | null;
@@ -23,11 +24,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const getPersistedUser = (): User | null => {
     if (typeof window === "undefined") return null;
     try {
-      const key = Object.keys(localStorage).find((k) =>
-        k.startsWith("firebase:authUser")
-      );
-      const stored = key ? localStorage.getItem(key) : null;
-      return stored ? (JSON.parse(stored) as User) : null;
+      const key = `firebase:authUser:${auth.app.options.apiKey}:${auth.app.name}`;
+      const stored = localStorage.getItem(key);
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      const userSchema = z.object({ uid: z.string() }).passthrough();
+      const result = userSchema.safeParse(parsed);
+      return result.success ? (result.data as User) : null;
     } catch {
       return null;
     }
