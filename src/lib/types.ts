@@ -20,6 +20,11 @@ export type Goal = {
 
 export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
 
+export type CategorySummary = {
+  name: string;
+  total: number;
+};
+
 // This is the unified, authoritative Debt type used across the app.
 export type Debt = {
   id: string;

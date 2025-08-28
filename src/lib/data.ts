@@ -19,6 +19,13 @@ export const mockGoals: Goal[] = [
   { id: '4', name: 'Vacation to Hawaii', targetAmount: 4000, currentAmount: 1250, deadline: '2025-06-01', importance: 2 },
 ];
 
+export const mockCategorySummaries = [
+  { name: 'Housing', total: 1200 },
+  { name: 'Food', total: 205.3 },
+  { name: 'Transport', total: 45 },
+  { name: 'Loans', total: 350 },
+];
+
 // This is the seed data for the interactive calendar, now using the unified Debt type.
 export const mockDebts: Debt[] = [
     { 

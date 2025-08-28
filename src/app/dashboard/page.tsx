@@ -3,8 +3,8 @@ import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
-import { mockTransactions } from "@/lib/data";
-import type { Transaction } from "@/lib/types";
+import { mockTransactions, mockCategorySummaries } from "@/lib/data";
+import type { Transaction, CategorySummary } from "@/lib/types";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
@@ -27,10 +27,16 @@ const getChartData = async () => {
   ];
 };
 
+const getCategorySummaries = async (): Promise<CategorySummary[]> => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return mockCategorySummaries;
+};
+
 export default async function DashboardPage() {
-  const [transactions, chartData] = await Promise.all([
+  const [transactions, chartData, categorySummaries] = await Promise.all([
     getTransactions(),
-    getChartData()
+    getChartData(),
+    getCategorySummaries()
   ]);
 
   return (
@@ -43,7 +49,7 @@ export default async function DashboardPage() {
         <OverviewCards transactions={transactions} />
       </Suspense>
       <Suspense fallback={<Skeleton className="h-[436px] w-full" />}>
-        <DashboardCharts transactions={transactions} chartData={chartData} />
+        <DashboardCharts transactions={transactions} chartData={chartData} categorySummaries={categorySummaries} />
       </Suspense>
     </div>
   )
