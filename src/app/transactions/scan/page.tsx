@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
+import Image from "next/image"
 
 export default function ScanReceiptPage() {
   const router = useRouter()
@@ -183,8 +184,14 @@ export default function ScanReceiptPage() {
           <CardContent className="space-y-4">
             {imagePreview && (
               <div className="space-y-4">
-                  <div className="aspect-video w-full bg-muted rounded-md overflow-hidden border">
-                    <img src={imagePreview} alt="Receipt preview" className="w-full h-full object-contain" />
+                  <div className="relative aspect-video w-full bg-muted rounded-md overflow-hidden border">
+                    <Image
+                      src={imagePreview}
+                      alt="Receipt preview"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-contain"
+                    />
                   </div>
                   <Button onClick={analyzeImage} disabled={isLoading} className="w-full">
                     {isLoading ? (
