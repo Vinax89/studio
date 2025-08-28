@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
+import { TransactionRowSchema, validateTransactions } from "@/lib/transactions"
 
 /**
  * Generic transaction syncing endpoint.
@@ -8,7 +9,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  * from any source and persists them to the database.
  */
 const bodySchema = z.object({
-  transactions: z.array(z.any()),
+  transactions: z.array(TransactionRowSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
@@ -40,10 +41,21 @@ export async function POST(req: Request) {
 
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
+    const message = parsed.error.errors
+      .map((e) => `${e.path.join(".")}: ${e.message}`)
+      .join("; ")
+    return NextResponse.json({ error: `Invalid payload: ${message}` }, { status: 400 })
   }
 
   const { transactions } = parsed.data
+
+  try {
+    validateTransactions(transactions)
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Invalid transactions"
+    return NextResponse.json({ error: message }, { status: 400 })
+  }
 
   try {
     return NextResponse.json({ received: transactions.length })
