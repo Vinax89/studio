@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { auth } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import {
@@ -28,9 +28,11 @@ import {
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { cn } from "@/lib/utils"
 
 export default function AppHeader() {
   const router = useRouter()
+  const pathname = usePathname()
   const { toast } = useToast()
 
   const handleLogout = async () => {
@@ -71,43 +73,64 @@ export default function AppHeader() {
             </Link>
             <Link
               href="/dashboard"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/dashboard") && "bg-accent text-accent-foreground"
+              )}
             >
               Dashboard
             </Link>
             <Link
               href="/transactions"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/transactions") && "bg-accent text-accent-foreground"
+              )}
             >
               Transactions
             </Link>
             <Link
               href="/debts"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/debts") && "bg-accent text-accent-foreground"
+              )}
             >
               Debts
             </Link>
             <Link
               href="/goals"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/goals") && "bg-accent text-accent-foreground"
+              )}
             >
               Goals
             </Link>
             <Link
               href="/cashflow"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/cashflow") && "bg-accent text-accent-foreground"
+              )}
             >
               Cashflow
             </Link>
             <Link
               href="/insights"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/insights") && "bg-accent text-accent-foreground"
+              )}
             >
               AI Insights
             </Link>
             <Link
               href="/taxes"
-              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+              className={cn(
+                "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/taxes") && "bg-accent text-accent-foreground"
+              )}
             >
               Tax Estimator
             </Link>
