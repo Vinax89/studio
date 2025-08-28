@@ -23,40 +23,50 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction, Recurrence } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
 }
 
 export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
-    const [open, setOpen] = useState(false)
-    const [description, setDescription] = useState("")
-    const [amount, setAmount] = useState("")
-    const [type, setType] = useState<"Income" | "Expense">("Expense")
-    const [category, setCategory] = useState("")
-    const [isRecurring, setIsRecurring] = useState(false)
-    const [recurrence, setRecurrence] = useState<Recurrence>("monthly")
+  const [open, setOpen] = useState(false)
+  const [description, setDescription] = useState("")
+  const [amount, setAmount] = useState("")
+  const [type, setType] = useState<"Income" | "Expense">("Expense")
+  const [category, setCategory] = useState("")
+  const [currency, setCurrency] = useState("USD")
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurrence, setRecurrence] = useState<Recurrence>("monthly")
+  const { toast } = useToast()
 
-    const handleSave = () => {
-        if(description && amount && type && category) {
-            onSave({
-                description,
-                amount: parseFloat(amount),
-                type,
-                category,
-                isRecurring,
-                recurrence: isRecurring ? recurrence : "none"
-            })
-            setOpen(false)
-            // Reset form
-            setDescription("")
-            setAmount("")
-            setType("Expense")
-            setCategory("")
-            setIsRecurring(false)
-            setRecurrence("monthly")
-        }
+  const handleSave = () => {
+    const numericAmount = Number(amount)
+
+    if (!description || !amount || !type || !category || !Number.isFinite(numericAmount)) {
+      toast({ title: "Invalid amount", description: "Please enter a valid amount.", variant: "destructive" })
+      return
     }
+
+    onSave({
+      description,
+      amount: numericAmount,
+      currency,
+      type,
+      category,
+      isRecurring,
+      recurrence: isRecurring ? recurrence : "none"
+    })
+    setOpen(false)
+    // Reset form
+    setDescription("")
+    setAmount("")
+    setType("Expense")
+    setCategory("")
+    setCurrency("USD")
+    setIsRecurring(false)
+    setRecurrence("monthly")
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -84,7 +94,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">Type</Label>
-             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} defaultValue={type}>
+             <Select onValueChange={(value: "Income" | "Expense") => setType(value)} value={type}>
                 <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -92,6 +102,19 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                     <SelectItem value="Income">Income</SelectItem>
                     <SelectItem value="Expense">Expense</SelectItem>
                 </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="currency" className="text-right">Currency</Label>
+            <Select onValueChange={setCurrency} value={currency}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD</SelectItem>
+                <SelectItem value="EUR">EUR</SelectItem>
+                <SelectItem value="GBP">GBP</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -105,7 +128,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           {isRecurring && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="recurrence" className="text-right">Frequency</Label>
-              <Select onValueChange={(value: Recurrence) => setRecurrence(value)} defaultValue={recurrence}>
+              <Select onValueChange={(value: Recurrence) => setRecurrence(value)} value={recurrence}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
