@@ -1,6 +1,10 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
 import { useIsMobile, MOBILE_BREAKPOINT } from "../hooks/use-mobile";
+import ReactDOMServer from "react-dom/server";
+import { SidebarProvider, Sidebar } from "@/components/ui/sidebar";
+
+jest.mock("lucide-react", () => ({ PanelLeft: () => null }));
 
 describe("useIsMobile", () => {
   let listeners: Array<() => void>;
@@ -39,5 +43,34 @@ describe("useIsMobile", () => {
     });
 
     expect(screen.getByText("mobile")).toBeInTheDocument();
+  });
+
+  it("renders on the server without warnings", () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    function TestComponent() {
+      useIsMobile();
+      return null;
+    }
+
+    ReactDOMServer.renderToString(<TestComponent />);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it("Sidebar renders on the server without warnings", () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    ReactDOMServer.renderToString(
+      <SidebarProvider>
+        <Sidebar>
+          <div />
+        </Sidebar>
+      </SidebarProvider>
+    );
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 });
