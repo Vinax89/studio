@@ -28,7 +28,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(key);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      const userSchema = z.object({ uid: z.string() }).passthrough();
+      const userSchema = z
+        .object({
+          uid: z.string(),
+          email: z.string(),
+          displayName: z.string(),
+        })
+        .passthrough();
       const result = userSchema.safeParse(parsed);
       return result.success ? (result.data as User) : null;
     } catch {
@@ -36,7 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [user, setUser] = useState<User | null>(() => auth.currentUser ?? getPersistedUser());
+  const [user, setUser] = useState<User | null>(() => {
+    const current = auth.currentUser;
+    if (current && current.email && current.displayName) return current;
+    return getPersistedUser();
+  });
   const router = useRouter();
   const pathname = usePathname();
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
+import type { User } from 'firebase/auth';
 
 let mockPathname = '/';
 const pushMock = jest.fn();
@@ -17,21 +18,24 @@ jest.mock('@/lib/firebase', () => ({
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
 }));
-const { auth: authStub } = require('@/lib/firebase');
+import { auth as authStub } from '@/lib/firebase';
 
-let mockUser: any = null;
-const onAuthStateChanged = jest.fn((_auth: unknown, cb: (u: any) => void) => {
-  cb(mockUser);
-  return () => {};
-});
+let mockUser: User | null = null;
+const onAuthStateChanged = jest.fn(
+  (_auth: unknown, cb: (u: User | null) => void) => {
+    cb(mockUser);
+    return () => {};
+  }
+);
 
 jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: (...args: any[]) => (onAuthStateChanged as any)(...args),
+  onAuthStateChanged: (...args: unknown[]) =>
+    (onAuthStateChanged as (...a: unknown[]) => unknown)(...args),
 }));
 
 function DisplayUser() {
   const { user } = useAuth();
-  return <div>{user ? user.uid : 'none'}</div>;
+  return <div>{user?.uid ?? 'none'}</div>;
 }
 
 beforeEach(() => {
@@ -44,7 +48,11 @@ beforeEach(() => {
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {
   mockPathname = '/';
-  mockUser = { uid: 'abc' } as any;
+  mockUser = {
+    uid: 'abc',
+    email: 'a@example.com',
+    displayName: 'Alice',
+  } as unknown as User;
 
   render(
     <AuthProvider>
@@ -86,6 +94,19 @@ test('handles missing persisted user', () => {
 test('handles corrupted persisted user', () => {
   const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
   localStorage.setItem(key, '{bad json');
+  const renderComponent = () =>
+    render(
+      <AuthProvider>
+        <DisplayUser />
+      </AuthProvider>
+    );
+  expect(renderComponent).not.toThrow();
+  expect(screen.getByText('none')).toBeInTheDocument();
+});
+
+test('ignores persisted user missing required fields', () => {
+  const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
+  localStorage.setItem(key, JSON.stringify({ uid: 'abc', email: 'a@example.com' }));
   const renderComponent = () =>
     render(
       <AuthProvider>
