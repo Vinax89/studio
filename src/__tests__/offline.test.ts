@@ -9,6 +9,10 @@ jest.mock("idb", () => {
       clear: async () => {
         store.length = 0
       },
+      getAllKeys: async () => store.map((_, i) => i),
+      delete: async () => {
+        store.shift()
+      },
     })),
   }
 })
@@ -21,13 +25,13 @@ import {
 
 describe("offline fallbacks", () => {
   it("uses in-memory store when IndexedDB fails", async () => {
-    await queueTransaction({ id: 1 })
-    await queueTransaction({ id: 2 })
+    expect(await queueTransaction({ id: 1 })).toBe(true)
+    expect(await queueTransaction({ id: 2 })).toBe(true)
 
     const queued = await getQueuedTransactions<{ id: number }>()
     expect(queued).toEqual([{ id: 1 }, { id: 2 }])
 
-    await clearQueuedTransactions()
+    expect(await clearQueuedTransactions()).toBe(true)
     const empty = await getQueuedTransactions()
     expect(empty).toEqual([])
   })
