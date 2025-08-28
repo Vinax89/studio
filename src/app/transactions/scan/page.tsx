@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows/analyze-receipt"
 import { useToast } from "@/hooks/use-toast"
+import { showNetworkErrorToast } from "@/lib/network-error"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -98,10 +99,9 @@ export default function ScanReceiptPage() {
     try {
       const result = await analyzeReceipt({ receiptImage: imagePreview });
       setAnalysisResult(result);
-    } catch (error) {
-      console.error("Error analyzing receipt:", error);
-      toast({ title: "Analysis Failed", description: "Could not analyze the receipt. Please try again.", variant: "destructive" });
-    } finally {
+      } catch (error) {
+        showNetworkErrorToast(error, "Could not analyze the receipt. Please try again.");
+      } finally {
       setIsLoading(false);
     }
   };

@@ -4,7 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { ThemeProvider } from '@/components/layout/theme-provider';
-import { ErrorBoundary, SuspenseBoundary } from '@/components/layout/boundaries';
+import ErrorBoundary from '@/components/layout/error-boundary';
+import { SuspenseBoundary } from '@/components/layout/suspense-boundary';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

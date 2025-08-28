@@ -11,13 +11,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { showNetworkErrorToast } from "@/lib/network-error"
 
 export default function InsightsPage() {
   const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
-  const { toast } = useToast();
+    const { toast } = useToast();
   
   // For this demo, we'll use the mockGoals. In a real app, this would be fetched.
   const goals = mockGoals;
@@ -59,14 +60,9 @@ export default function InsightsPage() {
           goals 
       });
       setAnalysisResult(result);
-    } catch (error) {
-      console.error("Error analyzing spending habits:", error);
-      toast({
-        title: "Analysis Failed",
-        description: "There was an error generating your financial insights. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+      } catch (error) {
+        showNetworkErrorToast(error, "There was an error generating your financial insights. Please try again.");
+      } finally {
       setIsLoading(false)
     }
   };
