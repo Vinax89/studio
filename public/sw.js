@@ -1,13 +1,28 @@
-importScripts("https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js")
-
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
 
-const dbPromise = idb.openDB(DB_NAME, 1, {
-  upgrade(db) {
-    db.createObjectStore(STORE_NAME, { autoIncrement: true })
-  },
-})
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1)
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore(STORE_NAME, { autoIncrement: true })
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+}
+
+const dbPromise = openDatabase()
+
+async function addQueuedTransaction(tx) {
+  const db = await dbPromise
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, "readwrite")
+    transaction.objectStore(STORE_NAME).add(tx)
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
 
 self.addEventListener("fetch", event => {
   const { request } = event
@@ -23,8 +38,7 @@ self.addEventListener("fetch", event => {
         } catch (err) {
           const clone = request.clone()
           const body = await clone.json()
-          const db = await dbPromise
-          await db.add(STORE_NAME, body)
+          await addQueuedTransaction(body)
           return new Response(JSON.stringify({ offline: true }), {
             status: 202,
             headers: { "Content-Type": "application/json" },
