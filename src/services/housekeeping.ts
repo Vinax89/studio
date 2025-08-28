@@ -61,8 +61,11 @@ export async function runWithRetry<T>(
     try {
       return await op();
     } catch (err) {
-      if (attempt === retries) throw err;
       console.error(`Attempt ${attempt + 1} failed:`, err);
+      if (attempt === retries) {
+        // Final failure after exhausting retries
+        throw err;
+      }
       const delay = delayMs * 2 ** attempt;
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -76,7 +79,10 @@ export async function runWithRetry<T>(
  * The snapshot is stored in the `backups` collection with a timestamp and
  * also returned to the caller for convenience.
  */
-export async function backupData(): Promise<{
+export async function backupData(
+  retries = 1,
+  delayMs = 100
+): Promise<{
   transactions: Transaction[];
   debts: Debt[];
   goals: Goal[];
@@ -91,10 +97,15 @@ export async function backupData(): Promise<{
     goals: goalsSnap.docs.map((d) => d.data() as Goal),
   };
 
-  await addDoc(collection(db, "backups"), {
-    ...data,
-    createdAt: new Date().toISOString(),
-  });
+  await runWithRetry(
+    () =>
+      addDoc(collection(db, "backups"), {
+        ...data,
+        createdAt: new Date().toISOString(),
+      }),
+    retries,
+    delayMs
+  );
 
   return data;
 }

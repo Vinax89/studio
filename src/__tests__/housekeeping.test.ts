@@ -198,5 +198,39 @@ describe('runWithRetry', () => {
     consoleSpy.mockRestore();
     jest.useRealTimers();
   });
+
+  test('logs final failure before throwing', async () => {
+    jest.useFakeTimers();
+
+    const op = jest.fn().mockImplementation(async () => {
+      throw new Error('fail');
+    });
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const promise = runWithRetry(op, 1, 1000);
+
+    // allow first rejection to be processed
+    await Promise.resolve();
+    expect(consoleSpy).toHaveBeenNthCalledWith(
+      1,
+      'Attempt 1 failed:',
+      expect.any(Error)
+    );
+
+    const expectation = expect(promise).rejects.toThrow('fail');
+    await jest.advanceTimersByTimeAsync(1000);
+    await expectation;
+    expect(consoleSpy).toHaveBeenNthCalledWith(
+      2,
+      'Attempt 2 failed:',
+      expect.any(Error)
+    );
+    expect(consoleSpy).toHaveBeenCalledTimes(2);
+
+    consoleSpy.mockRestore();
+    jest.useRealTimers();
+  });
 });
 
