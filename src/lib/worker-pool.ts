@@ -30,23 +30,16 @@ export class WorkerPool<T = unknown, R = unknown> {
     while (this.queue.length > 0 && this.idle.length > 0) {
       const worker = this.idle.shift()!
       const task = this.queue.shift()!
+      let done = false
 
       const finalize = () => {
         this.idle.push(worker)
         this.process()
       }
 
-      worker.once("message", (result: R) => {
-        task.resolve(result)
-        finalize()
-      })
-
-      worker.once("error", err => {
-        task.reject(err)
-        finalize()
-      })
-
-      worker.once("exit", code => {
+      const onExit = (code: number) => {
+        worker.off("message", onMessage)
+        worker.off("error", onError)
         this.workers.splice(this.workers.indexOf(worker), 1)
         const idleIndex = this.idle.indexOf(worker)
         if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
@@ -58,8 +51,28 @@ export class WorkerPool<T = unknown, R = unknown> {
         }
 
         this.process()
-        task.reject(new Error(`Worker stopped with exit code ${code}`))
-      })
+        if (code !== 0 && !done) {
+          task.reject(new Error(`Worker stopped with exit code ${code}`))
+        }
+      }
+
+      const onMessage = (result: R) => {
+        done = true
+        worker.off("exit", onExit)
+        task.resolve(result)
+        finalize()
+      }
+
+      const onError = (err: unknown) => {
+        done = true
+        worker.off("exit", onExit)
+        task.reject(err)
+        finalize()
+      }
+
+      worker.once("message", onMessage)
+      worker.once("error", onError)
+      worker.once("exit", onExit)
 
       worker.postMessage(task.data)
     }
