@@ -37,7 +37,7 @@ function Calendar({
         head_cell:
           "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-blueprint-accent/50 [&:has([aria-selected])]:bg-blueprint-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-blueprintAccent/50 [&:has([aria-selected])]:bg-blueprintAccent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-foreground"
@@ -45,12 +45,12 @@ function Calendar({
         day_range_end: "day-range-end",
         day_selected:
           "bg-blueprint text-blueprint-foreground hover:bg-blueprint hover:text-blueprint-foreground focus:bg-blueprint focus:text-blueprint-foreground",
-        day_today: "bg-blueprint-accent text-blueprint-accent-foreground",
+        day_today: "bg-blueprintAccent text-blueprintAccent-foreground",
         day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-blueprint-accent/50 aria-selected:text-muted-foreground",
+          "day-outside text-muted-foreground opacity-50 aria-selected:bg-blueprintAccent/50 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle:
-          "aria-selected:bg-blueprint-accent aria-selected:text-blueprint-accent-foreground",
+          "aria-selected:bg-blueprintAccent aria-selected:text-blueprintAccent-foreground",
         day_hidden: "invisible",
         ...classNames,
       }}

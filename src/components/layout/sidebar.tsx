@@ -59,7 +59,7 @@ export default function AppSidebar() {
                   href={item.href}
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
-                    pathname.startsWith(item.href) && "bg-blueprint-accent text-blueprint-accent-foreground"
+                    pathname.startsWith(item.href) && "bg-blueprintAccent text-blueprintAccent-foreground"
                   )}
                 >
                   <item.icon className="h-5 w-5" />

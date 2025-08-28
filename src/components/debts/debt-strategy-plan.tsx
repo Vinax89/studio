@@ -12,7 +12,7 @@ interface DebtStrategyPlanProps {
 
 export function DebtStrategyPlan({ strategy }: DebtStrategyPlanProps) {
   return (
-    <Card className="bg-blueprint-accent/50 border-blueprint/20">
+    <Card className="bg-blueprintAccent/50 border-blueprint/20">
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div>

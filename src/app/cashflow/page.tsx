@@ -416,7 +416,7 @@ export default function CashflowPage() {
                     }}
                     modifiersClassNames={{ 
                         scheduled: "bg-blueprint/20",
-                        payPeriod: "bg-blueprint-accent text-blueprint-accent-foreground",
+                        payPeriod: "bg-blueprintAccent text-blueprintAccent-foreground",
                         overtime: "bg-destructive/20 text-destructive-foreground",
                     }}
                 />
