@@ -25,26 +25,13 @@ const envSchema = z.object({
 
 const env = envSchema.parse(process.env);
 
-<<<<<<< HEAD
-const firebaseConfig = {
-<<<<<<< HEAD
+const firebaseConfig: FirebaseOptions = {
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
-=======
-=======
-const firebaseConfig: FirebaseOptions = {
->>>>>>> b8806e7 (I see this error with the app, reported by NextJS, please fix it. The er)
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
->>>>>>> d96745a (code review)
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // A function to check if all required environment variables are present.

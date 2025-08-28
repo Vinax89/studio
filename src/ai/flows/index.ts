@@ -25,3 +25,6 @@ export type { CalculateCashflowInput, CalculateCashflowOutput } from './calculat
 
 export { predictSpending } from './spendingForecast';
 export type { SpendingForecastInput, SpendingForecastOutput } from './spendingForecast';
+
+export { calculateCostOfLiving } from './cost-of-living';
+export type { CostOfLivingInput, CostOfLivingOutput } from './cost-of-living';

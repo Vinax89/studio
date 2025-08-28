@@ -8,6 +8,7 @@
 - Manual Transaction Tracking: Allow to manually track income and expenses with custom categories tailored to a nursing career (e.g., certifications, uniforms).
 - Goal Setting and Tracking: Set financial goals (e.g., buying a home, retirement) and track progress using visualizations.
 - Tax Estimation Tool: A tax estimation tool to provide insight, based on income, deductions, and location, of tax burden during the year, so the user can prepare.
+- Cost of Living Calculator: Uses publicly available cost-of-living indexes to estimate housing, food, transportation, and other expenses by state. Data sourced from the Council for Community and Economic Research (C2ER) Cost of Living Index, Q1 2024.
 - Data Security: Secure storage for uploaded documents and financial data.
 
 ## Style Guidelines:
