@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addDoc, collection } from "firebase/firestore";
+import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Transaction } from "./types";
 
@@ -51,12 +51,34 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
 
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
-  await Promise.all(transactions.map((tx) => addDoc(colRef, tx)));
+  const batch = writeBatch(db);
+  transactions.forEach((tx) => {
+    const docRef = doc(colRef);
+    batch.set(docRef, tx);
+  });
+
+  try {
+    await batch.commit();
+  } catch (err) {
+    throw new Error(
+      `Failed to save transactions batch: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 }
 
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
   const transactions = validateTransactions(rows);
-  await saveTransactions(transactions);
+  try {
+    await saveTransactions(transactions);
+  } catch (err) {
+    throw new Error(
+      `Failed to import transactions: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 }
 
 export interface TransactionPersistence {
