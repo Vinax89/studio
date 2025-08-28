@@ -12,6 +12,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {DATA_URI_REGEX} from '@/lib/regex';
 import {z} from 'genkit';
 
 const GoalSchema = z.object({
@@ -23,9 +24,13 @@ const GoalSchema = z.object({
     importance: z.number().describe("User's importance rating for this goal, from 1 (not important) to 5 (very important)."),
 });
 
-const AnalyzeSpendingHabitsInputSchema = z.object({
+export const MAX_FINANCIAL_DOCUMENTS = 10;
+export const MAX_DOCUMENT_SIZE = 1024 * 1024; // 1MB
+
+export const AnalyzeSpendingHabitsInputSchema = z.object({
   financialDocuments: z
-    .array(z.string())
+    .array(z.string().regex(DATA_URI_REGEX).max(MAX_DOCUMENT_SIZE))
+    .max(MAX_FINANCIAL_DOCUMENTS)
     .describe(
       'An array of financial documents as data URIs that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
     ),
