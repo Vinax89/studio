@@ -3,9 +3,14 @@
  */
 import { GET, resetRateLimit } from "@/app/api/cron/housekeeping/route";
 import { runHousekeeping } from "@/lib/housekeeping";
+import { getCurrentTime } from "@/lib/internet-time";
 
 jest.mock("@/lib/housekeeping", () => ({
   runHousekeeping: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock("@/lib/internet-time", () => ({
+  getCurrentTime: jest.fn(),
 }));
 
 jest.mock("@/lib/firebase", () => ({ db: {} }));
@@ -52,6 +57,7 @@ describe("/api/cron/housekeeping", () => {
     process.env.CRON_SECRET = secret;
     await resetRateLimit();
     (runHousekeeping as jest.Mock).mockClear();
+    (getCurrentTime as jest.Mock).mockResolvedValue(new Date(61_000));
   });
 
   it("returns 401 when secret is missing or invalid", async () => {
