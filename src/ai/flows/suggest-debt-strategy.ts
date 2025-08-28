@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { Debt } from '@/lib/types';
+import { RecurrenceValues } from '@/lib/types';
 
 const DebtSchema = z.object({
     id: z.string(),
@@ -21,7 +21,7 @@ const DebtSchema = z.object({
     interestRate: z.number(),
     minimumPayment: z.number(),
     dueDate: z.string(),
-    recurrence: z.enum(['once', 'monthly']),
+    recurrence: z.enum(RecurrenceValues),
 });
 
 const SuggestDebtStrategyInputSchema = z.object({
