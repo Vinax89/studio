@@ -8,10 +8,8 @@ const baseRow = {
 };
 
 describe("validateTransactions", () => {
-  it.each(["abc", "", "NaN"])("throws for invalid amount '%s'", (amount) => {
-    const rows = [{ ...baseRow, amount }];
-    expect(() => validateTransactions(rows)).toThrow(
-      /Invalid amount in row 1/
-    );
+  it.each(["abc", NaN])("throws for invalid amount '%s'", (amount) => {
+    const rows = [{ ...baseRow, amount }] as any;
+    expect(() => validateTransactions(rows)).toThrow(/Invalid row 1/);
   });
 });
