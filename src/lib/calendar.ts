@@ -1,4 +1,4 @@
-import { addDays, formatISO, isSameDay, parseISO } from "date-fns";
+import { addDays, addMinutes, formatISO, isSameDay, parseISO } from "date-fns";
 import type { Debt, Recurrence } from "./types";
 
 export function monthMatrix(year: number, month: number, startOn: 0 | 1): Date[] {
@@ -8,6 +8,12 @@ export function monthMatrix(year: number, month: number, startOn: 0 | 1): Date[]
   const cells: Date[] = [];
   for (let i = 0; i < 42; i++) cells.push(addDays(startDate, i));
   return cells;
+}
+
+export function dateKey(date: Date): string {
+  return formatISO(addMinutes(date, date.getTimezoneOffset()), {
+    representation: "date",
+  });
 }
 
 export function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOrAfter: Date): Date | null {
@@ -72,7 +78,7 @@ export function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
   debts.forEach((d) => {
     const occ = allOccurrencesInRange(d, from, to);
     occ.forEach((dt) => {
-      const oc = { date: formatISO(dt, { representation: "date" }), debt: d };
+      const oc = { date: dateKey(dt), debt: d };
       occurrences.push(oc);
       const arr = grouped.get(oc.date) ?? [];
       arr.push(oc);
