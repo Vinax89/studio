@@ -6,6 +6,7 @@ import { AuthProvider } from '@/components/auth/auth-provider';
 import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary, SuspenseBoundary } from '@/components/layout/boundaries';
 import { ServiceWorker } from '@/components/service-worker';
+import { CategoriesProvider } from '@/components/categories/categories-context';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -26,9 +27,11 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <ErrorBoundary>
-              <SuspenseBoundary>{children}</SuspenseBoundary>
-            </ErrorBoundary>
+            <CategoriesProvider>
+              <ErrorBoundary>
+                <SuspenseBoundary>{children}</SuspenseBoundary>
+              </ErrorBoundary>
+            </CategoriesProvider>
           </AuthProvider>
           <Toaster />
           <ServiceWorker />
