@@ -2,9 +2,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { formatISO, parseISO, isSameDay } from "date-fns";
+import { formatISO, isSameDay } from "date-fns";
 import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
-import { monthMatrix, legacyDateKey } from "@/lib/calendar";
+import { monthMatrix, legacyDateKey, localDateFromISO } from "@/lib/calendar";
 import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -92,14 +92,14 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     setDebts((prev) => prev.filter((d) => d.id !== id));
   }
   function markPaid(dateISO: string, id: string) {
-    const legacy = legacyDateKey(parseISO(dateISO));
+    const legacy = legacyDateKey(localDateFromISO(dateISO));
     setDebts((prev) => prev.map((d) => d.id !== id ? d : {
       ...d,
       paidDates: Array.from(new Set([...(d.paidDates ?? []).filter((x) => x !== legacy), dateISO]))
     }));
   }
   function unmarkPaid(dateISO: string, id: string) {
-    const legacy = legacyDateKey(parseISO(dateISO));
+    const legacy = legacyDateKey(localDateFromISO(dateISO));
     setDebts((prev) => prev.map((d) => d.id !== id ? d : {
       ...d,
       paidDates: (d.paidDates ?? []).filter((x) => x !== dateISO && x !== legacy)
@@ -111,11 +111,11 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     let paid = 0;
     let autopay = 0;
     for (const oc of occurrences) {
-      const dt = parseISO(oc.date);
+      const dt = localDateFromISO(oc.date);
       if (dt.getMonth() !== cursor.getMonth()) continue;
       total += oc.debt.minimumPayment;
       if (oc.debt.autopay) autopay += oc.debt.minimumPayment;
-      if (oc.debt.paidDates?.some((p) => p === oc.date || p === legacyDateKey(parseISO(oc.date))))
+      if (oc.debt.paidDates?.some((p) => p === oc.date || p === legacyDateKey(localDateFromISO(oc.date))))
         paid += oc.debt.minimumPayment;
     }
     return { total, paid, autopay };
@@ -278,7 +278,7 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
 
   useEffect(() => { ref.current?.focus(); }, []);
 
-  const legacy = legacyDateKey(parseISO(dateISO));
+  const legacy = legacyDateKey(localDateFromISO(dateISO));
   const paidToday = initial?.paidDates?.some((p) => p === dateISO || p === legacy) ?? false;
 
   function handleSave() {

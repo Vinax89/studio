@@ -5,6 +5,11 @@ export function legacyDateKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+export function localDateFromISO(dateISO: string) {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 export function monthMatrix(year: number, month: number, startOn: 0 | 1): Date[] {
   const firstOfMonth = new Date(year, month, 1);
   const firstDay = (firstOfMonth.getDay() - startOn + 7) % 7;
