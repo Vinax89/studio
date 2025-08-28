@@ -6,10 +6,7 @@ import type { Transaction } from "./types";
 const TransactionRow = z.object({
   date: z.string(),
   description: z.string(),
-  amount: z.preprocess(
-    (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
-    z.string()
-  ),
+  amount: z.coerce.number().finite(),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
   isRecurring: z.union([z.boolean(), z.string()]).optional(),
@@ -24,19 +21,12 @@ export function validateTransactions(rows: TransactionRowType[]): Transaction[] 
       throw new Error(`Invalid row ${index + 1}: ${parsed.error.message}`);
     }
     const data = parsed.data;
-    const amountString = data.amount.trim();
-    const parsedAmount = parseFloat(amountString);
-    if (isNaN(parsedAmount)) {
-      throw new Error(
-        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`
-      );
-    }
 
     return {
       id: crypto.randomUUID(),
       date: data.date,
       description: data.description,
-      amount: parsedAmount,
+      amount: data.amount,
       type: data.type,
       category: data.category,
       // Default to USD until currency is provided in import sources
