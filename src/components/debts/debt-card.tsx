@@ -26,7 +26,8 @@ interface DebtCardProps {
 export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const progress = (debt.currentAmount / debt.initialAmount) * 100;
+  // Guard against division by zero if initialAmount is not set or is 0
+  const progress = debt.initialAmount > 0 ? (debt.currentAmount / debt.initialAmount) * 100 : 0;
   const remainingAmount = debt.initialAmount - debt.currentAmount;
 
   const handleDelete = async () => {

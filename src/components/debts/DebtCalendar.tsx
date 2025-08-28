@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Recurrence, CalendarDebt as Debt } from "@/lib/types"; // Use the aliased CalendarDebt type
+import { Recurrence, Debt } from "@/lib/types"; // Use the unified Debt type
 import { useDebtOccurrences } from "@/hooks/use-debt-occurrences";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -120,9 +120,9 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     for (const oc of occurrences) {
       const dt = parseISO(oc.date);
       if (dt.getMonth() !== cursor.getMonth()) continue;
-      total += oc.debt.amount;
-      if (oc.debt.autopay) autopay += oc.debt.amount;
-      if (oc.debt.paidDates?.includes(oc.date)) paid += oc.debt.amount;
+      total += oc.debt.minimumPayment;
+      if (oc.debt.autopay) autopay += oc.debt.minimumPayment;
+      if (oc.debt.paidDates?.includes(oc.date)) paid += oc.debt.minimumPayment;
     }
     return { total, paid, autopay };
   }, [occurrences, cursor]);
@@ -169,7 +169,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
           const dayEvents = grouped.get(dateISO) ?? [];
           const isToday = isSameDay(date, today);
           const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-          const sumForDay = dayEvents.reduce((s, e) => s + e.debt.amount, 0);
+          const sumForDay = dayEvents.reduce((s, e) => s + e.debt.minimumPayment, 0);
 
           return (
             <div
@@ -209,11 +209,11 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
                       data-chip
                       className="group flex items-center gap-2 px-2 py-1 rounded-md text-xs cursor-pointer hover:opacity-90"
                       style={chipStyle}
-                      title={`${debt.name} — ${currency(debt.amount)}${debt.notes ? "\n" + debt.notes : ""}`}
+                      title={`${debt.name} — ${currency(debt.minimumPayment)}${debt.notes ? "\n" + debt.notes : ""}`}
                       onClick={() => { setSelectedDate(date); setActiveDebt(debt); setShowForm(true); }}
                     >
                       <span className={"truncate " + (paid ? "line-through" : "")}>{debt.name}</span>
-                      <span className={"ml-auto tabular-nums " + (paid ? "line-through" : "font-semibold")}>{currency(debt.amount)}</span>
+                      <span className={"ml-auto tabular-nums " + (paid ? "line-through" : "font-semibold")}>{currency(debt.minimumPayment)}</span>
                       {debt.autopay && <span className="text-[10px] px-1 py-0.5 rounded bg-black/10">AUTO</span>}
                     </div>
                   );
@@ -264,7 +264,10 @@ interface FormProps {
 
 function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onUnmarkPaid }: FormProps) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : "");
+  const [initialAmount, setInitialAmount] = useState<string>(initial ? String(initial.initialAmount) : "");
+  const [currentAmount, setCurrentAmount] = useState<string>(initial ? String(initial.currentAmount) : "");
+  const [interestRate, setInterestRate] = useState<string>(initial ? String(initial.interestRate) : "");
+  const [minimumPayment, setMinimumPayment] = useState<string>(initial ? String(initial.minimumPayment) : "");
   const [dueDate, setDueDate] = useState<string>(initial?.dueDate ?? dateISO);
   const [recurrence, setRecurrence] = useState<Recurrence>(initial?.recurrence ?? "none");
   const [autopay, setAutopay] = useState<boolean>(initial?.autopay ?? false);
@@ -283,9 +286,28 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
   const paidToday = initial?.paidDates?.includes(dateISO) ?? false;
 
   function handleSave() {
-    const amt = Number.parseFloat(amount);
-    if (!name.trim() || Number.isNaN(amt) || amt <= 0) return;
-    const payload: Omit<Debt, "id" | "paidDates"> = { name: name.trim(), amount: Math.round(amt * 100) / 100, dueDate, recurrence, autopay, notes: notes.trim() || undefined, color: color || undefined };
+    const initAmt = Number.parseFloat(initialAmount);
+    const currAmt = Number.parseFloat(currentAmount);
+    const intRate = Number.parseFloat(interestRate);
+    const minPay = Number.parseFloat(minimumPayment);
+
+    if (!name.trim() || [initAmt, currAmt, intRate, minPay].some(isNaN) || minPay <= 0) {
+      // Add more specific validation feedback if needed
+      return;
+    }
+    
+    const payload: Omit<Debt, "id" | "paidDates"> = { 
+        name: name.trim(), 
+        initialAmount: initAmt,
+        currentAmount: currAmt,
+        interestRate: intRate,
+        minimumPayment: minPay,
+        dueDate, 
+        recurrence, 
+        autopay, 
+        notes: notes.trim() || undefined, 
+        color: color || undefined 
+    };
     onSave(payload);
   }
 
@@ -299,7 +321,10 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormLabel label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., X1 Card" /></FormLabel>
-          <FormLabel label="Payment Amount"><Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="0.00" /></FormLabel>
+          <FormLabel label="Interest Rate (%)"><Input value={interestRate} onChange={(e) => setInterestRate(e.target.value)} type="number" placeholder="5.5" /></FormLabel>
+          <FormLabel label="Initial Amount ($)"><Input value={initialAmount} onChange={(e) => setInitialAmount(e.target.value)} type="number" placeholder="5000" /></FormLabel>
+          <FormLabel label="Current Amount ($)"><Input value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} type="number" placeholder="3250" /></FormLabel>
+          <FormLabel label="Minimum Payment ($)"><Input value={minimumPayment} onChange={(e) => setMinimumPayment(e.target.value)} type="number" placeholder="150" /></FormLabel>
           <FormLabel label="Anchor Due Date"><Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></FormLabel>
           <FormLabel label="Recurrence">
             <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
@@ -312,8 +337,8 @@ function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onU
               </SelectContent>
             </Select>
           </FormLabel>
-          <FormLabel label="Autopay"><Toggle checked={autopay} onChange={setAutopay} /></FormLabel>
           <FormLabel label="Chip Color (optional)"><Input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 p-1" /></FormLabel>
+          <FormLabel label="Autopay" full><Toggle checked={autopay} onChange={setAutopay} /></FormLabel>
           <FormLabel label="Notes" full>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[80px]" placeholder="Internal notes…" />
           </FormLabel>

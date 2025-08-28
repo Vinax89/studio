@@ -1,12 +1,13 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { useDebtOccurrences } from "../hooks/use-debt-occurrences";
-import { CalendarDebt } from "../lib/types";
+import { Debt } from "../lib/types";
 
 type HookReturn = ReturnType<typeof useDebtOccurrences>;
 
+// A helper to render the hook in a Node.js test environment
 function renderUseDebtOccurrences(
-  debts: CalendarDebt[],
+  debts: Debt[],
   from: Date,
   to: Date,
   query = ""
@@ -20,15 +21,22 @@ function renderUseDebtOccurrences(
   return result;
 }
 
+const baseDebt: Omit<Debt, 'id' | 'name' | 'dueDate' | 'recurrence'> = {
+    initialAmount: 1000,
+    currentAmount: 500,
+    interestRate: 5,
+    minimumPayment: 100,
+    autopay: false,
+};
+
 describe("useDebtOccurrences", () => {
   it("handles weekly debts", () => {
-    const debt: CalendarDebt = {
+    const debt: Debt = {
+      ...baseDebt,
       id: "w1",
       name: "Weekly",
-      amount: 100,
       dueDate: "2024-01-01",
       recurrence: "weekly",
-      autopay: false,
     };
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
@@ -45,13 +53,12 @@ describe("useDebtOccurrences", () => {
   });
 
   it("handles biweekly debts", () => {
-    const debt: CalendarDebt = {
+    const debt: Debt = {
+      ...baseDebt,
       id: "b1",
       name: "Biweekly",
-      amount: 100,
       dueDate: "2024-01-01",
       recurrence: "biweekly",
-      autopay: false,
     };
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
@@ -66,13 +73,12 @@ describe("useDebtOccurrences", () => {
   });
 
   it("handles monthly debts", () => {
-    const debt: CalendarDebt = {
+    const debt: Debt = {
+      ...baseDebt,
       id: "m1",
       name: "Monthly",
-      amount: 100,
       dueDate: "2024-01-15",
       recurrence: "monthly",
-      autopay: false,
     };
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
@@ -88,13 +94,12 @@ describe("useDebtOccurrences", () => {
   });
 
   it("handles non-recurring debts", () => {
-    const debt: CalendarDebt = {
+    const debt: Debt = {
+      ...baseDebt,
       id: "n1",
       name: "One-time",
-      amount: 100,
       dueDate: "2024-01-10",
       recurrence: "none",
-      autopay: false,
     };
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
@@ -104,4 +109,3 @@ describe("useDebtOccurrences", () => {
     expect(occurrences.map((o) => o.date)).toEqual(["2024-01-10"]);
   });
 });
-

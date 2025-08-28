@@ -8,16 +8,14 @@ import type { Transaction } from "@/lib/types";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
-  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500));
   return mockTransactions;
 };
 
 const getChartData = async () => {
-  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true") {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-  }
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
   return [
     { month: "Jan", income: 4000, expenses: 2400 },
     { month: "Feb", income: 3000, expenses: 1398 },
@@ -28,7 +26,6 @@ const getChartData = async () => {
     { month: "Jul", income: 5100, expenses: 2550 },
   ];
 };
-
 
 export default async function DashboardPage() {
   const [transactions, chartData] = await Promise.all([

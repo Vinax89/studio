@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Recurrence, CalendarDebt as Debt } from "@/lib/types";
+import { Recurrence, Debt } from "@/lib/types";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const parseISO = (s: string) => {
@@ -18,8 +18,20 @@ function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOr
   if (recurrence === "none") return isSameDay(anchor, onOrAfter) || anchor > onOrAfter ? anchor : null;
   const step = recurrence === "weekly" ? 7 : recurrence === "biweekly" ? 14 : 0;
   if (recurrence === "monthly") {
-    const target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth(), anchor.getDate());
-    if (target < onOrAfter) target.setMonth(target.getMonth() + 1);
+    let target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth(), anchor.getDate());
+    // If the calculated target date for this month is already past, move to next month.
+    // The `isSameDay` check is important for when the anchor date is today.
+    if (target < onOrAfter && !isSameDay(target, onOrAfter)) {
+        target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth() + 1, anchor.getDate());
+    }
+    // Now, ensure the final target is not before the original anchor date.
+    if (target < anchor) {
+      target.setFullYear(anchor.getFullYear());
+      target.setMonth(anchor.getMonth());
+      if (target < anchor) {
+         target.setMonth(target.getMonth() + 1);
+      }
+    }
     return target;
   }
   const diffDays = Math.floor((onOrAfter.getTime() - anchor.getTime()) / 86400000);
@@ -30,7 +42,7 @@ function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOr
 
 function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
   const out: Date[] = [];
-  const maxIter = 400;
+  const maxIter = 400; // Safety break
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
     if (d >= from && d <= to) out.push(d);
@@ -39,20 +51,23 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
   let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
   let iter = 0;
   const stepDays =
-    debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 30;
+    debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
+    
   while (cur && cur <= to && iter < maxIter) {
     out.push(new Date(cur));
+    iter++;
     if (debt.recurrence === "monthly") {
-      const nextMonth = new Date(
-        cur.getFullYear(),
-        cur.getMonth() + 1,
-        cur.getDate()
-      );
-      cur = nextMonth;
+      const nextDate = new Date(cur.getFullYear(), cur.getMonth() + 1, cur.getDate());
+      // Handle month-end issues by advancing at least one day
+      if(nextDate <= cur) {
+          cur.setDate(cur.getDate() + 1); // Move to next day before calculating next month
+          cur = new Date(cur.getFullYear(), cur.getMonth() + 1, debt.dueDate ? parseISO(debt.dueDate).getDate() : cur.getDate());
+      } else {
+          cur = nextDate;
+      }
     } else {
       cur = addDays(cur, stepDays);
     }
-    iter++;
   }
   return out;
 }
@@ -103,4 +118,3 @@ export function useDebtOccurrences(
 
   return { occurrences, grouped: filtered } as const;
 }
-

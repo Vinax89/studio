@@ -27,10 +27,9 @@ export default function TransactionsPage() {
     return ['all', ...Array.from(new Set(allCategories))];
   }, [transactions]);
 
-
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
     setTransactions(prev => [
-      { ...transaction, id: (prev.length + 1).toString(), date: new Date().toISOString().split('T')[0] },
+      { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
   };

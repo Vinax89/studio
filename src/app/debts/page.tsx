@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import type { SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
+import { suggestDebtStrategy } from "@/ai/flows/suggest-debt-strategy";
 
 export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>(mockDebts);
@@ -31,41 +32,15 @@ export default function DebtsPage() {
     setIsLoading(true);
     setStrategy(null);
     try {
-      const { suggestDebtStrategy } = await import("@/ai/flows/suggest-debt-strategy");
-
-      // The AI flow expects the full debt details.
-      // The `suggestDebtStrategy` flow needs `initialAmount` and `currentAmount` which are not in the calendar's `Debt` type.
-      // We will map the calendar debt type to the type expected by the flow.
+      // The AI flow expects the full debt details, which our unified `Debt` type now provides.
+      // We need to ensure the recurrence maps correctly.
       const strategyInput = debts.map(d => ({
-        id: d.id,
-        name: d.name,
-        // The calendar 'amount' is the payment. We need total amounts. Let's use placeholder values for now.
-        // For a real app, these would be part of the Debt model.
-        initialAmount: d.amount * 12 * 5, // Placeholder
-        currentAmount: d.amount * 12 * 3, // Placeholder
-        interestRate: 5, // Placeholder
-        minimumPayment: d.amount,
-        dueDate: d.dueDate,
-        recurrence: d.recurrence as 'once' | 'monthly', // Type assertion
+        ...d,
+        recurrence: d.recurrence === 'none' ? 'once' : 'monthly',
       }));
 
-      // The current calendar debt type doesn't match the one needed for the AI strategy.
-      // This is a placeholder to show the UI. A full implementation would require merging the Debt types.
-       toast({
-         title: "Feature Under Development",
-         description: "The AI strategy requires more debt details (like total amount and interest rate) which are not yet captured in the calendar. This is a placeholder UI.",
-       });
-       // Silently fail for now, just to show UI
-       // const result = await suggestDebtStrategy({ debts: strategyInput });
-       // setStrategy(result);
-       setStrategy({
-           recommendedStrategy: 'avalanche',
-           strategyReasoning: 'The avalanche method is recommended to save the most on interest by paying off the highest-rate debts first.',
-           payoffOrder: debts.map((d,i) => ({ debtName: d.name, priority: i + 1})),
-           summary: 'This is a placeholder strategy. Focus on your highest interest debts to save money.'
-       })
-      void suggestDebtStrategy; // avoid unused var until AI flow is wired up
-
+      const result = await suggestDebtStrategy({ debts: strategyInput });
+      setStrategy(result);
 
     } catch (error) {
       console.error("Error suggesting debt strategy:", error);
@@ -85,13 +60,6 @@ export default function DebtsPage() {
     setDebts(prev => prev.filter(d => d.id !== id));
     toast({ title: "Debt Deleted", description: "This is a visual demo. The calendar has its own state."})
   };
-
-  const handleUpdateDebt = (updatedDebt: Debt) => {
-     // This should be handled by the calendar's internal logic and propagated via onChange
-    setDebts(prev => prev.map(d => d.id === updatedDebt.id ? updatedDebt : d));
-    toast({ title: "Debt Updated", description: "This is a visual demo. The calendar has its own state."})
-  };
-
 
   return (
     <div className="space-y-8">
@@ -128,23 +96,28 @@ export default function DebtsPage() {
       
       <div>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Your Debts</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {debts.map(debt => (
-                <DebtCard 
-                  key={debt.id} 
-                  debt={{
-                      ...debt,
-                      // These fields are missing from the calendar debt type, so we add them for the card
-                      initialAmount: debt.amount * 12 * 5, // Placeholder
-                      currentAmount: debt.amount * 12 * 3, // Placeholder
-                      interestRate: 5.5, // Placeholder
-                      minimumPayment: debt.amount,
-                  }} 
-                  onDelete={() => handleDeleteDebt(debt.id)}
-                  onUpdate={() => { /* This would trigger an edit form */}}
-                />
-              ))}
-          </div>
+          {debts.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {debts.map(debt => (
+                  <DebtCard 
+                    key={debt.id} 
+                    debt={debt} 
+                    onDelete={() => handleDeleteDebt(debt.id)}
+                    onUpdate={(updatedDebt) => { 
+                       /* This would trigger an edit form */
+                       const debtIndex = debts.findIndex(d => d.id === updatedDebt.id);
+                       const newDebts = [...debts];
+                       if (debtIndex > -1) {
+                         newDebts[debtIndex] = updatedDebt;
+                         setDebts(newDebts);
+                       }
+                     }}
+                  />
+                ))}
+            </div>
+          ) : (
+             <p className="text-muted-foreground">You haven't added any debts yet. Add one in the calendar to get started.</p>
+          )}
       </div>
     </div>
   );
