@@ -28,18 +28,34 @@ function makeTransactions(count: number): Tx[] {
   }));
 }
 
+const ROW_HEIGHT = 56;
+const LIST_HEIGHT = 400;
+
 describe('TransactionsTable', () => {
-  it('paginates transactions', () => {
-    const transactions = makeTransactions(25);
+  it('virtualizes transactions', async () => {
+    const transactions = makeTransactions(100);
     render(<TransactionsTable transactions={transactions} />);
 
-    // first page
-    expect(screen.getByText('Transaction 1')).toBeInTheDocument();
-    expect(screen.queryByText('Transaction 21')).not.toBeInTheDocument();
+    const table = screen.getByRole('table');
+    const scrollContainer = table.parentElement as HTMLElement;
 
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    Object.defineProperty(scrollContainer, 'scrollHeight', {
+      configurable: true,
+      value: ROW_HEIGHT * transactions.length,
+    });
+    Object.defineProperty(scrollContainer, 'clientHeight', {
+      configurable: true,
+      value: LIST_HEIGHT,
+    });
 
-    expect(screen.getByText('Transaction 21')).toBeInTheDocument();
+    // Only a subset of rows should render initially
+    expect(screen.queryByText('Transaction 100')).not.toBeInTheDocument();
+
+    const scrollOffset = ROW_HEIGHT * transactions.length;
+    scrollContainer.scrollTop = scrollOffset;
+    fireEvent.scroll(scrollContainer, { target: { scrollTop: scrollOffset } });
+
+    expect(await screen.findByText('Transaction 100')).toBeInTheDocument();
     expect(screen.queryByText('Transaction 1')).not.toBeInTheDocument();
   });
 });
