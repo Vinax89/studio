@@ -13,7 +13,7 @@ export class WorkerPool<T = unknown, R = unknown> {
 
   constructor(private readonly file: string, size: number) {
     for (let i = 0; i < size; i++) {
-      const worker = new Worker(file)
+      const worker = this.spawnWorker()
       this.workers.push(worker)
       this.idle.push(worker)
     }
@@ -32,6 +32,7 @@ export class WorkerPool<T = unknown, R = unknown> {
       const task = this.queue.shift()!
 
       const finalize = () => {
+        worker.removeAllListeners()
         this.idle.push(worker)
         this.process()
       }
@@ -48,7 +49,13 @@ export class WorkerPool<T = unknown, R = unknown> {
 
       worker.once("exit", code => {
         if (code !== 0) {
-          task.reject(new Error(`Worker stopped with exit code ${code}`))
+          const replacement = this.spawnWorker()
+          const index = this.workers.indexOf(worker)
+          if (index !== -1) this.workers[index] = replacement
+          worker.removeAllListeners()
+          this.queue.unshift(task)
+          this.idle.push(replacement)
+          this.process()
         }
       })
 
@@ -60,6 +67,10 @@ export class WorkerPool<T = unknown, R = unknown> {
     await Promise.all(this.workers.map(worker => worker.terminate()))
     this.queue = []
     this.idle.length = 0
+  }
+
+  private spawnWorker(): Worker {
+    return new Worker(this.file)
   }
 }
 
