@@ -20,7 +20,7 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-10 hidden flex-col border-r bg-background transition-all sm:flex",
+        "fixed inset-y-0 left-0 z-10 hidden flex-col border-r bg-background dark:border-r dark:bg-background transition-all sm:flex",
         collapsed ? "w-14" : "w-56"
       )}
     >
