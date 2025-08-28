@@ -37,6 +37,7 @@ jest.mock('firebase/firestore', () => {
 
   const getDocs = jest.fn(async (q: any) => {
     const colName = q.name;
+    if (!dataStore[colName]) dataStore[colName] = new Map();
     let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
       id,
       data: () => data,
@@ -95,6 +96,9 @@ jest.mock('firebase/firestore', () => {
       },
       commit: jest.fn(async () => {
         for (const op of ops) {
+          if (!dataStore[op.docRef.name]) {
+            dataStore[op.docRef.name] = new Map();
+          }
           if (op.type === 'set') {
             dataStore[op.docRef.name].set(op.docRef.id, op.data);
           } else if (op.type === 'delete') {
@@ -109,14 +113,18 @@ jest.mock('firebase/firestore', () => {
 
   const addDoc = jest.fn(async (colRef: any, data: any) => {
     const id = Math.random().toString(36).slice(2);
+    if (!dataStore[colRef.name]) dataStore[colRef.name] = new Map();
     dataStore[colRef.name].set(id, data);
     return { id };
   });
 
   return {
     getFirestore: jest.fn(() => ({})),
-    collection: (_db: any, name: string) => ({ name }),
-    doc: (_db: any, name: string, id: string) => ({ name, id }),
+    collection: (_db: any, ...segments: string[]) => ({ name: segments.join('/') }),
+    doc: (_db: any, ...segments: string[]) => ({
+      name: segments.slice(0, -1).join('/'),
+      id: segments[segments.length - 1],
+    }),
     getDocs,
     addDoc,
     query,
@@ -231,6 +239,11 @@ describe('housekeeping services', () => {
     expect(backup.debts).toHaveLength(1);
     expect(backup.goals).toHaveLength(1);
     expect(store.backups.size).toBe(1);
+    const backupId = Array.from(store.backups.keys())[0];
+    expect(store[`backups/${backupId}/transactions`].size).toBe(1);
+    expect(store[`backups/${backupId}/debts`].size).toBe(1);
+    expect(store[`backups/${backupId}/goals`].size).toBe(1);
+    expect(firestore.writeBatch).toHaveBeenCalledTimes(3);
   });
 
   test('archiveOldTransactions handles large datasets efficiently', async () => {
