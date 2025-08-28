@@ -15,9 +15,11 @@ import {z} from 'zod';
 export const TaxEstimationInputSchema = z.object({
   income: z
     .number()
+    .nonnegative()
     .describe('Annual income in USD.'),
   deductions: z
     .number()
+    .nonnegative()
     .describe('Total deductions in USD.'),
   location: z
     .string()
@@ -30,9 +32,12 @@ export type TaxEstimationInput = z.infer<typeof TaxEstimationInputSchema>;
 const TaxEstimationOutputSchema = z.object({
   estimatedTax: z
     .number()
+    .nonnegative()
     .describe('Estimated total tax amount in USD.'),
   taxRate: z
     .number()
+    .nonnegative()
+    .max(100)
     .describe('Estimated effective tax rate as a percentage.'),
   breakdown: z
     .string()
@@ -73,6 +78,9 @@ const taxEstimationFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await taxEstimationPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from taxEstimationFlow');
+    }
+    return output;
   }
 );

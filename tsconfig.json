@@ -6,8 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -26,7 +25,8 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "allowJs": true
   },
   "include": [
     "**/*.ts",
