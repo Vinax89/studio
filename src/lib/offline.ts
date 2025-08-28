@@ -10,6 +10,16 @@ const dbPromise = openDB(DB_NAME, 1, {
   },
 })
 
+/**
+ * Enqueue a transaction in IndexedDB for offline processing.
+ * The transaction is stored in the `transactions` object store and the
+ * queue is capped at `maxQueueSize`, removing the oldest entries when the
+ * limit is exceeded. Errors are logged to the console.
+ *
+ * @param tx Data to queue for later processing.
+ * @param maxQueueSize Maximum number of transactions retained in storage.
+ * @returns `true` if the transaction was queued successfully, otherwise `false`.
+ */
 export async function queueTransaction(
   tx: unknown,
   maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
@@ -32,6 +42,13 @@ export async function queueTransaction(
   }
 }
 
+/**
+ * Retrieve all transactions currently queued in IndexedDB.
+ * The returned list reflects the transactions stored by {@link queueTransaction}.
+ * Errors are logged to the console.
+ *
+ * @returns An array of queued transactions or `null` if retrieval fails.
+ */
 export async function getQueuedTransactions<T = unknown>() {
   try {
     const db = await dbPromise
@@ -42,6 +59,13 @@ export async function getQueuedTransactions<T = unknown>() {
   }
 }
 
+/**
+ * Remove all queued transactions from IndexedDB storage.
+ * This clears the offline queue used by {@link queueTransaction}.
+ * Errors are logged to the console.
+ *
+ * @returns `true` if the queue was cleared successfully, otherwise `false`.
+ */
 export async function clearQueuedTransactions() {
   try {
     const db = await dbPromise
