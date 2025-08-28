@@ -92,11 +92,7 @@ export const TransactionsTable = memo(function TransactionsTable({
 
   const Outer = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     ({ style, children, ...props }, ref) => (
-      <div
-        ref={ref}
-        style={{ ...style, overflow: "auto" }}
-        {...props}
-      >
+      <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
         <Table>{children}</Table>
       </div>
     ),
