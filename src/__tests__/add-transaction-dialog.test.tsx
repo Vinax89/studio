@@ -32,25 +32,25 @@ jest.mock('@/components/ui/switch', () => ({
   ),
 }));
 
-jest.mock('@/ai/flows/categorize-transaction', () => ({
-  suggestCategory: jest.fn(),
+jest.mock('@/app/actions', () => ({
+  suggestCategoryAction: jest.fn(),
 }));
-const { suggestCategory: suggestCategoryMock } = require('@/ai/flows/categorize-transaction') as {
-  suggestCategory: jest.Mock;
+const { suggestCategoryAction: suggestCategoryActionMock } = require('@/app/actions') as {
+  suggestCategoryAction: jest.Mock;
 };
-suggestCategoryMock.mockResolvedValue('Misc');
+suggestCategoryActionMock.mockResolvedValue('Misc');
 
 beforeEach(() => {
   onSave.mockClear();
   toastMock.mockClear();
-  suggestCategoryMock.mockClear();
+  suggestCategoryActionMock.mockClear();
 });
 
 async function openAndFill(amount: string) {
   render(<AddTransactionDialog onSave={onSave} />);
   fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test' } });
   fireEvent.blur(screen.getByLabelText(/description/i));
-  await waitFor(() => expect(suggestCategoryMock).toHaveBeenCalled());
+  await waitFor(() => expect(suggestCategoryActionMock).toHaveBeenCalled());
   fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: amount } });
   fireEvent.click(screen.getByText(/save transaction/i));
 }

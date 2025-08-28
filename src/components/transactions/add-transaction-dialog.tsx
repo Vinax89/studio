@@ -25,7 +25,7 @@ import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { getCategories } from "@/lib/categories"
-import { suggestCategory } from "@/ai/flows/categorize-transaction"
+import { suggestCategoryAction } from "@/app/actions"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -51,7 +51,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const handleDescriptionBlur = async () => {
         if (!description.trim()) return
         try {
-            const suggested = await suggestCategory(description)
+            const suggested = await suggestCategoryAction(description)
             if (suggested) {
                 setCategory(suggested)
                 setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
@@ -144,18 +144,20 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <Select onValueChange={setCategory} value={category}>
-              <SelectTrigger id="category" className="col-span-3">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
+            <Input
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              list="category-options"
+              className="col-span-3 capitalize"
+            />
+            {categories.length > 0 && (
+              <datalist id="category-options">
                 {categories.map(cat => (
-                  <SelectItem key={cat} value={cat} className="capitalize">
-                    {cat}
-                  </SelectItem>
+                  <option key={cat} value={cat} />
                 ))}
-              </SelectContent>
-            </Select>
+              </datalist>
+            )}
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">Recurring</Label>
