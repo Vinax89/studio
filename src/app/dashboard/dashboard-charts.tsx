@@ -62,7 +62,7 @@ interface DashboardChartsProps {
 
 export default function DashboardCharts({ transactions, chartData, categorySummaries }: DashboardChartsProps) {
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div className="lg:col-span-2">
         <IncomeExpenseChartClient data={chartData} />
       </div>
