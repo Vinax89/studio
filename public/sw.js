@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js")
+importScripts("/vendor/idb-7.1.1.min.js")
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
