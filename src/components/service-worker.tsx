@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
+import { auth } from "@/lib/firebase"
 
 export function ServiceWorker() {
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -14,9 +15,18 @@ export function ServiceWorker() {
         const queued = await getQueuedTransactions()
         if (queued.length) {
           try {
+            const user = auth.currentUser
+            const token = user ? await user.getIdToken() : null
+            if (!token) {
+              console.error("Cannot sync queued transactions without auth")
+              return
+            }
             const response = await fetch("/api/transactions/sync", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
               body: JSON.stringify({ transactions: queued }),
             })
             if (!response.ok) {
