@@ -1,22 +1,22 @@
 
 import OverviewCards from "@/components/dashboard/overview-cards";
+import TimeCard from "@/components/dashboard/time-card";
+import PaydayCountdownCard from "@/components/dashboard/payday-countdown-card";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardCharts from '@/app/dashboard/dashboard-charts';
+import DashboardCharts from "@/app/dashboard/dashboard-charts";
 import { mockTransactions } from "@/lib/data";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, ChartPoint } from "@/lib/types";
 import { getTranslation } from "@/lib/i18n";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Replace with real data fetching when an API is available
   return mockTransactions;
 };
 
-const getChartData = async () => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+const getChartData = async (): Promise<ChartPoint[]> => {
+  // Replace with real data fetching when an API is available
   return [
     { month: "Jan", income: 4000, expenses: 2400 },
     { month: "Feb", income: 3000, expenses: 1398 },
@@ -29,17 +29,21 @@ const getChartData = async () => {
 };
 
 export default async function DashboardPage() {
-  const [transactions, chartData] = await Promise.all([
+  const [transactions, chartData]: [Transaction[], ChartPoint[]] = await Promise.all([
     getTransactions(),
-    getChartData()
+    getChartData(),
   ]);
-  const t = getTranslation()
+  const t = getTranslation("en");
 
   return (
     <main role="main" tabIndex={-1} className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
         <p className="text-muted-foreground">{t("dashboard.overview")}</p>
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <TimeCard />
+        <PaydayCountdownCard />
       </div>
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
