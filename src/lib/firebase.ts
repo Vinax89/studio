@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore, collection } from "firebase/firestore";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -25,5 +26,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-export { app, auth };
+const transactionsCollection = collection(db, "transactions");
+const chartDataCollection = collection(db, "chartData");
+
+export { app, auth, db, transactionsCollection, chartDataCollection };
