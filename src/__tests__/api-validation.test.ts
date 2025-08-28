@@ -58,4 +58,16 @@ describe("/api/transactions/sync", () => {
     const res = await transactionsSync(req)
     expect(res.status).toBe(400)
   })
+
+  it("returns 400 for malformed transactions", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ transactions: [{ date: "2024-01-01" }] }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toMatch(/description/)
+  })
 })
