@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+config(); // Load environment variables from .env file
+
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -53,7 +56,7 @@ function validateFirebaseConfig(config: FirebaseOptions): void {
     'projectId',
   ];
   for (const key of requiredKeys) {
-    if (!config[key] || config[key] === "YOUR_API_KEY") {
+    if (!config[key] || config[key] === "YOUR_API_KEY_HERE") {
       const envVarName = `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`;
       throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file for the ${envVarName} variable.`);
     }
