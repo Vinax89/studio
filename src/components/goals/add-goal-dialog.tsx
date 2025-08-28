@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -30,6 +30,17 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
     const [deadline, setDeadline] = useState("")
     const [importance, setImportance] = useState([3]) // Default importance
 
+    const triggerRef = useRef<HTMLButtonElement | null>(null)
+    const firstFieldRef = useRef<HTMLInputElement | null>(null)
+
+    useEffect(() => {
+        if (open) {
+            firstFieldRef.current?.focus()
+        } else {
+            triggerRef.current?.focus()
+        }
+    }, [open])
+
     const handleSave = () => {
         if(name && targetAmount && currentAmount && deadline) {
             onSave({
@@ -52,7 +63,11 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button
+          ref={triggerRef}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
           <PlusCircle className="mr-2 h-4 w-4" />
           Add New Goal
         </Button>
@@ -67,7 +82,14 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Goal Name</Label>
-            <Input id="name" placeholder="e.g. Buy a new car" value={name} onChange={e => setName(e.target.value)} className="col-span-3" />
+            <Input
+              id="name"
+              ref={firstFieldRef}
+              placeholder="e.g. Buy a new car"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="target" className="text-right">Target Amount</Label>
@@ -91,6 +113,7 @@ export function AddGoalDialog({ onSave }: AddGoalDialogProps) {
                 step={1}
                 value={importance}
                 onValueChange={setImportance}
+                aria-label="Goal importance"
               />
               <span className="font-bold w-4">{importance[0]}</span>
             </div>

@@ -74,6 +74,8 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
   const [activeDebt, setActiveDebt] = useState<Debt | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [query, setQuery] = useState("");
+  const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
   const grid = useMemo(() => monthMatrix(cursor.getFullYear(), cursor.getMonth(), startOn), [cursor, startOn]);
 
@@ -146,7 +148,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <Button onClick={() => { setSelectedDate(today); setActiveDebt(null); setShowForm(true); }}>New</Button>
+          <Button onClick={(e) => { lastFocused.current = e.currentTarget; setSelectedDate(today); setActiveDebt(null); setShowForm(true); }}>New</Button>
         </div>
       </div>
 
@@ -162,7 +164,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1 rounded-lg bg-muted/50 p-1">
+      <div className="grid grid-cols-7 gap-1 rounded-lg bg-muted/50 p-1" role="grid" aria-label="Debt calendar">
         {grid.map((date, idx) => {
           const inMonth = date.getMonth() === cursor.getMonth();
           const dateISO = iso(date);
@@ -180,12 +182,31 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
                 (isToday ? " ring-2 ring-primary " : "")
               }
               role="gridcell"
+              tabIndex={0}
+              ref={(el) => (cellRefs.current[idx] = el)}
+              aria-selected={selectedDate ? isSameDay(date, selectedDate) : undefined}
               aria-label={`${date.toDateString()} — ${currency(sumForDay)} due`}
               onClick={(e) => {
                 if ((e.target as HTMLElement).closest("[data-chip]") || (e.target as HTMLElement).closest("[data-menu]") ) return;
+                lastFocused.current = e.currentTarget as HTMLElement;
                 setSelectedDate(date);
                 setActiveDebt(null);
                 setShowForm(true);
+              }}
+              onKeyDown={(e) => {
+                const key = e.key;
+                if (key === "Enter" || key === " ") {
+                  e.preventDefault();
+                  lastFocused.current = e.currentTarget as HTMLElement;
+                  setSelectedDate(date);
+                  setActiveDebt(null);
+                  setShowForm(true);
+                } else if (key === "ArrowRight" || key === "ArrowLeft" || key === "ArrowDown" || key === "ArrowUp") {
+                  e.preventDefault();
+                  const delta = key === "ArrowRight" ? 1 : key === "ArrowLeft" ? -1 : key === "ArrowDown" ? 7 : -7;
+                  const nextIdx = idx + delta;
+                  cellRefs.current[nextIdx]?.focus();
+                }
               }}
             >
               <div className="flex items-center justify-between">
@@ -228,12 +249,13 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
         <DebtForm
           dateISO={selectedDate ? iso(selectedDate) : iso(today)}
           initial={activeDebt}
-          onClose={() => setShowForm(false)}
-          onDelete={activeDebt ? () => { deleteDebt(activeDebt.id); setShowForm(false); } : undefined}
+          onClose={() => { setShowForm(false); lastFocused.current?.focus(); }}
+          onDelete={activeDebt ? () => { deleteDebt(activeDebt.id); setShowForm(false); lastFocused.current?.focus(); } : undefined}
           onSave={(values) => {
             const next: Debt = activeDebt ? { ...activeDebt, ...values } : { ...values, id: crypto.randomUUID() };
             addOrUpdateDebt(next);
             setShowForm(false);
+            lastFocused.current?.focus();
           }}
           onMarkPaid={(dateISO) => activeDebt && markPaid(dateISO, activeDebt.id)}
           onUnmarkPaid={(dateISO) => activeDebt && unmarkPaid(dateISO, activeDebt.id)}
