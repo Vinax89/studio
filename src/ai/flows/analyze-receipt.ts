@@ -1,5 +1,5 @@
 // This file uses server-side code.
-'use server';
+"use server";
 
 /**
  * @fileOverview Analyzes a receipt image and extracts transaction details.
@@ -9,33 +9,43 @@
  * - AnalyzeReceiptOutput - The return type for the analyzeReceipt function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
     .describe(
-      "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'.",
     ),
 });
 export type AnalyzeReceiptInput = z.infer<typeof AnalyzeReceiptInputSchema>;
 
 const AnalyzeReceiptOutputSchema = z.object({
-    description: z.string().describe("The name of the vendor or a brief description of the transaction."),
-    amount: z.number().describe("The total amount of the transaction."),
-    category: z.string().describe("A suggested category for the transaction (e.g., Food, Transport, Supplies)."),
+  description: z
+    .string()
+    .describe(
+      "The name of the vendor or a brief description of the transaction.",
+    ),
+  amount: z.number().describe("The total amount of the transaction."),
+  category: z
+    .string()
+    .describe(
+      "A suggested category for the transaction (e.g., Food, Transport, Supplies).",
+    ),
 });
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
-export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
+export async function analyzeReceipt(
+  input: AnalyzeReceiptInput,
+): Promise<AnalyzeReceiptOutput> {
   return analyzeReceiptFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'analyzeReceiptPrompt',
-  input: {schema: AnalyzeReceiptInputSchema},
-  output: {schema: AnalyzeReceiptOutputSchema},
+  name: "analyzeReceiptPrompt",
+  input: { schema: AnalyzeReceiptInputSchema },
+  output: { schema: AnalyzeReceiptOutputSchema },
   prompt: `You are an expert receipt scanner. Analyze the provided receipt image and extract the vendor name (for the description), the total amount, and suggest a relevant category for a nursing professional (e.g., Food, Uniforms, Supplies, Transport, Certifications, Other). The transaction type is always 'Expense'.
 
 Receipt Image: {{media url=receiptImage}}`,
@@ -43,15 +53,15 @@ Receipt Image: {{media url=receiptImage}}`,
 
 const analyzeReceiptFlow = ai.defineFlow(
   {
-    name: 'analyzeReceiptFlow',
+    name: "analyzeReceiptFlow",
     inputSchema: AnalyzeReceiptInputSchema,
     outputSchema: AnalyzeReceiptOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await prompt(input);
     if (!output) {
-      throw new Error('No output returned from analyzeReceiptPrompt');
+      throw new Error("No output returned from analyzeReceiptPrompt");
     }
     return output;
-  }
+  },
 );

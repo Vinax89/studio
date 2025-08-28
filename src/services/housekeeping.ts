@@ -17,7 +17,9 @@ import type { Transaction, Debt, Goal } from "../lib/types";
  * Moves transactions older than the provided cutoff date to an archive collection
  * and removes them from the main transactions collection.
  */
-export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
+export async function archiveOldTransactions(
+  cutoffDate: string,
+): Promise<void> {
   const cutoff = new Date(cutoffDate).toISOString();
   const transCol = collection(db, "transactions");
   const pageSize = 100;
@@ -30,13 +32,13 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
           where("date", "<", cutoff),
           orderBy("date"),
           startAfter(lastDoc),
-          limit(pageSize)
+          limit(pageSize),
         )
       : query(
           transCol,
           where("date", "<", cutoff),
           orderBy("date"),
-          limit(pageSize)
+          limit(pageSize),
         );
 
     const snapshot = await getDocs(q);
@@ -71,13 +73,13 @@ export async function cleanupDebts(): Promise<void> {
           where("currentAmount", "<=", 0),
           orderBy("currentAmount"),
           startAfter(lastDoc),
-          limit(pageSize)
+          limit(pageSize),
         )
       : query(
           debtsCol,
           where("currentAmount", "<=", 0),
           orderBy("currentAmount"),
-          limit(pageSize)
+          limit(pageSize),
         );
 
     const snapshot = await getDocs(q);
@@ -98,7 +100,7 @@ export async function cleanupDebts(): Promise<void> {
 export async function runWithRetry<T>(
   op: () => Promise<T>,
   retries = 1,
-  delayMs = 100
+  delayMs = 100,
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -124,13 +126,16 @@ export async function runWithRetry<T>(
  */
 export async function backupData(
   retries = 1,
-  delayMs = 100
+  delayMs = 100,
 ): Promise<{
   transactions: Transaction[];
   debts: Debt[];
   goals: Goal[];
 }> {
-  async function fetchAll<T>(colName: string, orderField: string): Promise<T[]> {
+  async function fetchAll<T>(
+    colName: string,
+    orderField: string,
+  ): Promise<T[]> {
     const col = collection(db, colName);
     const pageSize = 100;
     const items: T[] = [];
@@ -167,9 +172,8 @@ export async function backupData(
         createdAt: new Date().toISOString(),
       }),
     retries,
-    delayMs
+    delayMs,
   );
 
   return data;
 }
-

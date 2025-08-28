@@ -8,7 +8,7 @@ const nonPlaceholder = z
   .min(1)
   .refine(
     (v) => v !== "REPLACE_WITH_VALUE",
-    "Set this Firebase env var in .env.local"
+    "Set this Firebase env var in .env.local",
   );
 
 const envSchema = z.object({
@@ -28,7 +28,7 @@ const firebaseConfig = {
   projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

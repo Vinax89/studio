@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -22,7 +21,8 @@ import { addCategory, getCategories } from "@/lib/categories";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(mockTransactions);
   const router = useRouter();
   const [isTransitionPending, startTransition] = useTransition();
 
@@ -60,7 +60,7 @@ export default function TransactionsPage() {
       ]);
       addCategory(transaction.category);
     },
-    [setTransactions]
+    [setTransactions],
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();
@@ -83,7 +83,7 @@ export default function TransactionsPage() {
   const handleDownload = () => {
     downloadCsv(
       transactions.map(({ id, ...rest }) => rest),
-      "transactions.csv"
+      "transactions.csv",
     );
   };
 
@@ -105,37 +105,44 @@ export default function TransactionsPage() {
     (value: string) => {
       startTransition(() => setSearchTerm(value));
     },
-    [startTransition, setSearchTerm]
+    [startTransition, setSearchTerm],
   );
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
-            <h1 className="text-3xl font-bold font-headline tracking-tight">Transactions</h1>
-            <p className="text-muted-foreground">Track and manage your income and expenses.</p>
+          <h1 className="text-3xl font-bold font-headline tracking-tight">
+            Transactions
+          </h1>
+          <p className="text-muted-foreground">
+            Track and manage your income and expenses.
+          </p>
         </div>
-         <div className="flex gap-2 items-center flex-wrap">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button variant="outline" onClick={handleUploadClick}>
-                <Upload className="mr-2 h-4 w-4" />
-                Import
-            </Button>
-            <Button variant="outline" onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-            </Button>
-             <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan Receipt
-            </Button>
-            <AddTransactionDialog onSave={addTransaction} />
+        <div className="flex gap-2 items-center flex-wrap">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button variant="outline" onClick={handleUploadClick}>
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button variant="outline" onClick={handleDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/transactions/scan")}
+          >
+            <ScanLine className="mr-2 h-4 w-4" />
+            Scan Receipt
+          </Button>
+          <AddTransactionDialog onSave={addTransaction} />
         </div>
       </div>
 

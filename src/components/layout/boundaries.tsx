@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import React, { PropsWithChildren, Suspense } from 'react';
+import React, { PropsWithChildren, Suspense } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-class RootErrorBoundary extends React.Component<PropsWithChildren, ErrorBoundaryState> {
+class RootErrorBoundary extends React.Component<
+  PropsWithChildren,
+  ErrorBoundaryState
+> {
   constructor(props: PropsWithChildren) {
     super(props);
     this.state = { hasError: false };

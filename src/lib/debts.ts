@@ -1,4 +1,9 @@
-import { collection, doc, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from "firebase/firestore";
 import { db } from "./firebase";
 import type { Debt } from "./types";
 
@@ -14,5 +19,8 @@ const debtConverter = {
 };
 
 // `debts` collection reference using the converter.
-export const debtsCollection = collection(db, "debts").withConverter(debtConverter);
-export const debtDoc = (id: string) => doc(db, "debts", id).withConverter(debtConverter);
+export const debtsCollection = collection(db, "debts").withConverter(
+  debtConverter,
+);
+export const debtDoc = (id: string) =>
+  doc(db, "debts", id).withConverter(debtConverter);

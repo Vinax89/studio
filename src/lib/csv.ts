@@ -6,14 +6,14 @@ export function parseCsv<T>(file: File): Promise<T[]> {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: true,
-      complete: results => {
+      complete: (results) => {
         if (results.errors.length) {
           reject(results.errors);
         } else {
           resolve(results.data as T[]);
         }
       },
-      error: err => reject(err),
+      error: (err) => reject(err),
     });
   });
 }
@@ -30,4 +30,3 @@ export function downloadCsv(data: object[], filename: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-

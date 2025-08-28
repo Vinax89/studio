@@ -1,4 +1,3 @@
-
 export type Transaction = {
   id: string;
   date: string;
@@ -19,8 +18,13 @@ export type Goal = {
   importance: number; // New field: 1-5 rating
 };
 
-export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
-export type Recurrence = typeof RecurrenceValues[number];
+export const RecurrenceValues = [
+  "none",
+  "weekly",
+  "biweekly",
+  "monthly",
+] as const;
+export type Recurrence = (typeof RecurrenceValues)[number];
 
 // This is the unified, authoritative Debt type used across the app.
 export type Debt = {
@@ -33,7 +37,7 @@ export type Debt = {
   // Due date handling:
   // For recurring debts, this is the anchor date for recurrence calculation.
   // For one-time debts, this is the specific due date.
-  dueDate: string; 
+  dueDate: string;
   recurrence: Recurrence;
   autopay: boolean;
   notes?: string;

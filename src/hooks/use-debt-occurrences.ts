@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Recurrence, Debt } from "@/lib/types";
 import {
@@ -20,7 +19,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 function nextOccurrenceOnOrAfter(
   anchorISO: string,
   recurrence: Recurrence,
-  onOrAfter: Date
+  onOrAfter: Date,
 ): Date | null {
   const anchor = parseISO(anchorISO);
   if (recurrence === "none")
@@ -47,7 +46,7 @@ function allOccurrencesInRange(
   debt: Debt,
   from: Date,
   to: Date,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES,
 ): Date[] {
   const out: Date[] = [];
   if (debt.recurrence === "none") {
@@ -70,7 +69,7 @@ function allOccurrencesInRange(
   }
   if (cur && !isAfter(cur, to)) {
     console.warn(
-      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`,
     );
   }
   return out;
@@ -80,7 +79,7 @@ function computeDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES,
 ) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
@@ -105,7 +104,7 @@ export function useDebtOccurrences(
   from: Date,
   to: Date,
   query: string,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES,
 ) {
   const fromTime = from.getTime();
   const toTime = to.getTime();
@@ -115,9 +114,9 @@ export function useDebtOccurrences(
         debts,
         new Date(fromTime),
         new Date(toTime),
-        maxOccurrences
+        maxOccurrences,
       ),
-    [debts, fromTime, toTime, maxOccurrences]
+    [debts, fromTime, toTime, maxOccurrences],
   );
 
   const filtered = useMemo(() => {
@@ -127,7 +126,7 @@ export function useDebtOccurrences(
       const filteredArr = arr.filter((oc) =>
         `${oc.debt.name} ${oc.debt.notes ?? ""}`
           .toLowerCase()
-          .includes(query.toLowerCase())
+          .includes(query.toLowerCase()),
       );
       if (filteredArr.length) map.set(date, filteredArr);
     });
