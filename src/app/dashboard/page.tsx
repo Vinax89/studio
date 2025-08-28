@@ -1,6 +1,6 @@
-import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import OverviewCards from "@/components/dashboard/overview-cards";
 import CurrentTimeCard from "@/components/dashboard/current-time-card";
 import DashboardCharts from "@/app/dashboard/dashboard-charts";
 import { mockTransactions } from "@/lib/data";
