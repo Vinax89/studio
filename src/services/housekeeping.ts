@@ -3,8 +3,12 @@ import {
   getDocs,
   doc,
   addDoc,
-  setDoc,
-  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -14,23 +18,42 @@ import type { Transaction, Debt, Goal } from "../lib/types";
  * and removes them from the main transactions collection.
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const cutoff = new Date(cutoffDate);
+  const cutoff = new Date(cutoffDate).toISOString();
   const transCol = collection(db, "transactions");
-  const snapshot = await getDocs(transCol);
+  const pageSize = 100;
+  let lastDoc: any | undefined;
 
-  const ops: Promise<void>[] = [];
+  while (true) {
+    const q = lastDoc
+      ? query(
+          transCol,
+          where("date", "<", cutoff),
+          orderBy("date"),
+          startAfter(lastDoc),
+          limit(pageSize)
+        )
+      : query(
+          transCol,
+          where("date", "<", cutoff),
+          orderBy("date"),
+          limit(pageSize)
+        );
 
-  for (const snap of snapshot.docs) {
-    const data = snap.data() as Transaction;
-    if (new Date(data.date) < cutoff) {
-      ops.push(
-        setDoc(doc(db, "transactions_archive", snap.id), data),
-        deleteDoc(doc(db, "transactions", snap.id))
-      );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) break;
+
+    const batch = writeBatch(db);
+    for (const snap of snapshot.docs) {
+      const data = snap.data() as Transaction;
+      batch.set(doc(db, "transactions_archive", snap.id), data);
+      batch.delete(doc(db, "transactions", snap.id));
     }
-  }
 
-  await runWithRetry(() => Promise.all(ops));
+    await runWithRetry(() => batch.commit());
+
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    if (snapshot.size < pageSize) break;
+  }
 }
 
 /**
@@ -38,18 +61,38 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
  */
 export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
-  const snapshot = await getDocs(debtsCol);
+  const pageSize = 100;
+  let lastDoc: any | undefined;
 
-  const deletions: Promise<void>[] = [];
+  while (true) {
+    const q = lastDoc
+      ? query(
+          debtsCol,
+          where("currentAmount", "<=", 0),
+          orderBy("currentAmount"),
+          startAfter(lastDoc),
+          limit(pageSize)
+        )
+      : query(
+          debtsCol,
+          where("currentAmount", "<=", 0),
+          orderBy("currentAmount"),
+          limit(pageSize)
+        );
 
-  for (const snap of snapshot.docs) {
-    const data = snap.data() as Debt;
-    if (data.currentAmount <= 0) {
-      deletions.push(deleteDoc(doc(db, "debts", snap.id)));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) break;
+
+    const batch = writeBatch(db);
+    for (const snap of snapshot.docs) {
+      batch.delete(doc(db, "debts", snap.id));
     }
-  }
 
-  await runWithRetry(() => Promise.all(deletions));
+    await runWithRetry(() => batch.commit());
+
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    if (snapshot.size < pageSize) break;
+  }
 }
 
 export async function runWithRetry<T>(
@@ -81,14 +124,34 @@ export async function backupData(): Promise<{
   debts: Debt[];
   goals: Goal[];
 }> {
-  const transactionsSnap = await getDocs(collection(db, "transactions"));
-  const debtsSnap = await getDocs(collection(db, "debts"));
-  const goalsSnap = await getDocs(collection(db, "goals"));
+  async function fetchAll<T>(colName: string, orderField: string): Promise<T[]> {
+    const col = collection(db, colName);
+    const pageSize = 100;
+    const items: T[] = [];
+    let lastDoc: any | undefined;
+
+    while (true) {
+      const q = lastDoc
+        ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
+        : query(col, orderBy(orderField), limit(pageSize));
+
+      const snap = await getDocs(q);
+      if (snap.empty) break;
+
+      for (const d of snap.docs) {
+        items.push(d.data() as T);
+      }
+
+      lastDoc = snap.docs[snap.docs.length - 1];
+      if (snap.size < pageSize) break;
+    }
+    return items;
+  }
 
   const data = {
-    transactions: transactionsSnap.docs.map((d) => d.data() as Transaction),
-    debts: debtsSnap.docs.map((d) => d.data() as Debt),
-    goals: goalsSnap.docs.map((d) => d.data() as Goal),
+    transactions: await fetchAll<Transaction>("transactions", "id"),
+    debts: await fetchAll<Debt>("debts", "id"),
+    goals: await fetchAll<Goal>("goals", "id"),
   };
 
   await addDoc(collection(db, "backups"), {
