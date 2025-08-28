@@ -5,7 +5,7 @@ export type Transaction = {
   description: string;
   amount: number;
   type: "Income" | "Expense";
-  category: string;
+  category: string; // Transaction category
   isRecurring?: boolean;
 };
 

@@ -4,6 +4,7 @@
 import { useState, useMemo, useTransition, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
+import { getCategories, addCategory } from "@/lib/categories";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -21,17 +22,18 @@ export default function TransactionsPage() {
   const isPending = isTransitionPending || deferredSearchTerm !== searchTerm;
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [categories, setCategories] = useState<string[]>(() => getCategories());
 
-  const categories = useMemo(() => {
-    const allCategories = transactions.map(t => t.category);
-    return ['all', ...Array.from(new Set(allCategories))];
-  }, [transactions]);
 
   const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
     setTransactions(prev => [
       { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
+    if (!categories.includes(transaction.category)) {
+      addCategory(transaction.category);
+      setCategories(getCategories());
+    }
   };
 
   const filteredTransactions = useMemo(() => {
@@ -74,7 +76,7 @@ export default function TransactionsPage() {
         onTypeChange={setFilterType}
         filterCategory={filterCategory}
         onCategoryChange={setFilterCategory}
-        categories={categories}
+        categories={['all', ...categories]}
       />
 
       {isPending && (
