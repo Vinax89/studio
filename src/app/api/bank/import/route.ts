@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
+import { TransactionSchema } from "@/lib/types"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -9,7 +10,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
  */
 const bodySchema = z.object({
   provider: z.string(),
-  transactions: z.array(z.any()),
+  transactions: z.array(TransactionSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
