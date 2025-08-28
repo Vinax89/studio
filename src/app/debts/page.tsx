@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { ssr: false });
+const DebtProgressChart = dynamic(() => import("@/components/debts/DebtProgressChart"), { ssr: false });
 import { mockDebts } from "@/lib/data";
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
@@ -69,7 +70,9 @@ export default function DebtsPage() {
       </div>
 
       <DebtCalendar storageKey="nursefinai.debts" initialDebts={debts} onChange={setDebts} />
-      
+
+      <DebtProgressChart debts={debts} />
+
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
           <div>
