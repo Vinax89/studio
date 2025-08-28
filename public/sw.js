@@ -21,10 +21,35 @@ self.addEventListener("fetch", event => {
         try {
           return await fetch(request)
         } catch (err) {
-          const clone = request.clone()
-          const body = await clone.json()
-          const db = await dbPromise
-          await db.add(STORE_NAME, body)
+          const contentType = request.headers.get("Content-Type") || ""
+          let body
+
+          if (contentType.includes("application/json")) {
+            const clone = request.clone()
+            try {
+              body = await clone.json()
+            } catch (parseErr) {
+              console.warn("Failed to parse JSON payload", parseErr)
+              try {
+                body = await request.clone().text()
+              } catch (textErr) {
+                console.warn("Failed to read request body", textErr)
+              }
+            }
+          } else {
+            console.warn(`Unexpected content type: ${contentType}`)
+            try {
+              body = await request.clone().text()
+            } catch (textErr) {
+              console.warn("Failed to read request body", textErr)
+            }
+          }
+
+          if (body !== undefined) {
+            const db = await dbPromise
+            await db.add(STORE_NAME, body)
+          }
+
           return new Response(JSON.stringify({ offline: true }), {
             status: 202,
             headers: { "Content-Type": "application/json" },
