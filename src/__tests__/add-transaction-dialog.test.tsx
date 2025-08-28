@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
 const onSave = jest.fn();
@@ -32,24 +32,34 @@ jest.mock('@/components/ui/switch', () => ({
   ),
 }));
 
+jest.mock('@/ai/flows/categorize-transaction', () => ({
+  suggestCategory: jest.fn(),
+}));
+const { suggestCategory: suggestCategoryMock } = require('@/ai/flows/categorize-transaction') as {
+  suggestCategory: jest.Mock;
+};
+suggestCategoryMock.mockResolvedValue('Misc');
+
 beforeEach(() => {
   onSave.mockClear();
   toastMock.mockClear();
+  suggestCategoryMock.mockClear();
 });
 
-function openAndFill(amount: string) {
+async function openAndFill(amount: string) {
   render(<AddTransactionDialog onSave={onSave} />);
   fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test' } });
+  fireEvent.blur(screen.getByLabelText(/description/i));
+  await waitFor(() => expect(suggestCategoryMock).toHaveBeenCalled());
   fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: amount } });
-  fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Misc' } });
   fireEvent.click(screen.getByText(/save transaction/i));
 }
 
 describe('AddTransactionDialog', () => {
   it.each(['abc', 'Infinity'])(
     'shows toast and prevents save for invalid amount "%s"',
-    (amount) => {
-      openAndFill(amount);
+    async (amount) => {
+      await openAndFill(amount);
       expect(onSave).not.toHaveBeenCalled();
       expect(toastMock).toHaveBeenCalled();
     }

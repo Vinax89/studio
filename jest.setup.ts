@@ -22,6 +22,21 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+// Stub Firebase module to avoid compiling the real implementation during tests
+jest.mock('@/lib/firebase', () => ({}))
+
+// Basic Firestore mocks so modules depending on firebase/firestore don't fail during tests
+jest.mock('firebase/firestore', () => ({
+  collection: () => ({ withConverter: () => ({}) }),
+  doc: () => ({ withConverter: () => ({}) }),
+  onSnapshot: (_ref: any, cb: any) => { cb({ docs: [] }); return () => {}; },
+  setDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  arrayUnion: jest.fn(),
+  arrayRemove: jest.fn(),
+}))
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'
