@@ -1,5 +1,6 @@
 import os from "node:os"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { WorkerPool } from "./worker-pool"
 
 export async function parallelSquare(
@@ -15,12 +16,15 @@ export async function parallelSquare(
   )
 
   const pool = new WorkerPool<number[], number[]>(
-    path.join(__dirname, "mapWorker.js"),
+    path.join(fileURLToPath(new URL(".", import.meta.url)), "mapWorker.js"),
     actualThreads
   )
 
-  const promises = chunks.map(chunk => pool.run(chunk))
-  const results = await Promise.all(promises)
-  await pool.destroy()
-  return results.flat()
+  try {
+    const promises = chunks.map(chunk => pool.run(chunk))
+    const results = await Promise.all(promises)
+    return results.flat()
+  } finally {
+    await pool.destroy()
+  }
 }

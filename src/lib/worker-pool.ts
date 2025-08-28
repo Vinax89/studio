@@ -47,9 +47,18 @@ export class WorkerPool<T = unknown, R = unknown> {
       })
 
       worker.once("exit", code => {
+        this.workers.splice(this.workers.indexOf(worker), 1)
+        const idleIndex = this.idle.indexOf(worker)
+        if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
+
         if (code !== 0) {
-          task.reject(new Error(`Worker stopped with exit code ${code}`))
+          const replacement = new Worker(this.file)
+          this.workers.push(replacement)
+          this.idle.push(replacement)
         }
+
+        this.process()
+        task.reject(new Error(`Worker stopped with exit code ${code}`))
       })
 
       worker.postMessage(task.data)
