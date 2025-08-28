@@ -10,13 +10,14 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'picsum.photos', pathname: '/**' },
     ],
   },
-
-  // Allow Firebase Studio / Cloud Workstations preview host to fetch /_next/*
-  allowedDevOrigins: [
-    '*.cloudworkstations.dev',
-    // Add the specific origin from the error log for stability
-    '6000-firebase-studio-1756253661847.cluster-rhptpnrfenhe4qarq36djxjqmg.cloudworkstations.dev',
-  ],
+  async headers() {
+    return [
+      {
+        source: '/_next/:path*',
+        headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
+      },
+    ];
+  },
 
   experimental: {},
   webpack: (config, { isServer, webpack }) => {

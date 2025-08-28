@@ -295,9 +295,9 @@ export default function CashflowPage() {
                     onSelect={handleDateSelect}
                     month={cursorDate}
                     onMonthChange={setCursorDate}
-                    modifiers={{ 
+                    modifiers={{
                         scheduled: shifts.map(s => s.date),
-                        payPeriod: payPeriod || {},
+                        payPeriod: payPeriod ?? [],
                         overtime: overtimeShifts,
                     }}
                     modifiersClassNames={{ 

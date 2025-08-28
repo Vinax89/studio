@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const parsed = JSON.parse(stored);
       const userSchema = z.object({ uid: z.string() }).passthrough();
       const result = userSchema.safeParse(parsed);
-      return result.success ? (result.data as User) : null;
+      return result.success ? (result.data as unknown as User) : null;
     } catch {
       return null;
     }
