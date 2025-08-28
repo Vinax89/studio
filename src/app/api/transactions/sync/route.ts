@@ -6,7 +6,9 @@ import { TransactionPayloadSchema } from "@/lib/transactions"
 /**
  * Generic transaction syncing endpoint.
  * Unlike `/api/bank/import`, this expects transactions already retrieved
- * from any source and persists them to the database.
+ * from any source and only validates them, returning how many were received.
+ * TODO: Persist validated transactions to the database using
+ * `transactionPersistence.saveTransactions` once storage is implemented.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
@@ -72,6 +74,7 @@ export async function POST(req: Request) {
 
   const { transactions } = parsed.data
 
+  // TODO: Persist transactions using `transactionPersistence.saveTransactions`.
   try {
     return NextResponse.json({ received: transactions.length })
   } catch {
