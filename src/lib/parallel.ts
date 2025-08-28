@@ -18,7 +18,7 @@ export async function parallelSquare(numbers: number[], threads = os.cpus().leng
         return
       }
 
-      const worker = new Worker(new URL("./mapWorker.ts", import.meta.url), {
+      const worker = new Worker(new URL("./mapWorker.js", import.meta.url), {
         workerData: chunk,
       })
 
