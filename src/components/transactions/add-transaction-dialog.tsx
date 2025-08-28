@@ -69,14 +69,14 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         if (suggested) {
             setCategory(suggested)
             setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
-            addCategory(suggested)
         }
     }
 
     const handleSave = () => {
         const numericAmount = Number(amount)
+        const trimmedCategory = category.trim()
 
-        if (!description || !amount || !type || !category || !Number.isFinite(numericAmount)) {
+        if (!description || !amount || !type || !trimmedCategory || !Number.isFinite(numericAmount)) {
             toast({ title: "Invalid amount", description: "Please enter a valid amount.", variant: "destructive" })
             return
         }
@@ -86,10 +86,10 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             amount: numericAmount,
             currency,
             type,
-            category,
+            category: trimmedCategory,
             isRecurring
         })
-        addCategory(category)
+        setCategories(addCategory(trimmedCategory))
         setOpen(false)
         // Reset form
         setDescription("")
