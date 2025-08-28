@@ -55,10 +55,14 @@ export class WorkerPool<T = unknown, R = unknown> {
           const replacement = new Worker(this.file)
           this.workers.push(replacement)
           this.idle.push(replacement)
+          this.process()
+          task.reject(new Error(`Worker stopped with exit code ${code}`))
+        } else {
+          // A zero exit code indicates a graceful shutdown. No need to reject
+          // the pending task; just continue processing with the remaining
+          // workers.
+          this.process()
         }
-
-        this.process()
-        task.reject(new Error(`Worker stopped with exit code ${code}`))
       })
 
       worker.postMessage(task.data)
