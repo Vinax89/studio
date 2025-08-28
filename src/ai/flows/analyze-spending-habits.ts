@@ -21,7 +21,14 @@ const GoalSchema = z.object({
     targetAmount: z.number(),
     currentAmount: z.number(),
     deadline: z.string(),
-    importance: z.number().describe("User's importance rating for this goal, from 1 (not important) to 5 (very important)."),
+    importance: z
+      .number()
+      .int()
+      .min(1)
+      .max(5)
+      .describe(
+        "User's importance rating for this goal, from 1 (not important) to 5 (very important)."
+      ),
 });
 
 export const AnalyzeSpendingHabitsInputSchema = z.object({
