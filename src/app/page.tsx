@@ -96,6 +96,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
                     placeholder="nurse@hospital.com"
                     required
                     value={email}
@@ -107,6 +108,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="current-password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -127,7 +129,11 @@ export default function LoginPage() {
               </form>
               <div className="mt-6 text-center text-sm">
                 {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-                <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
+                <button
+                  type="button"
+                  onClick={() => setIsLoginView(!isLoginView)}
+                  className="underline font-semibold text-primary"
+                >
                   {isLoginView ? "Sign up" : "Sign in"}
                 </button>
               </div>
