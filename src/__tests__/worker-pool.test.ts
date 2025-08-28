@@ -6,11 +6,15 @@ jest.mock("node:worker_threads", () => {
   const { EventEmitter } = require("events")
   return {
     Worker: class MockWorker extends EventEmitter {
-      postMessage(data: unknown) {
+      postMessage(data: any) {
         if (data === "crash") {
           this.emit("error", new Error("boom"))
+        } else if (data && typeof data === "object" && data.exitOnce && !data.exited) {
+          data.exited = true
+          this.emit("exit", 1)
         } else {
-          this.emit("message", (data as number) * 2)
+          const value = typeof data === "number" ? data : data.n
+          this.emit("message", value * 2)
         }
       }
       terminate() {
@@ -31,6 +35,18 @@ describe("WorkerPool", () => {
 
     await expect(fail).rejects.toThrow("boom")
     await expect(success).resolves.toBe(10)
+
+    await pool.destroy()
+  })
+
+  it("recovers when a worker exits unexpectedly", async () => {
+    const pool = new WorkerPool<any, number>("fake", 1)
+
+    const first = pool.run({ n: 2, exitOnce: true })
+    const second = pool.run(3)
+
+    await expect(first).resolves.toBe(4)
+    await expect(second).resolves.toBe(6)
 
     await pool.destroy()
   })
