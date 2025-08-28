@@ -3,12 +3,23 @@ export interface TaxBracket {
   upTo: number | null; // upper bound of the bracket in USD, null for no limit
 }
 
-export interface StateTaxInfo {
+export type FilingStatus =
+  | 'single'
+  | 'married_jointly'
+  | 'married_separately'
+  | 'head_of_household';
+
+interface BaseStateTaxInfo {
   name: string;
-  brackets: TaxBracket[];
+  brackets: TaxBracket[]; // single filer brackets
 }
 
-export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
+export interface StateTaxInfo {
+  name: string;
+  brackets: Record<FilingStatus, TaxBracket[]>;
+}
+
+const BASE_STATE_TAX_RATES: Record<string, BaseStateTaxInfo> = {
   AL: { name: 'Alabama', brackets: [{ rate: 0.05, upTo: null }] },
   AK: { name: 'Alaska', brackets: [{ rate: 0, upTo: null }] },
   AZ: { name: 'Arizona', brackets: [{ rate: 0.025, upTo: null }] },
@@ -91,14 +102,46 @@ export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
   WY: { name: 'Wyoming', brackets: [{ rate: 0, upTo: null }] },
 };
 
-export const US_STATES = Object.entries(STATE_TAX_RATES).map(([code, info]) => ({ code, name: info.name }));
+function cloneBrackets(brackets: TaxBracket[]): Record<FilingStatus, TaxBracket[]> {
+  return {
+    single: brackets,
+    married_jointly: brackets,
+    married_separately: brackets,
+    head_of_household: brackets,
+  };
+}
 
-export function calculateStateTax(taxableIncome: number, stateCode: string): number {
+export const STATE_TAX_RATES: Record<string, StateTaxInfo> = Object.fromEntries(
+  Object.entries(BASE_STATE_TAX_RATES).map(([code, info]) => [
+    code,
+    { name: info.name, brackets: cloneBrackets(info.brackets) },
+  ])
+) as Record<string, StateTaxInfo>;
+
+// Adjust brackets for states with different thresholds by status
+STATE_TAX_RATES.CA.brackets.married_jointly = STATE_TAX_RATES.CA.brackets.single.map(
+  (b) => ({ ...b, upTo: b.upTo === null ? null : b.upTo * 2 })
+);
+STATE_TAX_RATES.NY.brackets.married_jointly = STATE_TAX_RATES.NY.brackets.single.map(
+  (b) => ({ ...b, upTo: b.upTo === null ? null : b.upTo * 2 })
+);
+
+export const US_STATES = Object.entries(STATE_TAX_RATES).map(([code, info]) => ({
+  code,
+  name: info.name,
+}));
+
+export function calculateStateTax(
+  taxableIncome: number,
+  stateCode: string,
+  status: FilingStatus
+): number {
   const info = STATE_TAX_RATES[stateCode];
   if (!info) return 0;
+  const brackets = info.brackets[status] ?? info.brackets.single;
   let tax = 0;
   let last = 0;
-  for (const bracket of info.brackets) {
+  for (const bracket of brackets) {
     const cap = bracket.upTo ?? taxableIncome;
     const amount = Math.max(Math.min(cap, taxableIncome) - last, 0);
     tax += amount * bracket.rate;
@@ -107,3 +150,4 @@ export function calculateStateTax(taxableIncome: number, stateCode: string): num
   }
   return tax;
 }
+
