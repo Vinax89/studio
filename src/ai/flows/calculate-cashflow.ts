@@ -15,12 +15,15 @@ import {z} from 'genkit';
 const CalculateCashflowInputSchema = z.object({
   annualIncome: z
     .number()
+    .nonnegative()
     .describe('Total annual gross income from all sources.'),
   estimatedAnnualTaxes: z
     .number()
+    .nonnegative()
     .describe('Estimated total annual taxes (federal, state, local).'),
   totalMonthlyDeductions: z
     .number()
+    .nonnegative()
     .describe('Total of all monthly deductions and expenses (e.g., rent, loans, utilities, groceries).'),
 });
 export type CalculateCashflowInput = z.infer<typeof CalculateCashflowInputSchema>;
@@ -28,9 +31,11 @@ export type CalculateCashflowInput = z.infer<typeof CalculateCashflowInputSchema
 const CalculateCashflowOutputSchema = z.object({
   grossMonthlyIncome: z
     .number()
+    .nonnegative()
     .describe('The gross monthly income, calculated as annual income divided by 12.'),
   netMonthlyIncome: z
     .number()
+    .min(-1000000)
     .describe('The net monthly income, calculated as gross monthly income minus monthly taxes and deductions.'),
   analysis: z
     .string()
