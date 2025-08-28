@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { z } from "zod";
@@ -22,6 +22,7 @@ const envSchema = z.object({
 
 const env = envSchema.parse(process.env);
 
+<<<<<<< HEAD
 const firebaseConfig = {
 <<<<<<< HEAD
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -31,6 +32,9 @@ const firebaseConfig = {
   messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
 =======
+=======
+const firebaseConfig: FirebaseOptions = {
+>>>>>>> b8806e7 (I see this error with the app, reported by NextJS, please fix it. The er)
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -39,6 +43,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 >>>>>>> d96745a (code review)
 };
+
+// A function to check if all required environment variables are present.
+// This provides a clearer error message than the generic Firebase error.
+function validateFirebaseConfig(config: FirebaseOptions): void {
+  const requiredKeys: (keyof FirebaseOptions)[] = [
+    'apiKey',
+    'authDomain',
+    'projectId',
+  ];
+  for (const key of requiredKeys) {
+    if (!config[key] || config[key] === "YOUR_API_KEY") {
+      throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file.`);
+    }
+  }
+}
+
+// Validate the config before initializing
+validateFirebaseConfig(firebaseConfig);
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
