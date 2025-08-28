@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
-import { deleteDoc } from "firebase/firestore";
-import { debtDoc } from "@/lib/debts";
+import { deleteDebt } from "@/lib/debts/use-debts";
 
 export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>([]);
@@ -49,7 +48,7 @@ export default function DebtsPage() {
   };
 
   const handleDeleteDebt = async (id: string) => {
-    await deleteDoc(debtDoc(id));
+    await deleteDebt(id);
     toast({ title: "Debt Deleted" });
   };
 
