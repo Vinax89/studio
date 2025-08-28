@@ -22,6 +22,10 @@ import {
   getQueuedTransactions,
   clearQueuedTransactions,
 } from "../lib/offline"
+import { render, act } from "@testing-library/react"
+import { ServiceWorker } from "../components/service-worker"
+import * as offline from "../lib/offline"
+import React from "react"
 
 describe("offline fallbacks", () => {
   it("uses in-memory store when IndexedDB fails", async () => {
@@ -34,5 +38,29 @@ describe("offline fallbacks", () => {
     expect(await clearQueuedTransactions()).toBe(true)
     const empty = await getQueuedTransactions()
     expect(empty).toEqual([])
+  })
+})
+
+describe("ServiceWorker", () => {
+  it("handles null queued transactions gracefully", async () => {
+    jest.useFakeTimers()
+    const getQueuedSpy = jest
+      .spyOn(offline, "getQueuedTransactions")
+      .mockResolvedValueOnce(null)
+
+    const fetchMock = jest.fn()
+    ;(global as any).fetch = fetchMock
+
+    render(React.createElement(ServiceWorker))
+
+    await act(async () => {
+      jest.runOnlyPendingTimers()
+    })
+
+    expect(getQueuedSpy).toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    jest.useRealTimers()
+    delete (global as any).fetch
   })
 })
