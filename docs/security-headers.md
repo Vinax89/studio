@@ -1,6 +1,6 @@
 # Security Headers
 
-This project defines security headers in `next.config.ts` for all routes. Any additional routes or middleware must continue to apply these headers.
+This project defines security headers in `middleware.ts` for all routes using a request-specific nonce. Any additional routes or middleware must continue to apply these headers.
 
 ## Required Headers
 
@@ -12,6 +12,6 @@ This project defines security headers in `next.config.ts` for all routes. Any ad
 
 ### Using the CSP Nonce
 
-The Content-Security-Policy includes a nonce. When adding inline scripts, apply this nonce to the `<script>` tag's `nonce` attribute or replace the inline script with an external file. Middleware that generates HTML should propagate the same nonce in the response headers.
+The Content-Security-Policy includes a nonce. Server components can access it with `getRequestNonce()` from `@/lib/nonce`. When adding inline scripts, apply this nonce to the `<script>` tag's `nonce` attribute or replace the inline script with an external file. Middleware that generates HTML should propagate the same nonce in the response headers.
 
 Always verify headers locally when introducing new routes or middleware to ensure functionality remains intact.
