@@ -3,10 +3,47 @@ export interface TaxBracket {
   upTo: number | null; // upper bound of the bracket in USD, null for no limit
 }
 
+export type FilingStatus =
+  | 'single'
+  | 'married_jointly'
+  | 'married_separately'
+  | 'head_of_household';
+
 export interface StateTaxInfo {
   name: string;
-  brackets: TaxBracket[];
+  brackets: TaxBracket[] | Record<FilingStatus, TaxBracket[]>;
 }
+
+function doubleBrackets(brackets: TaxBracket[]): TaxBracket[] {
+  return brackets.map((b) => ({ rate: b.rate, upTo: b.upTo == null ? null : b.upTo * 2 }));
+}
+
+const CA_SINGLE: TaxBracket[] = [
+  { rate: 0.01, upTo: 10099 },
+  { rate: 0.02, upTo: 23942 },
+  { rate: 0.04, upTo: 37788 },
+  { rate: 0.06, upTo: 52455 },
+  { rate: 0.08, upTo: 66295 },
+  { rate: 0.093, upTo: 338639 },
+  { rate: 0.103, upTo: 406364 },
+  { rate: 0.113, upTo: 677275 },
+  { rate: 0.123, upTo: 1000000 },
+  { rate: 0.133, upTo: null },
+];
+
+const NY_SINGLE: TaxBracket[] = [
+  { rate: 0.04, upTo: 8500 },
+  { rate: 0.045, upTo: 11700 },
+  { rate: 0.0525, upTo: 13900 },
+  { rate: 0.059, upTo: 21400 },
+  { rate: 0.0597, upTo: 80650 },
+  { rate: 0.0633, upTo: 215400 },
+  { rate: 0.0657, upTo: 1077550 },
+  { rate: 0.0685, upTo: 5000000 },
+  { rate: 0.0965, upTo: 25000000 },
+  { rate: 0.103, upTo: 50000000 },
+  { rate: 0.109, upTo: null },
+];
 
 export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
   AL: { name: 'Alabama', brackets: [{ rate: 0.05, upTo: null }] },
@@ -15,18 +52,12 @@ export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
   AR: { name: 'Arkansas', brackets: [{ rate: 0.049, upTo: null }] },
   CA: {
     name: 'California',
-    brackets: [
-      { rate: 0.01, upTo: 10099 },
-      { rate: 0.02, upTo: 23942 },
-      { rate: 0.04, upTo: 37788 },
-      { rate: 0.06, upTo: 52455 },
-      { rate: 0.08, upTo: 66295 },
-      { rate: 0.093, upTo: 338639 },
-      { rate: 0.103, upTo: 406364 },
-      { rate: 0.113, upTo: 677275 },
-      { rate: 0.123, upTo: 1000000 },
-      { rate: 0.133, upTo: null },
-    ],
+    brackets: {
+      single: CA_SINGLE,
+      married_jointly: doubleBrackets(CA_SINGLE),
+      married_separately: CA_SINGLE,
+      head_of_household: CA_SINGLE,
+    },
   },
   CO: { name: 'Colorado', brackets: [{ rate: 0.044, upTo: null }] },
   CT: { name: 'Connecticut', brackets: [{ rate: 0.05, upTo: null }] },
@@ -57,19 +88,12 @@ export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
   NM: { name: 'New Mexico', brackets: [{ rate: 0.049, upTo: null }] },
   NY: {
     name: 'New York',
-    brackets: [
-      { rate: 0.04, upTo: 8500 },
-      { rate: 0.045, upTo: 11700 },
-      { rate: 0.0525, upTo: 13900 },
-      { rate: 0.059, upTo: 21400 },
-      { rate: 0.0597, upTo: 80650 },
-      { rate: 0.0633, upTo: 215400 },
-      { rate: 0.0657, upTo: 1077550 },
-      { rate: 0.0685, upTo: 5000000 },
-      { rate: 0.0965, upTo: 25000000 },
-      { rate: 0.103, upTo: 50000000 },
-      { rate: 0.109, upTo: null },
-    ],
+    brackets: {
+      single: NY_SINGLE,
+      married_jointly: doubleBrackets(NY_SINGLE),
+      married_separately: NY_SINGLE,
+      head_of_household: NY_SINGLE,
+    },
   },
   NC: { name: 'North Carolina', brackets: [{ rate: 0.0475, upTo: null }] },
   ND: { name: 'North Dakota', brackets: [{ rate: 0.029, upTo: null }] },
@@ -93,12 +117,20 @@ export const STATE_TAX_RATES: Record<string, StateTaxInfo> = {
 
 export const US_STATES = Object.entries(STATE_TAX_RATES).map(([code, info]) => ({ code, name: info.name }));
 
-export function calculateStateTax(taxableIncome: number, stateCode: string): number {
+export function calculateStateTax(
+  taxableIncome: number,
+  stateCode: string,
+  filingStatus: FilingStatus
+): number {
   const info = STATE_TAX_RATES[stateCode];
   if (!info) return 0;
+  const brackets = Array.isArray(info.brackets)
+    ? info.brackets
+    : info.brackets[filingStatus];
+  if (!brackets) return 0;
   let tax = 0;
   let last = 0;
-  for (const bracket of info.brackets) {
+  for (const bracket of brackets) {
     const cap = bracket.upTo ?? taxableIncome;
     const amount = Math.max(Math.min(cap, taxableIncome) - last, 0);
     tax += amount * bracket.rate;
