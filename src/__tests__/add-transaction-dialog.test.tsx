@@ -47,6 +47,7 @@ async function openAndFill(amount: string) {
   fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test' } });
   fireEvent.blur(screen.getByLabelText(/description/i));
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  await waitFor(() => expect(screen.getByLabelText(/category/i)).toHaveValue('Misc'));
   fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: amount } });
   fireEvent.click(screen.getByText(/save transaction/i));
 }
