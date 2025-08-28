@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -18,9 +18,9 @@ import {
   Settings,
   CreditCard,
   Wallet,
-} from "lucide-react"
-import { NurseFinAILogo } from "@/components/icons"
-import { cn } from "@/lib/utils"
+} from "lucide-react";
+import { NurseFinAILogo } from "@/components/icons";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -30,16 +30,16 @@ const navItems = [
   { href: "/cashflow", icon: Wallet, label: "Cashflow" },
   { href: "/insights", icon: Sparkles, label: "AI Insights" },
   { href: "/taxes", icon: Landmark, label: "Tax Estimator" },
-]
+];
 
 export default function AppSidebar() {
-  const pathname = usePathname()
-  const router = useRouter()
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
-    navItems.forEach((item) => router.prefetch(item.href))
-    router.prefetch("/settings")
-  }, [router])
+    navItems.forEach((item) => router.prefetch(item.href));
+    router.prefetch("/settings");
+  }, [router]);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background dark:border-r dark:bg-background sm:flex">
@@ -59,7 +59,8 @@ export default function AppSidebar() {
                   href={item.href}
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
-                    pathname.startsWith(item.href) && "bg-accent text-accent-foreground"
+                    pathname.startsWith(item.href) &&
+                      "bg-accent text-accent-foreground",
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -86,5 +87,5 @@ export default function AppSidebar() {
         </nav>
       </TooltipProvider>
     </aside>
-  )
+  );
 }

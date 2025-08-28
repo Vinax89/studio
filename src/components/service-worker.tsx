@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
-import { auth } from "@/lib/firebase"
+import { useEffect, useRef } from "react";
+import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline";
+import { auth } from "@/lib/firebase";
 
 export function ServiceWorker() {
-  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleOnline = () => {
-      if (debounceId.current) clearTimeout(debounceId.current)
+      if (debounceId.current) clearTimeout(debounceId.current);
 
       debounceId.current = setTimeout(async () => {
-        const queued = await getQueuedTransactions()
+        const queued = await getQueuedTransactions();
         if (queued.length) {
           try {
-            const user = auth.currentUser
-            const token = user ? await user.getIdToken() : null
+            const user = auth.currentUser;
+            const token = user ? await user.getIdToken() : null;
             if (!token) {
-              console.error("Cannot sync queued transactions without auth")
-              return
+              console.error("Cannot sync queued transactions without auth");
+              return;
             }
             const response = await fetch("/api/transactions/sync", {
               method: "POST",
@@ -28,42 +28,42 @@ export function ServiceWorker() {
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ transactions: queued }),
-            })
+            });
             if (!response.ok) {
               console.error(
                 "Failed to sync queued transactions",
-                await response.text()
-              )
-              return
+                await response.text(),
+              );
+              return;
             }
-            await clearQueuedTransactions()
+            await clearQueuedTransactions();
           } catch (error) {
-            console.error("Failed to sync queued transactions", error)
+            console.error("Failed to sync queued transactions", error);
           }
         }
-      }, 1000)
-    }
+      }, 1000);
+    };
 
     const registerAndListen = async () => {
       if ("serviceWorker" in navigator) {
         try {
-          await navigator.serviceWorker.register("/sw.js")
+          await navigator.serviceWorker.register("/sw.js");
         } catch (error) {
-          console.error(error)
+          console.error(error);
         }
       }
 
-      window.addEventListener("online", handleOnline)
-      if (navigator.onLine) handleOnline()
-    }
+      window.addEventListener("online", handleOnline);
+      if (navigator.onLine) handleOnline();
+    };
 
-    registerAndListen()
+    registerAndListen();
 
     return () => {
-      window.removeEventListener("online", handleOnline)
-      if (debounceId.current) clearTimeout(debounceId.current)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      if (debounceId.current) clearTimeout(debounceId.current);
+    };
+  }, []);
 
-  return null
+  return null;
 }

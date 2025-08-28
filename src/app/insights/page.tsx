@@ -1,24 +1,47 @@
+"use client";
 
-"use client"
-
-import { useState, useEffect } from "react"
-import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput, predictSpending } from "@/ai/flows"
+import { useState, useEffect } from "react";
+import {
+  analyzeSpendingHabits,
+  type AnalyzeSpendingHabitsOutput,
+  predictSpending,
+} from "@/ai/flows";
 import { mockGoals, mockTransactions } from "@/lib/data"; // Import mock data
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 export default function InsightsPage() {
-  const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
-  const [files, setFiles] = useState<File[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
-  const [forecastData, setForecastData] = useState<{ month: string; amount: number }[]>([])
+  const [userDescription, setUserDescription] = useState(
+    "I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.",
+  );
+  const [files, setFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalyzeSpendingHabitsOutput | null>(null);
+  const [forecastData, setForecastData] = useState<
+    { month: string; amount: number }[]
+  >([]);
   const { toast } = useToast();
 
   // For this demo, we'll use mock data. In a real app, this would be fetched.
@@ -27,7 +50,9 @@ export default function InsightsPage() {
   useEffect(() => {
     const loadForecast = async () => {
       try {
-        const result = await predictSpending({ transactions: mockTransactions });
+        const result = await predictSpending({
+          transactions: mockTransactions,
+        });
         setForecastData(result.forecast);
       } catch (error) {
         console.error("Error predicting spending:", error);
@@ -52,7 +77,7 @@ export default function InsightsPage() {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
     if (files.length === 0) {
       toast({
         title: "Missing Information",
@@ -62,45 +87,55 @@ export default function InsightsPage() {
       return;
     }
 
-    setIsLoading(true)
-    setAnalysisResult(null)
+    setIsLoading(true);
+    setAnalysisResult(null);
 
     try {
       const financialDocuments = await Promise.all(files.map(fileToDataURI));
-      const result = await analyzeSpendingHabits({ 
-          userDescription, 
-          financialDocuments,
-          goals 
+      const result = await analyzeSpendingHabits({
+        userDescription,
+        financialDocuments,
+        goals,
       });
       setAnalysisResult(result);
     } catch (error) {
       console.error("Error analyzing spending habits:", error);
       toast({
         title: "Analysis Failed",
-        description: "There was an error generating your financial insights. Please try again.",
+        description:
+          "There was an error generating your financial insights. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">AI-Powered Financial Insights</h1>
-        <p className="text-muted-foreground">Get personalized advice based on your goals and financial documents.</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          AI-Powered Financial Insights
+        </h1>
+        <p className="text-muted-foreground">
+          Get personalized advice based on your goals and financial documents.
+        </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Generate Insights</CardTitle>
-          <CardDescription>Your financial goals (from the Goals page) will be automatically included in the analysis. Just provide any relevant documents.</CardDescription>
+          <CardDescription>
+            Your financial goals (from the Goals page) will be automatically
+            included in the analysis. Just provide any relevant documents.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-             <div className="space-y-2">
-              <Label htmlFor="user-description">Your Personal Context (Optional)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="user-description">
+                Your Personal Context (Optional)
+              </Label>
               <Textarea
                 id="user-description"
                 placeholder="e.g., I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years."
@@ -127,7 +162,9 @@ export default function InsightsPage() {
                   ))}
                 </ul>
               )}
-              <p className="text-sm text-muted-foreground">Upload documents like pay stubs or bank statements.</p>
+              <p className="text-sm text-muted-foreground">
+                Upload documents like pay stubs or bank statements.
+              </p>
             </div>
             <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
@@ -138,7 +175,7 @@ export default function InsightsPage() {
               ) : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                   Generate Analysis
+                  Generate Analysis
                 </>
               )}
             </Button>
@@ -150,7 +187,9 @@ export default function InsightsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Spending Forecast</CardTitle>
-            <CardDescription>Projected spending for the next 3 months.</CardDescription>
+            <CardDescription>
+              Projected spending for the next 3 months.
+            </CardDescription>
           </CardHeader>
           <CardContent className="py-6">
             <ResponsiveContainer width="100%" height={300}>
@@ -160,7 +199,12 @@ export default function InsightsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="amount" stroke="var(--color-expenses)" name="Spending" />
+                <Line
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="var(--color-expenses)"
+                  name="Spending"
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -176,43 +220,55 @@ export default function InsightsPage() {
               </div>
               <div>
                 <CardTitle>Spending Analysis</CardTitle>
-                <CardDescription>A summary of your spending patterns.</CardDescription>
+                <CardDescription>
+                  A summary of your spending patterns.
+                </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="leading-relaxed">{analysisResult.spendingAnalysis}</p>
+              <p className="leading-relaxed">
+                {analysisResult.spendingAnalysis}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
-                <div className="p-3 rounded-full bg-accent text-accent-foreground">
-                    <TrendingUp className="h-6 w-6" />
-                </div>
-                <div>
-                    <CardTitle>Savings Opportunities</CardTitle>
-                    <CardDescription>Where you can potentially save money.</CardDescription>
-                </div>
+              <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle>Savings Opportunities</CardTitle>
+                <CardDescription>
+                  Where you can potentially save money.
+                </CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="leading-relaxed whitespace-pre-wrap">{analysisResult.savingsOpportunities}</p>
+              <p className="leading-relaxed whitespace-pre-wrap">
+                {analysisResult.savingsOpportunities}
+              </p>
             </CardContent>
           </Card>
           <Card>
-             <CardHeader className="flex flex-row items-center gap-4">
-                <div className="p-3 rounded-full bg-accent text-accent-foreground">
-                    <Sparkles className="h-6 w-6" />
-                </div>
-                <div>
-                    <CardTitle>Personalized Recommendations</CardTitle>
-                    <CardDescription>Actionable advice based on your goals and their importance.</CardDescription>
-                </div>
+            <CardHeader className="flex flex-row items-center gap-4">
+              <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle>Personalized Recommendations</CardTitle>
+                <CardDescription>
+                  Actionable advice based on your goals and their importance.
+                </CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="leading-relaxed whitespace-pre-wrap">{analysisResult.recommendations}</p>
+              <p className="leading-relaxed whitespace-pre-wrap">
+                {analysisResult.recommendations}
+              </p>
             </CardContent>
           </Card>
         </div>
       )}
     </div>
-  )
+  );
 }

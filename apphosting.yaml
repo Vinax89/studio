@@ -47,7 +47,7 @@ env:
 scheduler:
   jobs:
     - name: housekeeping
-      schedule: "0 0 * * *"  # daily at midnight
+      schedule: "0 0 * * *" # daily at midnight
       httpTarget:
         uri: /api/cron/housekeeping
         httpMethod: GET

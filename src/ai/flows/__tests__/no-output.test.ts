@@ -1,47 +1,53 @@
 function setupNoOutputMocks() {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
+  const definePromptMock = jest
+    .fn()
+    .mockReturnValue(async () => ({ output: undefined }));
   const defineFlowMock = jest.fn((_config: any, handler: any) => handler);
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  jest.doMock("@/ai/genkit", () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
 }
 
-describe('calculateCashflowFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+describe("calculateCashflowFlow", () => {
+  it("throws an error when prompt returns no output", async () => {
     jest.resetModules();
     setupNoOutputMocks();
-    const { calculateCashflow } = await import('@/ai/flows/calculate-cashflow');
+    const { calculateCashflow } = await import("@/ai/flows/calculate-cashflow");
     await expect(
       calculateCashflow({
         annualIncome: 50000,
         estimatedAnnualTaxes: 10000,
         totalMonthlyDeductions: 2000,
-      })
-    ).rejects.toThrow('No output returned from calculateCashflowFlow');
+      }),
+    ).rejects.toThrow("No output returned from calculateCashflowFlow");
   });
 });
 
-describe('suggestDebtStrategyFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+describe("suggestDebtStrategyFlow", () => {
+  it("throws an error when prompt returns no output", async () => {
     jest.resetModules();
     setupNoOutputMocks();
-    const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
-    await expect(
-      suggestDebtStrategy({ debts: [] })
-    ).rejects.toThrow('No output returned from suggestDebtStrategyFlow');
+    const { suggestDebtStrategy } = await import(
+      "@/ai/flows/suggest-debt-strategy"
+    );
+    await expect(suggestDebtStrategy({ debts: [] })).rejects.toThrow(
+      "No output returned from suggestDebtStrategyFlow",
+    );
   });
 });
 
-describe('taxEstimationFlow', () => {
-  it('throws an error when prompt returns no output', async () => {
+describe("taxEstimationFlow", () => {
+  it("throws an error when prompt returns no output", async () => {
     jest.resetModules();
     setupNoOutputMocks();
-    const { estimateTax } = await import('@/ai/flows/tax-estimation');
+    const { estimateTax } = await import("@/ai/flows/tax-estimation");
     await expect(
       estimateTax({
         income: 50000,
         deductions: 10000,
-        location: 'NY',
-        filingStatus: 'single',
-      })
-    ).rejects.toThrow('No output returned from taxEstimationFlow');
+        location: "NY",
+        filingStatus: "single",
+      }),
+    ).rejects.toThrow("No output returned from taxEstimationFlow");
   });
 });

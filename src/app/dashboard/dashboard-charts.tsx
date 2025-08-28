@@ -31,15 +31,18 @@ const IncomeExpenseChartClient = dynamic(
         </CardContent>
       </Card>
     ),
-  }
+  },
 );
 
 interface DashboardChartsProps {
-    transactions: Transaction[];
-    chartData: any[];
+  transactions: Transaction[];
+  chartData: any[];
 }
 
-export default function DashboardCharts({ transactions, chartData }: DashboardChartsProps) {
+export default function DashboardCharts({
+  transactions,
+  chartData,
+}: DashboardChartsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div className="lg:col-span-2">

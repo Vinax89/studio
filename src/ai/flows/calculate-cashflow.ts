@@ -1,5 +1,5 @@
 // This file uses server-side code.
-'use server';
+"use server";
 
 /**
  * @fileOverview Provides a cashflow analysis based on income, taxes, and deductions.
@@ -9,43 +9,55 @@
  * - CalculateCashflowOutput - The return type for the calculateCashflow function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const CalculateCashflowInputSchema = z.object({
   annualIncome: z
     .number()
-    .describe('Total annual gross income from all sources.'),
+    .describe("Total annual gross income from all sources."),
   estimatedAnnualTaxes: z
     .number()
-    .describe('Estimated total annual taxes (federal, state, local).'),
+    .describe("Estimated total annual taxes (federal, state, local)."),
   totalMonthlyDeductions: z
     .number()
-    .describe('Total of all monthly deductions and expenses (e.g., rent, loans, utilities, groceries).'),
+    .describe(
+      "Total of all monthly deductions and expenses (e.g., rent, loans, utilities, groceries).",
+    ),
 });
-export type CalculateCashflowInput = z.infer<typeof CalculateCashflowInputSchema>;
+export type CalculateCashflowInput = z.infer<
+  typeof CalculateCashflowInputSchema
+>;
 
 const CalculateCashflowOutputSchema = z.object({
   grossMonthlyIncome: z
     .number()
-    .describe('The gross monthly income, calculated as annual income divided by 12.'),
+    .describe(
+      "The gross monthly income, calculated as annual income divided by 12.",
+    ),
   netMonthlyIncome: z
     .number()
-    .describe('The net monthly income, calculated as gross monthly income minus monthly taxes and deductions.'),
+    .describe(
+      "The net monthly income, calculated as gross monthly income minus monthly taxes and deductions.",
+    ),
   analysis: z
     .string()
-    .describe('A brief analysis and summary of the cashflow situation.'),
+    .describe("A brief analysis and summary of the cashflow situation."),
 });
-export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
+export type CalculateCashflowOutput = z.infer<
+  typeof CalculateCashflowOutputSchema
+>;
 
-export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
+export async function calculateCashflow(
+  input: CalculateCashflowInput,
+): Promise<CalculateCashflowOutput> {
   return calculateCashflowFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'calculateCashflowPrompt',
-  input: {schema: CalculateCashflowInputSchema},
-  output: {schema: CalculateCashflowOutputSchema},
+  name: "calculateCashflowPrompt",
+  input: { schema: CalculateCashflowInputSchema },
+  output: { schema: CalculateCashflowOutputSchema },
   prompt: `You are a financial analyst. Based on the user's provided income, taxes, and deductions, calculate their gross and net monthly cashflow.
 
 Annual Income: {{{annualIncome}}}
@@ -61,15 +73,15 @@ Return the results in the specified output format.`,
 
 const calculateCashflowFlow = ai.defineFlow(
   {
-    name: 'calculateCashflowFlow',
+    name: "calculateCashflowFlow",
     inputSchema: CalculateCashflowInputSchema,
     outputSchema: CalculateCashflowOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await prompt(input);
     if (!output) {
-      throw new Error('No output returned from calculateCashflowFlow');
+      throw new Error("No output returned from calculateCashflowFlow");
     }
     return output;
-  }
+  },
 );

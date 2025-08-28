@@ -36,7 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [user, setUser] = useState<User | null>(() => auth.currentUser ?? getPersistedUser());
+  const [user, setUser] = useState<User | null>(
+    () => auth.currentUser ?? getPersistedUser(),
+  );
   const router = useRouter();
   const pathname = usePathname();
 
@@ -60,8 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, router, pathname]);
 
   return (
-    <AuthContext.Provider value={{ user }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
   );
 }

@@ -5,12 +5,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import type { Transaction } from "@/lib/types"
-import { Repeat } from "lucide-react"
-import { formatCurrency } from "@/lib/currency"
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type { Transaction } from "@/lib/types";
+import { Repeat } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import {
   memo,
   useMemo,
@@ -18,16 +18,16 @@ import {
   forwardRef,
   type HTMLAttributes,
   type ComponentType,
-} from "react"
-import { FixedSizeList, type ListChildComponentProps } from "react-window"
-import { Button } from "@/components/ui/button"
+} from "react";
+import { FixedSizeList, type ListChildComponentProps } from "react-window";
+import { Button } from "@/components/ui/button";
 
 interface TransactionsTableProps {
-  transactions: Transaction[]
+  transactions: Transaction[];
   /** Height of the scrollable list in pixels */
-  height?: number
+  height?: number;
   /** Height of each row in pixels */
-  rowHeight?: number
+  rowHeight?: number;
 }
 
 export const TransactionsTable = memo(function TransactionsTable({
@@ -35,8 +35,8 @@ export const TransactionsTable = memo(function TransactionsTable({
   height = 400,
   rowHeight = 56,
 }: TransactionsTableProps) {
-  const [page, setPage] = useState(0)
-  const [pageSize] = useState(20)
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(20);
 
   const currentTransactions = useMemo(
     () =>
@@ -50,10 +50,10 @@ export const TransactionsTable = memo(function TransactionsTable({
           }${formatCurrency(transaction.amount, transaction.currency)}`,
         })),
     [transactions, page, pageSize],
-  )
+  );
 
   const Row = ({ index, style }: ListChildComponentProps) => {
-    const transaction = currentTransactions[index]
+    const transaction = currentTransactions[index];
     return (
       <TableRow style={style} key={transaction.id}>
         <TableCell>{transaction.formattedDate}</TableCell>
@@ -76,22 +76,23 @@ export const TransactionsTable = memo(function TransactionsTable({
           {transaction.formattedAmount}
         </TableCell>
       </TableRow>
-    )
-  }
+    );
+  };
 
-  const Outer: ComponentType<HTMLAttributes<HTMLDivElement>> =
-    forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-      ({ style, children, ...props }, ref) => (
-        <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
-          <Table>{children}</Table>
-        </div>
-      ),
-    )
+  const Outer: ComponentType<HTMLAttributes<HTMLDivElement>> = forwardRef<
+    HTMLDivElement,
+    HTMLAttributes<HTMLDivElement>
+  >(({ style, children, ...props }, ref) => (
+    <div ref={ref} style={{ ...style, overflow: "auto" }} {...props}>
+      <Table>{children}</Table>
+    </div>
+  ));
 
   const Inner: ComponentType<HTMLAttributes<HTMLTableSectionElement>> =
-    forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
-      (props, ref) => <TableBody ref={ref} {...props} />,
-    )
+    forwardRef<
+      HTMLTableSectionElement,
+      HTMLAttributes<HTMLTableSectionElement>
+    >((props, ref) => <TableBody ref={ref} {...props} />);
 
   return (
     <div className="rounded-lg border">
@@ -138,6 +139,5 @@ export const TransactionsTable = memo(function TransactionsTable({
         </Button>
       </div>
     </div>
-  )
-})
-
+  );
+});

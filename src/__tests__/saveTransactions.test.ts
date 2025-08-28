@@ -52,8 +52,7 @@ describe("saveTransactions", () => {
   it("throws detailed error when commit fails", async () => {
     mockCommit.mockRejectedValueOnce(new Error("commit failed"));
     await expect(saveTransactions(transactions)).rejects.toThrow(
-      "Failed to save transactions batch: commit failed"
+      "Failed to save transactions batch: commit failed",
     );
   });
 });
-
