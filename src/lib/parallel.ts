@@ -11,6 +11,6 @@ export async function parallelSquare(numbers: number[], threads = os.cpus().leng
 
   const promises = chunks.map(chunk => pool.run(chunk))
   const results = await Promise.all(promises)
-
+  await pool.destroy()
   return results.flat()
 }
