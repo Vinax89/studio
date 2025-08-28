@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { Loader2, Mail, Lock } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -75,26 +75,39 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nurse@hospital.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div className="flex items-center w-full">
+                <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nurse@hospital.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 w-auto"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="flex items-center w-full">
+                <Lock className="mr-2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="flex-1 w-auto"
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-primary/80 transition-colors focus:ring-2 focus:ring-primary hover:from-primary/90 hover:to-primary/70"
+              size="lg"
+              disabled={isLoading}
+            >
                 {isLoading ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
