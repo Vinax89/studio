@@ -19,6 +19,12 @@ export type Goal = {
   importance: number; // New field: 1-5 rating
 };
 
+export interface ChartPoint {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
 export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
 export type Recurrence = typeof RecurrenceValues[number];
 
