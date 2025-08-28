@@ -5,6 +5,7 @@ export const transactionSchema = z.object({
   date: z.string(),
   description: z.string(),
   amount: z.number(),
+  currency: z.string(),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
   isRecurring: z.boolean().optional()
@@ -21,7 +22,14 @@ export const goalSchema = z.object({
 });
 export type Goal = z.infer<typeof goalSchema>;
 
-export const recurrenceSchema = z.enum(["none", "weekly", "biweekly", "monthly"]);
+export interface ChartPoint {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
+export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
+export const recurrenceSchema = z.enum(RecurrenceValues);
 export type Recurrence = z.infer<typeof recurrenceSchema>;
 
 export const debtSchema = z.object({
