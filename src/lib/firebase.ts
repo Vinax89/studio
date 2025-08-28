@@ -1,4 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { config } from "dotenv";
+config(); // Load environment variables from .env file
+
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { z } from "zod";
@@ -22,14 +25,33 @@ const envSchema = z.object({
 
 const env = envSchema.parse(process.env);
 
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+// A function to check if all required environment variables are present.
+// This provides a clearer error message than the generic Firebase error.
+function validateFirebaseConfig(config: FirebaseOptions): void {
+  const requiredKeys: (keyof FirebaseOptions)[] = [
+    'apiKey',
+    'authDomain',
+    'projectId',
+  ];
+  for (const key of requiredKeys) {
+    if (!config[key] || config[key] === "YOUR_API_KEY_HERE") {
+      const envVarName = `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`;
+      throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file for the ${envVarName} variable.`);
+    }
+  }
+}
+
+// Validate the config before initializing
+validateFirebaseConfig(firebaseConfig);
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
