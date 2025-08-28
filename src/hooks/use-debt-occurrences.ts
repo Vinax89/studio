@@ -1,83 +1,118 @@
 
 import { useMemo } from "react";
 import { Recurrence, Debt } from "@/lib/types";
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  differenceInMonths,
+  isAfter,
+  isBefore,
+  isSameDay,
+  parseISO,
+} from "date-fns";
+
+// Maximum number of occurrences to generate for a single debt
+export const DEFAULT_MAX_OCCURRENCES = 400;
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
-const parseISO = (s: string) => {
-  const [y, m, dd] = s.split("-").map(Number);
-  return new Date(y, m - 1, dd);
-};
-const addDays = (d: Date, days: number) =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
-const isSameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
 
-function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOrAfter: Date): Date | null {
+/**
+ * Computes the next occurrence of a recurring debt on or after a target date.
+ *
+ * Supported recurrence modes are:
+ * - `"none"` – a one-time occurrence that must match the anchor date exactly.
+ * - `"weekly"` – repeats every seven days.
+ * - `"biweekly"` – repeats every fourteen days.
+ * - `"monthly"` – repeats on the same day of each month.
+ *
+ * @param anchorISO - ISO date string representing the first occurrence.
+ * @param recurrence - Recurrence frequency of the debt.
+ * @param onOrAfter - Date to search for the next occurrence from.
+ * @returns The first occurrence on or after `onOrAfter`, or `null` if none.
+ */
+function nextOccurrenceOnOrAfter(
+  anchorISO: string,
+  recurrence: Recurrence,
+  onOrAfter: Date
+): Date | null {
   const anchor = parseISO(anchorISO);
-  if (recurrence === "none") return isSameDay(anchor, onOrAfter) || anchor > onOrAfter ? anchor : null;
-  const step = recurrence === "weekly" ? 7 : recurrence === "biweekly" ? 14 : 0;
+  if (recurrence === "none")
+    return isSameDay(anchor, onOrAfter) || isAfter(anchor, onOrAfter)
+      ? anchor
+      : null;
   if (recurrence === "monthly") {
-    let target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth(), anchor.getDate());
-    // If the calculated target date for this month is already past, move to next month.
-    // The `isSameDay` check is important for when the anchor date is today.
-    if (target < onOrAfter && !isSameDay(target, onOrAfter)) {
-        target = new Date(onOrAfter.getFullYear(), onOrAfter.getMonth() + 1, anchor.getDate());
+    if (isBefore(onOrAfter, anchor)) return anchor;
+    const monthsDiff = differenceInMonths(onOrAfter, anchor);
+    let candidate = addMonths(anchor, monthsDiff);
+    if (isBefore(candidate, onOrAfter)) {
+      candidate = addMonths(candidate, 1);
     }
-    // Now, ensure the final target is not before the original anchor date.
-    if (target < anchor) {
-      target.setFullYear(anchor.getFullYear());
-      target.setMonth(anchor.getMonth());
-      if (target < anchor) {
-         target.setMonth(target.getMonth() + 1);
-      }
-    }
-    return target;
+    return candidate;
   }
-  const diffDays = Math.floor((onOrAfter.getTime() - anchor.getTime()) / 86400000);
+  const step = recurrence === "weekly" ? 7 : 14;
+  const diffDays = differenceInCalendarDays(onOrAfter, anchor);
   const k = diffDays <= 0 ? 0 : Math.ceil(diffDays / step);
   const candidate = addDays(anchor, k * step);
-  return candidate < onOrAfter ? addDays(candidate, step) : candidate;
+  return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate;
 }
 
-function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
+/**
+ * Generates all occurrences of a debt within the given date range.
+ *
+ * The iteration stops after `maxOccurrences` cycles; if more occurrences
+ * exist within the range after that point, a console warning is emitted to
+ * signal truncation.
+ *
+ * @param debt - Debt to expand into individual occurrences.
+ * @param from - Start of the date range (inclusive).
+ * @param to - End of the date range (inclusive).
+ * @param maxOccurrences - Maximum number of iterations to perform.
+ * @returns Array of occurrence dates within the specified range.
+ */
+function allOccurrencesInRange(
+  debt: Debt,
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+): Date[] {
   const out: Date[] = [];
-  const maxIter = 400; // Safety break
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
-    if (d >= from && d <= to) out.push(d);
+    if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
     return out;
   }
   let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
   let iter = 0;
   const stepDays =
     debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
-    
-  while (cur && cur <= to && iter < maxIter) {
-    out.push(new Date(cur));
+
+  while (cur && !isAfter(cur, to) && iter < maxOccurrences) {
+    out.push(cur);
     iter++;
-    if (debt.recurrence === "monthly") {
-      const nextDate = new Date(cur.getFullYear(), cur.getMonth() + 1, cur.getDate());
-      // Handle month-end issues by advancing at least one day
-      if(nextDate <= cur) {
-          cur.setDate(cur.getDate() + 1); // Move to next day before calculating next month
-          cur = new Date(cur.getFullYear(), cur.getMonth() + 1, debt.dueDate ? parseISO(debt.dueDate).getDate() : cur.getDate());
-      } else {
-          cur = nextDate;
-      }
-    } else {
-      cur = addDays(cur, stepDays);
-    }
+    cur =
+      debt.recurrence === "monthly"
+        ? addMonths(cur, 1)
+        : addDays(cur, stepDays);
+  }
+  if (cur && !isAfter(cur, to)) {
+    console.warn(
+      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+    );
   }
   return out;
 }
 
-function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
+function computeDebtOccurrences(
+  debts: Debt[],
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to);
+    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
     occ.forEach((dt) => {
       const oc = { date: iso(dt), debt: d };
       occurrences.push(oc);
@@ -92,16 +127,39 @@ function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
 
 export type Occurrence = { date: string; debt: Debt };
 
+/**
+ * React hook that expands debts into dated occurrences and groups them by day.
+ *
+ * The grouped map is filtered by `query`, which matches against a debt's name
+ * and optional notes. The returned `occurrences` list is unaffected by this
+ * filtering.
+ *
+ * @param debts - Debts to compute occurrences for.
+ * @param from - Start of the date range (inclusive).
+ * @param to - End of the date range (inclusive).
+ * @param query - Search string used to filter the grouped map by debt info.
+ * @param maxOccurrences - Maximum occurrences to generate per debt.
+ * @returns An object containing the flat `occurrences` list and a `grouped`
+ * map keyed by ISO date string after filtering.
+ */
 export function useDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  query: string
+  query: string,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
+  const fromTime = from.getTime();
+  const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
-    () => computeDebtOccurrences(debts, from, to),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debts, from.toISOString(), to.toISOString()]
+    () =>
+      computeDebtOccurrences(
+        debts,
+        new Date(fromTime),
+        new Date(toTime),
+        maxOccurrences
+      ),
+    [debts, fromTime, toTime, maxOccurrences]
   );
 
   const filtered = useMemo(() => {

@@ -16,4 +16,3 @@ parentPort?.on("message", (numbers: number[]) => {
     })
   }
 })
-
