@@ -1,12 +1,16 @@
-import { getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
+import { getApps, initializeApp, type App } from "firebase-admin/app";
+import { getAuth, type DecodedIdToken } from "firebase-admin/auth";
 
 /**
  * Verifies a Firebase ID token from the Authorization header.
  * In test environments, a token value of "test-token" is accepted.
  * @throws Error if the token is missing or invalid.
  */
-export async function verifyFirebaseToken(req: Request): Promise<void> {
+let app: App | undefined;
+
+export async function verifyFirebaseToken(
+  req: Request,
+): Promise<DecodedIdToken> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new Error("Missing Authorization header");
@@ -18,12 +22,12 @@ export async function verifyFirebaseToken(req: Request): Promise<void> {
     if (token !== "test-token") {
       throw new Error("Invalid token");
     }
-    return;
+    return { uid: "test-uid" } as unknown as DecodedIdToken;
   }
 
-  if (!getApps().length) {
-    initializeApp();
+  if (!app) {
+    app = getApps().length ? getApps()[0] : initializeApp();
   }
 
-  await getAuth().verifyIdToken(token);
+  return getAuth(app).verifyIdToken(token);
 }
