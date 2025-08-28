@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 
 interface TransactionsFilterProps {
     searchTerm: string;
@@ -26,7 +26,11 @@ export function TransactionsFilter({
   return (
     <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Icon
+              name="search"
+              size={16}
+              className="absolute left-2.5 top-2.5 text-muted-foreground"
+            />
             <Input
             type="search"
             placeholder="Search by description..."

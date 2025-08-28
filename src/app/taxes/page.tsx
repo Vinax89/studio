@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Calculator, Percent, FileText } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -99,9 +99,19 @@ export default function TaxEstimatorPage() {
             </div>
             <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Calculating...</>
+                <>
+                  <Icon
+                    name="loader2"
+                    size={16}
+                    className="mr-2 animate-spin"
+                  />
+                  Calculating...
+                </>
               ) : (
-                <><Calculator className="mr-2 h-4 w-4" /> Estimate Taxes</>
+                <>
+                  <Icon name="calculator" size={16} className="mr-2" />
+                  Estimate Taxes
+                </>
               )}
             </Button>
           </form>
@@ -115,7 +125,11 @@ export default function TaxEstimatorPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Estimated Tax</CardTitle>
-                        <Calculator className="h-4 w-4 text-muted-foreground" />
+                        <Icon
+                          name="calculator"
+                          size={16}
+                          className="text-muted-foreground"
+                        />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${taxResult.estimatedTax.toLocaleString()}</div>
@@ -125,7 +139,11 @@ export default function TaxEstimatorPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Effective Tax Rate</CardTitle>
-                        <Percent className="h-4 w-4 text-muted-foreground" />
+                        <Icon
+                          name="percent"
+                          size={16}
+                          className="text-muted-foreground"
+                        />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{taxResult.taxRate.toFixed(2)}%</div>
@@ -135,7 +153,7 @@ export default function TaxEstimatorPage() {
             </div>
              <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Breakdown</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Icon name="fileText" size={20} /> Breakdown</CardTitle>
                     <CardDescription>A detailed explanation of how the tax was estimated.</CardDescription>
                 </CardHeader>
                 <CardContent>

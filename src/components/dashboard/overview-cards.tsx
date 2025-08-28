@@ -1,7 +1,7 @@
 
 "use client"
 
-import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types"
 
@@ -25,7 +25,7 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Icon name="trendingUp" size={16} className="text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -35,7 +35,7 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-          <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          <Icon name="trendingDown" size={16} className="text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -45,7 +45,7 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Savings</CardTitle>
-          <PiggyBank className="h-4 w-4 text-muted-foreground" />
+          <Icon name="piggyBank" size={16} className="text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${savings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>

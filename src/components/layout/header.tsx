@@ -4,11 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { auth } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
-import {
-  CircleUser,
-  Menu,
-  Search,
-} from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -56,7 +52,7 @@ export default function AppHeader() {
       <Sheet>
         <SheetTrigger asChild>
           <Button size="icon" variant="outline" className="sm:hidden">
-            <Menu className="h-5 w-5" />
+            <Icon name="menu" size={20} />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
@@ -115,7 +111,11 @@ export default function AppHeader() {
         </SheetContent>
       </Sheet>
       <div className="relative ml-auto flex-1 md:grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Icon
+          name="search"
+          size={16}
+          className="absolute left-2.5 top-2.5 text-muted-foreground"
+        />
         <Input
           type="search"
           placeholder="Search..."
@@ -130,7 +130,7 @@ export default function AppHeader() {
             size="icon"
             className="overflow-hidden rounded-full"
           >
-            <CircleUser className="h-6 w-6" />
+            <Icon name="circleUser" size={24} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

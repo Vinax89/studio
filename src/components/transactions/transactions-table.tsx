@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
-import { Repeat } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import {
   memo,
   useMemo,
@@ -62,7 +62,11 @@ export const TransactionsTable = memo(function TransactionsTable({
         </TableCell>
         <TableCell>
           {transaction.isRecurring && (
-            <Repeat className="h-4 w-4 text-muted-foreground" />
+            <Icon
+              name="repeat"
+              size={16}
+              className="text-muted-foreground"
+            />
           )}
         </TableCell>
         <TableCell

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { useToast } from "@/hooks/use-toast"
 
 export default function InsightsPage() {
@@ -108,13 +108,17 @@ export default function InsightsPage() {
             <Button type="submit" disabled={isLoading} size="lg">
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Icon
+                    name="loader2"
+                    size={16}
+                    className="mr-2 animate-spin"
+                  />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                   Generate Analysis
+                  <Icon name="sparkles" size={16} className="mr-2" />
+                  Generate Analysis
                 </>
               )}
             </Button>
@@ -127,7 +131,7 @@ export default function InsightsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="p-3 rounded-full bg-accent text-accent-foreground">
-                <Lightbulb className="h-6 w-6" />
+                <Icon name="lightbulb" size={24} />
               </div>
               <div>
                 <CardTitle>Spending Analysis</CardTitle>
@@ -141,7 +145,7 @@ export default function InsightsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
                 <div className="p-3 rounded-full bg-accent text-accent-foreground">
-                    <TrendingUp className="h-6 w-6" />
+                    <Icon name="trendingUp" size={24} />
                 </div>
                 <div>
                     <CardTitle>Savings Opportunities</CardTitle>
@@ -155,7 +159,7 @@ export default function InsightsPage() {
           <Card>
              <CardHeader className="flex flex-row items-center gap-4">
                 <div className="p-3 rounded-full bg-accent text-accent-foreground">
-                    <Sparkles className="h-6 w-6" />
+                    <Icon name="sparkles" size={24} />
                 </div>
                 <div>
                     <CardTitle>Personalized Recommendations</CardTitle>

@@ -9,27 +9,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  Target,
-  Sparkles,
-  Landmark,
-  Settings,
-  CreditCard,
-  Wallet,
-} from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 import { NurseFinAILogo } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
-  { href: "/debts", icon: CreditCard, label: "Debts" },
-  { href: "/goals", icon: Target, label: "Goals" },
-  { href: "/cashflow", icon: Wallet, label: "Cashflow" },
-  { href: "/insights", icon: Sparkles, label: "AI Insights" },
-  { href: "/taxes", icon: Landmark, label: "Tax Estimator" },
+  { href: "/dashboard", icon: "layoutDashboard", label: "Dashboard" },
+  { href: "/transactions", icon: "arrowLeftRight", label: "Transactions" },
+  { href: "/debts", icon: "creditCard", label: "Debts" },
+  { href: "/goals", icon: "target", label: "Goals" },
+  { href: "/cashflow", icon: "wallet", label: "Cashflow" },
+  { href: "/insights", icon: "sparkles", label: "AI Insights" },
+  { href: "/taxes", icon: "landmark", label: "Tax Estimator" },
 ]
 
 export default function AppSidebar() {
@@ -62,7 +53,7 @@ export default function AppSidebar() {
                     pathname.startsWith(item.href) && "bg-accent text-accent-foreground"
                   )}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <Icon name={item.icon} size={20} />
                   <span className="sr-only">{item.label}</span>
                 </Link>
               </TooltipTrigger>
@@ -78,7 +69,7 @@ export default function AppSidebar() {
                 aria-label="Settings"
                 className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
-                <Settings className="h-5 w-5" />
+                <Icon name="settings" size={20} />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right">Settings</TooltipContent>

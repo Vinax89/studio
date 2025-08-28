@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { Icon } from "@/components/ui/icon"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -97,7 +97,11 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                 {isLoading ? (
                     <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Icon
+                          name="loader2"
+                          size={16}
+                          className="mr-2 animate-spin"
+                        />
                         Please wait...
                     </>
                 ) : isLoginView ? (

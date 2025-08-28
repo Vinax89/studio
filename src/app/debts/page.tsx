@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 import dynamic from "next/dynamic";
 const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { ssr: false });
 import { mockDebts } from "@/lib/data";
@@ -79,12 +79,16 @@ export default function DebtsPage() {
           <Button onClick={handleGetStrategy} disabled={isLoading} size="lg">
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Icon
+                  name="loader2"
+                  size={16}
+                  className="mr-2 animate-spin"
+                />
                 Analyzing...
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Icon name="sparkles" size={16} className="mr-2" />
                 Get AI Payoff Plan
               </>
             )}
