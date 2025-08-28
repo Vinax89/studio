@@ -14,13 +14,11 @@ import { formatCurrency } from "@/lib/currency"
 import {
   memo,
   useMemo,
-  useState,
   forwardRef,
   type HTMLAttributes,
   type ComponentType,
 } from "react"
 import { FixedSizeList, type ListChildComponentProps } from "react-window"
-import { Button } from "@/components/ui/button"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
@@ -35,25 +33,20 @@ export const TransactionsTable = memo(function TransactionsTable({
   height = 400,
   rowHeight = 56,
 }: TransactionsTableProps) {
-  const [page, setPage] = useState(0)
-  const [pageSize] = useState(20)
-
-  const currentTransactions = useMemo(
+  const formattedTransactions = useMemo(
     () =>
-      transactions
-        .slice(page * pageSize, page * pageSize + pageSize)
-        .map((transaction) => ({
-          ...transaction,
-          formattedDate: new Date(transaction.date).toLocaleDateString(),
-          formattedAmount: `${
-            transaction.type === "Income" ? "+" : "-"
-          }${formatCurrency(transaction.amount, transaction.currency)}`,
-        })),
-    [transactions, page, pageSize],
+      transactions.map((transaction) => ({
+        ...transaction,
+        formattedDate: new Date(transaction.date).toLocaleDateString(),
+        formattedAmount: `${
+          transaction.type === "Income" ? "+" : "-"
+        }${formatCurrency(transaction.amount, transaction.currency)}`,
+      })),
+    [transactions],
   )
 
   const Row = ({ index, style }: ListChildComponentProps) => {
-    const transaction = currentTransactions[index]
+    const transaction = formattedTransactions[index]
     return (
       <TableRow style={style} key={transaction.id}>
         <TableCell>{transaction.formattedDate}</TableCell>
@@ -108,35 +101,15 @@ export const TransactionsTable = memo(function TransactionsTable({
       </Table>
       <FixedSizeList
         height={height}
-        itemCount={currentTransactions.length}
+        itemCount={formattedTransactions.length}
         itemSize={rowHeight}
         width="100%"
         outerElementType={Outer}
         innerElementType={Inner}
-        itemKey={(index) => currentTransactions[index].id}
+        itemKey={(index) => formattedTransactions[index].id}
       >
         {Row}
       </FixedSizeList>
-      <div className="flex justify-between p-4">
-        <Button
-          variant="outline"
-          onClick={() => setPage((p) => Math.max(p - 1, 0))}
-          disabled={page === 0}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() =>
-            setPage((p) =>
-              (p + 1) * pageSize >= transactions.length ? p : p + 1,
-            )
-          }
-          disabled={(page + 1) * pageSize >= transactions.length}
-        >
-          Next
-        </Button>
-      </div>
     </div>
   )
 })
