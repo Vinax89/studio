@@ -100,7 +100,7 @@ export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimat
   const parsed = TaxEstimationInputSchema.parse(input);
   const taxableIncome = Math.max(0, parsed.income - parsed.deductions);
   const federalTax = calculateFederalTax(taxableIncome, parsed.filingStatus);
-  const stateTax = calculateStateTax(taxableIncome, parsed.state);
+  const stateTax = calculateStateTax(taxableIncome, parsed.state, parsed.filingStatus);
   const total = federalTax + stateTax;
   const rate = parsed.income > 0 ? (total / parsed.income) * 100 : 0;
   const breakdown = `Federal Tax: $${federalTax.toFixed(2)}\nState Tax (${parsed.state}): $${stateTax.toFixed(2)}`;
