@@ -20,6 +20,9 @@ import {
 
 type ShiftDetails = Omit<Shift, 'date'>;
 
+// Anchor date used to align bi-weekly pay periods for this organization
+const payPeriodAnchor = new Date('2024-01-07T00:00:00.000Z');
+
 
 export default function CashflowPage() {
   const [annualIncome, setAnnualIncome] = useState("")
@@ -176,7 +179,7 @@ export default function CashflowPage() {
       setSelectedDate(date);
       
       if (date) {
-        const start = getPayPeriodStart(date);
+        const start = getPayPeriodStart(date, payPeriodAnchor);
         const end = new Date(start);
         end.setDate(start.getDate() + 13);
         setPayPeriod({ from: start, to: end });

@@ -16,14 +16,18 @@ export interface PayPeriodSummary {
 }
 
 // Helper to find the start of a 2-week pay period (a Sunday) for any given date.
-export const getPayPeriodStart = (date: Date): Date => {
+// The optional `anchor` parameter lets different organizations align pay periods
+// to their own reference Sunday. By default, January 7, 2024 is used as the anchor
+// date for calculations.
+export const getPayPeriodStart = (
+  date: Date,
+  anchor: Date = new Date('2024-01-07T00:00:00.000Z')
+): Date => {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   const dayOfWeek = d.getDay();
   d.setDate(d.getDate() - dayOfWeek);
 
-  // Use a fixed anchor date to determine the "even" or "odd" week period.
-  const anchor = new Date('2024-01-07T00:00:00.000Z'); // A known Sunday
   const diffWeeks = Math.floor((d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
 
   if (diffWeeks % 2 !== 0) {
