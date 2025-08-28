@@ -126,7 +126,7 @@ export default function InsightsPage() {
         <div className="grid gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
-              <div className="p-3 rounded-full bg-accent text-accent-foreground">
+              <div className="p-3 rounded-full bg-blueprint-accent text-blueprint-accent-foreground">
                 <Lightbulb className="h-6 w-6" />
               </div>
               <div>
@@ -140,7 +140,7 @@ export default function InsightsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center gap-4">
-                <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                <div className="p-3 rounded-full bg-blueprint-accent text-blueprint-accent-foreground">
                     <TrendingUp className="h-6 w-6" />
                 </div>
                 <div>
@@ -154,7 +154,7 @@ export default function InsightsPage() {
           </Card>
           <Card>
              <CardHeader className="flex flex-row items-center gap-4">
-                <div className="p-3 rounded-full bg-accent text-accent-foreground">
+                <div className="p-3 rounded-full bg-blueprint-accent text-blueprint-accent-foreground">
                     <Sparkles className="h-6 w-6" />
                 </div>
                 <div>

@@ -12,13 +12,13 @@ interface DebtStrategyPlanProps {
 
 export function DebtStrategyPlan({ strategy }: DebtStrategyPlanProps) {
   return (
-    <Card className="bg-accent/50 border-primary/20">
+    <Card className="bg-blueprint-accent/50 border-blueprint/20">
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div>
                 <CardTitle className="flex items-center gap-3">
                     Your AI Debt Payoff Plan:
-                    <Badge variant="secondary" className="text-base capitalize bg-primary text-primary-foreground">{strategy.recommendedStrategy}</Badge>
+                    <Badge variant="secondary" className="text-base capitalize bg-blueprint text-blueprint-foreground">{strategy.recommendedStrategy}</Badge>
                 </CardTitle>
                 <CardDescription className="mt-2">{strategy.summary}</CardDescription>
             </div>
