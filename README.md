@@ -31,6 +31,8 @@ The housekeeping service removes outdated files from Cloud Storage to manage cos
 
 ## Environment variables
 
+Create a `.env.local` file by copying `.env.example` and populate it with the required values. The `.env.local` file is excluded from version control to keep sensitive information local.
+
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
