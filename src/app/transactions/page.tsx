@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
-import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
+import { importTransactions } from "@/lib/bank";
+import { Upload, Download, ScanLine, Loader2, Landmark } from "lucide-react";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -67,6 +68,15 @@ export default function TransactionsPage() {
     );
   };
 
+  const handleBankImport = async () => {
+    try {
+      const imported = await importTransactions();
+      setTransactions(prev => [...imported, ...prev]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
         const matchesSearch = transaction.description.toLowerCase().includes(deferredSearchTerm.toLowerCase());
@@ -101,6 +111,10 @@ export default function TransactionsPage() {
             <Button variant="outline" onClick={handleUploadClick}>
                 <Upload className="mr-2 h-4 w-4" />
                 Import
+            </Button>
+            <Button variant="outline" onClick={handleBankImport}>
+                <Landmark className="mr-2 h-4 w-4" />
+                Import from Bank
             </Button>
             <Button variant="outline" onClick={handleDownload}>
                 <Download className="mr-2 h-4 w-4" />
