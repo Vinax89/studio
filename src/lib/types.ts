@@ -1,40 +1,41 @@
+import { z } from "zod";
 
-export type Transaction = {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  type: "Income" | "Expense";
-  category: string;
-  isRecurring?: boolean;
-};
+export const transactionSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional()
+});
+export type Transaction = z.infer<typeof transactionSchema>;
 
-export type Goal = {
-  id: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline: string;
-  importance: number; // New field: 1-5 rating
-};
+export const goalSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  targetAmount: z.number(),
+  currentAmount: z.number(),
+  deadline: z.string(),
+  importance: z.number()
+});
+export type Goal = z.infer<typeof goalSchema>;
 
-export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
+export const recurrenceSchema = z.enum(["none", "weekly", "biweekly", "monthly"]);
+export type Recurrence = z.infer<typeof recurrenceSchema>;
 
-// This is the unified, authoritative Debt type used across the app.
-export type Debt = {
-  id: string;
-  name: string;
-  initialAmount: number;
-  currentAmount: number;
-  interestRate: number;
-  minimumPayment: number;
-  // Due date handling:
-  // For recurring debts, this is the anchor date for recurrence calculation.
-  // For one-time debts, this is the specific due date.
-  dueDate: string; 
-  recurrence: Recurrence;
-  autopay: boolean;
-  notes?: string;
-  color?: string;
-  paidDates?: string[]; // ISO strings of dates where a payment was manually marked as paid
-};
+export const debtSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  initialAmount: z.number(),
+  currentAmount: z.number(),
+  interestRate: z.number(),
+  minimumPayment: z.number(),
+  dueDate: z.string(),
+  recurrence: recurrenceSchema,
+  autopay: z.boolean(),
+  notes: z.string().optional(),
+  color: z.string().optional(),
+  paidDates: z.array(z.string()).optional()
+});
+export type Debt = z.infer<typeof debtSchema>;
