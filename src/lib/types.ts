@@ -4,6 +4,7 @@ export type Transaction = {
   date: string;
   description: string;
   amount: number;
+  currency: string; // ISO currency code
   type: "Income" | "Expense";
   category: string;
   isRecurring?: boolean;
