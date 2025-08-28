@@ -1,37 +1,30 @@
-import { Worker } from "node:worker_threads"
 import os from "node:os"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { WorkerPool } from "./worker-pool"
 
-export async function parallelSquare(numbers: number[], threads = os.cpus().length): Promise<number[]> {
-  const chunkSize = Math.ceil(numbers.length / threads)
-  const chunks = Array.from({ length: threads }, (_, i) => numbers.slice(i * chunkSize, (i + 1) * chunkSize))
+export async function parallelSquare(
+  numbers: number[],
+  threads = Math.min(os.cpus().length, numbers.length)
+): Promise<number[]> {
+  if (numbers.length === 0) return []
 
-  return new Promise((resolve, reject) => {
-    const results: number[] = []
-    let completed = 0
+  const actualThreads = Math.min(threads, numbers.length)
+  const chunkSize = Math.ceil(numbers.length / actualThreads)
+  const chunks = Array.from({ length: actualThreads }, (_, i) =>
+    numbers.slice(i * chunkSize, (i + 1) * chunkSize)
+  )
 
-    chunks.forEach(chunk => {
-      if (chunk.length === 0) {
-        completed++
-        if (completed === chunks.length) {
-          resolve(results)
-        }
-        return
-      }
+  const pool = new WorkerPool<number[], number[]>(
+    path.join(fileURLToPath(new URL(".", import.meta.url)), "mapWorker.js"),
+    actualThreads
+  )
 
-      const worker = new Worker(path.join(__dirname, "mapWorker.js"), {
-        workerData: chunk,
-      })
-
-      worker.on("message", (data: number[]) => {
-        results.push(...data)
-        completed++
-        if (completed === chunks.length) {
-          resolve(results)
-        }
-      })
-
-      worker.on("error", reject)
-    })
-  })
+  try {
+    const promises = chunks.map(chunk => pool.run(chunk))
+    const results = await Promise.all(promises)
+    return results.flat()
+  } finally {
+    await pool.destroy()
+  }
 }
