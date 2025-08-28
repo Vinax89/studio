@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
-import { addCategory, getCategories } from "@/lib/categories";
+import { addCategory, getCategories } from "@/lib/categoryService";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
 
 export default function TransactionsPage() {
