@@ -14,7 +14,13 @@ export default function BudgetCards({ transactions, categories }: BudgetCardsPro
     .filter((c) => typeof c.monthlyBudget === "number")
     .map((category) => {
       const spent = transactions
-        .filter((t) => t.type === "Expense" && t.categoryId === category.id)
+        .filter(
+          (t) =>
+            t.type === "Expense" &&
+            (t.categoryId === category.id ||
+              (!t.categoryId &&
+                t.category.toLowerCase() === category.name.toLowerCase()))
+        )
         .reduce((sum, t) => sum + t.amount, 0)
       const budget = category.monthlyBudget || 0
       const percent = budget > 0 ? (spent / budget) * 100 : 0
