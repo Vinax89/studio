@@ -6,17 +6,16 @@ import { Loader2, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { ssr: false });
 const DebtProgressChart = dynamic(() => import("@/components/debts/DebtProgressChart"), { ssr: false });
-import { mockDebts } from "@/lib/data";
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
 import { Button } from "@/components/ui/button";
-import type { SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
+import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
-import { suggestDebtStrategy } from "@/ai/flows/suggest-debt-strategy";
+import { deleteDebt } from "@/lib/debts/use-debts";
 
 export default function DebtsPage() {
-  const [debts, setDebts] = useState<Debt[]>(mockDebts);
+  const [debts, setDebts] = useState<Debt[]>([]);
   const [strategy, setStrategy] = useState<SuggestDebtStrategyOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -34,13 +33,7 @@ export default function DebtsPage() {
     setStrategy(null);
     try {
       // The AI flow expects the full debt details, which our unified `Debt` type now provides.
-      // We need to ensure the recurrence maps correctly.
-      const strategyInput = debts.map(d => ({
-        ...d,
-        recurrence: d.recurrence === 'none' ? 'once' : 'monthly',
-      }));
-
-      const result = await suggestDebtStrategy({ debts: strategyInput });
+      const result = await suggestDebtStrategy({ debts });
       setStrategy(result);
 
     } catch (error) {
@@ -55,11 +48,9 @@ export default function DebtsPage() {
     }
   };
 
-  const handleDeleteDebt = (id: string) => {
-    // This should be handled by the calendar's internal logic and propagated via onChange
-    // For now, we will just update the local state to show it can be done.
-    setDebts(prev => prev.filter(d => d.id !== id));
-    toast({ title: "Debt Deleted", description: "This is a visual demo. The calendar has its own state."})
+  const handleDeleteDebt = async (id: string) => {
+    await deleteDebt(id);
+    toast({ title: "Debt Deleted" });
   };
 
   return (
@@ -69,10 +60,9 @@ export default function DebtsPage() {
         <p className="text-muted-foreground">Use the calendar to track due dates, and get an AI-powered plan to become debt-free.</p>
       </div>
 
-      <DebtCalendar storageKey="nursefinai.debts" initialDebts={debts} onChange={setDebts} />
+      <DebtCalendar onChange={setDebts} />
 
       <DebtProgressChart debts={debts} />
-
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
           <div>
