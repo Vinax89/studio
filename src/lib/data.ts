@@ -1,15 +1,20 @@
 
-import type { Transaction, Goal, Debt } from './types';
+import type { Transaction, Goal, Debt, Account } from './types';
+
+export const mockAccounts: Account[] = [
+  { id: 'acc1', name: 'Checking Account', type: 'Checking', currency: 'USD', startingBalance: 5000 },
+  { id: 'acc2', name: 'Savings Account', type: 'Savings', currency: 'USD', startingBalance: 10000 },
+];
 
 export const mockTransactions: Transaction[] = [
-  { id: '1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', isRecurring: true },
-  { id: '2', date: '2024-07-14', description: 'Scrubs & Uniforms', amount: 120.50, type: 'Expense', category: 'Uniforms' },
-  { id: '3', date: '2024-07-12', description: 'Groceries', amount: 85.30, type: 'Expense', category: 'Food' },
-  { id: '4', date: '2024-07-10', description: 'BLS Certification Renewal', amount: 75.00, type: 'Expense', category: 'Certifications', isRecurring: true },
-  { id: '5', date: '2024-07-08', description: 'Student Loan Payment', amount: 350.00, type: 'Expense', category: 'Loans', isRecurring: true },
-  { id: '6', date: '2024-07-05', description: 'Gas', amount: 45.00, type: 'Expense', category: 'Transport' },
-  { id: '7', date: '2024-07-01', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', isRecurring: true },
-  { id: '8', date: '2024-07-01', description: 'Rent', amount: 1200.00, type: 'Expense', category: 'Housing', isRecurring: true },
+  { id: '1', accountId: 'acc1', date: '2024-07-15', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
+  { id: '2', accountId: 'acc1', date: '2024-07-14', description: 'Scrubs & Uniforms', amount: 120.50, type: 'Expense', category: 'Uniforms', currency: 'USD' },
+  { id: '3', accountId: 'acc1', date: '2024-07-12', description: 'Groceries', amount: 85.30, type: 'Expense', category: 'Food', currency: 'USD' },
+  { id: '4', accountId: 'acc1', date: '2024-07-10', description: 'BLS Certification Renewal', amount: 75.00, type: 'Expense', category: 'Certifications', currency: 'USD', isRecurring: true },
+  { id: '5', accountId: 'acc1', date: '2024-07-08', description: 'Student Loan Payment', amount: 350.00, type: 'Expense', category: 'Loans', currency: 'USD', isRecurring: true },
+  { id: '6', accountId: 'acc1', date: '2024-07-05', description: 'Gas', amount: 45.00, type: 'Expense', category: 'Transport', currency: 'USD' },
+  { id: '7', accountId: 'acc1', date: '2024-07-01', description: 'Bi-weekly Paycheck', amount: 2500.00, type: 'Income', category: 'Salary', currency: 'USD', isRecurring: true },
+  { id: '8', accountId: 'acc2', date: '2024-07-01', description: 'Rent', amount: 1200.00, type: 'Expense', category: 'Housing', currency: 'USD', isRecurring: true },
 ];
 
 export const mockGoals: Goal[] = [

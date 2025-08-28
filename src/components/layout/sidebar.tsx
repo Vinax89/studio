@@ -12,6 +12,7 @@ import {
 import {
   LayoutDashboard,
   ArrowLeftRight,
+  PiggyBank,
   Target,
   Sparkles,
   Landmark,
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
+  { href: "/accounts", icon: PiggyBank, label: "Accounts" },
   { href: "/debts", icon: CreditCard, label: "Debts" },
   { href: "/goals", icon: Target, label: "Goals" },
   { href: "/cashflow", icon: Wallet, label: "Cashflow" },

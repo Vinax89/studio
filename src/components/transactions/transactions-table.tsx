@@ -46,7 +46,10 @@ export const TransactionsTable = memo(function TransactionsTable({
           formattedDate: new Date(transaction.date).toLocaleDateString(),
           formattedAmount: `${
             transaction.type === "Income" ? "+" : "-"
-          }$${transaction.amount.toFixed(2)}`,
+          }${new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: transaction.currency ?? 'USD',
+          }).format(transaction.amount)}`,
         })),
     [transactions, page, pageSize],
   )
