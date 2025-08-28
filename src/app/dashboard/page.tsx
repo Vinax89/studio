@@ -2,7 +2,9 @@
 import OverviewCards from "@/components/dashboard/overview-cards";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardCharts from '@/app/dashboard/dashboard-charts';
+import DashboardCharts from "@/app/dashboard/dashboard-charts";
+import TimeCard from "@/components/dashboard/time-card";
+import PaydayCountdownCard from "@/components/dashboard/payday-countdown-card";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction, ChartPoint } from "@/lib/types";
 
@@ -36,6 +38,10 @@ export default async function DashboardPage() {
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <TimeCard />
+        <PaydayCountdownCard />
       </div>
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
