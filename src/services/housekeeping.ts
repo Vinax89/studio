@@ -81,9 +81,11 @@ export async function backupData(): Promise<{
   debts: Debt[];
   goals: Goal[];
 }> {
-  const transactionsSnap = await getDocs(collection(db, "transactions"));
-  const debtsSnap = await getDocs(collection(db, "debts"));
-  const goalsSnap = await getDocs(collection(db, "goals"));
+  const [transactionsSnap, debtsSnap, goalsSnap] = await Promise.all([
+    getDocs(collection(db, "transactions")),
+    getDocs(collection(db, "debts")),
+    getDocs(collection(db, "goals")),
+  ]);
 
   const data = {
     transactions: transactionsSnap.docs.map((d) => d.data() as Transaction),
