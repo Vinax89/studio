@@ -1,4 +1,11 @@
-import { collection, getDocs, setDoc, deleteDoc, doc, addDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  addDoc,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
 
@@ -11,13 +18,19 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const transCol = collection(db, "transactions");
   const snapshot = await getDocs(transCol);
 
+  const ops: Promise<void>[] = [];
+
   for (const snap of snapshot.docs) {
     const data = snap.data() as Transaction;
     if (new Date(data.date) < cutoff) {
-      await setDoc(doc(db, "transactions_archive", snap.id), data);
-      await deleteDoc(doc(db, "transactions", snap.id));
+      ops.push(
+        setDoc(doc(db, "transactions_archive", snap.id), data),
+        deleteDoc(doc(db, "transactions", snap.id))
+      );
     }
   }
+
+  await runWithRetry(() => Promise.all(ops));
 }
 
 /**
@@ -27,12 +40,28 @@ export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const snapshot = await getDocs(debtsCol);
 
+  const deletions: Promise<void>[] = [];
+
   for (const snap of snapshot.docs) {
     const data = snap.data() as Debt;
     if (data.currentAmount <= 0) {
-      await deleteDoc(doc(db, "debts", snap.id));
+      deletions.push(deleteDoc(doc(db, "debts", snap.id)));
     }
   }
+
+  await runWithRetry(() => Promise.all(deletions));
+}
+
+async function runWithRetry<T>(op: () => Promise<T>, retries = 1): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await op();
+    } catch (err) {
+      if (attempt === retries) throw err;
+    }
+  }
+  // Should be unreachable
+  throw new Error("retry attempts exhausted");
 }
 
 /**
