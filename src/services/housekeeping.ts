@@ -13,6 +13,10 @@ import {
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
 
+const DEFAULT_RETENTION_DAYS = 30;
+export const RETENTION_DAYS =
+  parseInt(process.env.RETENTION_DAYS || "", 10) || DEFAULT_RETENTION_DAYS;
+
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
  * and removes them from the main transactions collection.
@@ -171,5 +175,19 @@ export async function backupData(
   );
 
   return data;
+}
+
+/**
+ * Runs housekeeping tasks against Firestore using the configured retention
+ * window. Transactions older than `RETENTION_DAYS` are archived, settled debts
+ * are removed, and a fresh backup snapshot is created.
+ */
+export async function runFirestoreCleanup(): Promise<void> {
+  const cutoffDate = new Date(
+    Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000
+  ).toISOString();
+  await archiveOldTransactions(cutoffDate);
+  await cleanupDebts();
+  await backupData();
 }
 
