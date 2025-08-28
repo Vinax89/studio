@@ -12,6 +12,9 @@ import {
   parseISO,
 } from "date-fns";
 
+// Maximum number of occurrences to generate for a single debt
+export const DEFAULT_MAX_OCCURRENCES = 400;
+
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
 function nextOccurrenceOnOrAfter(
@@ -40,9 +43,13 @@ function nextOccurrenceOnOrAfter(
   return isBefore(candidate, onOrAfter) ? addDays(candidate, step) : candidate;
 }
 
-function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
+function allOccurrencesInRange(
+  debt: Debt,
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+): Date[] {
   const out: Date[] = [];
-  const maxIter = 400; // Safety break
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
     if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
@@ -53,7 +60,7 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
   const stepDays =
     debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 0;
 
-  while (cur && !isAfter(cur, to) && iter < maxIter) {
+  while (cur && !isAfter(cur, to) && iter < maxOccurrences) {
     out.push(cur);
     iter++;
     cur =
@@ -61,14 +68,24 @@ function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
         ? addMonths(cur, 1)
         : addDays(cur, stepDays);
   }
+  if (cur && !isAfter(cur, to)) {
+    console.warn(
+      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
+    );
+  }
   return out;
 }
 
-function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
+function computeDebtOccurrences(
+  debts: Debt[],
+  from: Date,
+  to: Date,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to);
+    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
     occ.forEach((dt) => {
       const oc = { date: iso(dt), debt: d };
       occurrences.push(oc);
@@ -87,14 +104,20 @@ export function useDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  query: string
+  query: string,
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
 ) {
   const fromTime = from.getTime();
   const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
     () =>
-      computeDebtOccurrences(debts, new Date(fromTime), new Date(toTime)),
-    [debts, fromTime, toTime]
+      computeDebtOccurrences(
+        debts,
+        new Date(fromTime),
+        new Date(toTime),
+        maxOccurrences
+      ),
+    [debts, fromTime, toTime, maxOccurrences]
   );
 
   const filtered = useMemo(() => {
