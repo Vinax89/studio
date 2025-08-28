@@ -10,12 +10,21 @@ interface Hit {
   expires: number;
 }
 
-class SimpleLimiter {
+export class SimpleLimiter {
   private hits = new Map<string, Hit>();
   constructor(private options: Options) {}
 
+  private prune(now: number) {
+    for (const [key, hit] of this.hits) {
+      if (hit.expires <= now) {
+        this.hits.delete(key);
+      }
+    }
+  }
+
   check(key: string): boolean {
     const now = Date.now();
+    this.prune(now);
     const hit = this.hits.get(key);
     const windowMs = this.options.windowMs ?? DEFAULT_WINDOW_MS;
     if (hit && hit.expires > now) {
@@ -27,6 +36,10 @@ class SimpleLimiter {
     }
     this.hits.set(key, { count: 1, expires: now + windowMs });
     return true;
+  }
+
+  get size() {
+    return this.hits.size;
   }
 
   reset() {
