@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Card,
@@ -7,52 +7,110 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { useTheme } from "next-themes";
 import {
-  BarChart,
-  Bar,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
+import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface IncomeExpenseChartProps {
-  data: { month: string; income: number; expenses: number; }[];
+  data: { month: string; income: number; expenses: number }[];
 }
 
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
-  const { resolvedTheme } = useTheme();
-  const strokeColor = resolvedTheme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))";
+  const chartConfig = {
+    income: {
+      label: "Income",
+      color: "hsl(var(--chart-1))",
+    },
+    expenses: {
+      label: "Expenses",
+      color: "hsl(var(--chart-2))",
+    },
+  } as const;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Income vs. Expenses</CardTitle>
-        <CardDescription>A look at your cash flow for the last 7 months.</CardDescription>
+        <CardDescription>
+          A look at your cash flow for the last 7 months.
+        </CardDescription>
       </CardHeader>
       <CardContent className="py-6">
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[300px] w-full"
+        >
           <BarChart data={data}>
+            <defs>
+              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-income)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-income)"
+                  stopOpacity={0.2}
+                />
+              </linearGradient>
+              <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-expenses)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-expenses)"
+                  stopOpacity={0.2}
+                />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} stroke={strokeColor}/>
-            <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `$${value/1000}k`} stroke={strokeColor} />
-            <Tooltip
-              cursor={{ fill: 'hsl(var(--muted))', radius: 'var(--radius)' }}
-              contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                borderColor: 'hsl(var(--border))',
-                borderRadius: 'var(--radius)',
-              }}
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
             />
-            <Legend wrapperStyle={{paddingTop: '24px'}}/>
-            <Bar dataKey="income" fill="var(--color-income)" name="Income" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expenses" fill="var(--color-expenses)" name="Expenses" radius={[4, 4, 0, 0]} />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => `$${value / 1000}k`}
+            />
+            <ChartTooltip
+              cursor={{ fill: "hsl(var(--muted))", radius: 4 }}
+              content={
+                <ChartTooltipContent
+                  formatter={(value: number) => `$${value.toLocaleString()}`}
+                />
+              }
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Bar
+              dataKey="income"
+              fill="url(#incomeGradient)"
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={500}
+            />
+            <Bar
+              dataKey="expenses"
+              fill="url(#expensesGradient)"
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={500}
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
