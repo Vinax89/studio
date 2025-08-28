@@ -15,6 +15,34 @@ const bodySchema = z.object({
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
+async function readBodyWithLimit(req: Request, limit: number) {
+  const contentLength = req.headers.get("content-length")
+  if (contentLength && Number(contentLength) > limit) {
+    return null
+  }
+
+  const reader = req.body?.getReader()
+  if (!reader) {
+    return ""
+  }
+  const decoder = new TextDecoder()
+  let total = 0
+  let result = ""
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (value) {
+      total += value.length
+      if (total > limit) {
+        return null
+      }
+      result += decoder.decode(value, { stream: true })
+    }
+  }
+  result += decoder.decode()
+  return result
+}
+
 export async function POST(req: Request) {
   try {
     await verifyFirebaseToken(req)
@@ -23,13 +51,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 401 })
   }
 
-  let text: string
-  try {
-    text = await req.text()
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
-  }
-  if (new TextEncoder().encode(text).byteLength > MAX_BODY_SIZE) {
+  const text = await readBodyWithLimit(req, MAX_BODY_SIZE)
+  if (text === null) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 })
   }
 
