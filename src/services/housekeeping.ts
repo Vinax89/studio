@@ -9,9 +9,44 @@ import {
   limit,
   startAfter,
   writeBatch,
+  type QueryConstraint,
+  type QueryDocumentSnapshot,
+  type WriteBatch,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
+
+export async function paginateCollection<T>(
+  colName: string,
+  filter: QueryConstraint,
+  orderField: string,
+  perItem: (snap: QueryDocumentSnapshot<T>, batch: WriteBatch) =>
+    | void
+    | Promise<void>,
+  pageSize = 100
+): Promise<void> {
+  const col = collection(db, colName);
+  let lastDoc: QueryDocumentSnapshot<T> | undefined;
+
+  while (true) {
+    const q = lastDoc
+      ? query(col, filter, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
+      : query(col, filter, orderBy(orderField), limit(pageSize));
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) break;
+
+    const batch = writeBatch(db);
+    for (const snap of snapshot.docs as QueryDocumentSnapshot<T>[]) {
+      await perItem(snap, batch);
+    }
+
+    await runWithRetry(() => batch.commit());
+
+    lastDoc = snapshot.docs[snapshot.docs.length - 1] as QueryDocumentSnapshot<T>;
+    if (snapshot.size < pageSize) break;
+  }
+}
 
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
@@ -19,80 +54,31 @@ import type { Transaction, Debt, Goal } from "../lib/types";
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
   const cutoff = new Date(cutoffDate).toISOString();
-  const transCol = collection(db, "transactions");
-  const pageSize = 100;
-  let lastDoc: any | undefined;
 
-  while (true) {
-    const q = lastDoc
-      ? query(
-          transCol,
-          where("date", "<", cutoff),
-          orderBy("date"),
-          startAfter(lastDoc),
-          limit(pageSize)
-        )
-      : query(
-          transCol,
-          where("date", "<", cutoff),
-          orderBy("date"),
-          limit(pageSize)
-        );
-
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) break;
-
-    const batch = writeBatch(db);
-    for (const snap of snapshot.docs) {
+  await paginateCollection<Transaction>(
+    "transactions",
+    where("date", "<", cutoff),
+    "date",
+    (snap, batch) => {
       const data = snap.data() as Transaction;
       batch.set(doc(db, "transactions_archive", snap.id), data);
       batch.delete(doc(db, "transactions", snap.id));
     }
-
-    await runWithRetry(() => batch.commit());
-
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    if (snapshot.size < pageSize) break;
-  }
+  );
 }
 
 /**
  * Removes debts that have been fully paid off (currentAmount <= 0).
  */
 export async function cleanupDebts(): Promise<void> {
-  const debtsCol = collection(db, "debts");
-  const pageSize = 100;
-  let lastDoc: any | undefined;
-
-  while (true) {
-    const q = lastDoc
-      ? query(
-          debtsCol,
-          where("currentAmount", "<=", 0),
-          orderBy("currentAmount"),
-          startAfter(lastDoc),
-          limit(pageSize)
-        )
-      : query(
-          debtsCol,
-          where("currentAmount", "<=", 0),
-          orderBy("currentAmount"),
-          limit(pageSize)
-        );
-
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) break;
-
-    const batch = writeBatch(db);
-    for (const snap of snapshot.docs) {
+  await paginateCollection<Debt>(
+    "debts",
+    where("currentAmount", "<=", 0),
+    "currentAmount",
+    (snap, batch) => {
       batch.delete(doc(db, "debts", snap.id));
     }
-
-    await runWithRetry(() => batch.commit());
-
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    if (snapshot.size < pageSize) break;
-  }
+  );
 }
 
 export async function runWithRetry<T>(
