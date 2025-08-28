@@ -38,8 +38,17 @@ const CalculateCashflowOutputSchema = z.object({
 });
 export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
 
-export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
-  return calculateCashflowFlow(input);
+type CalculateCashflowError = { error: string };
+
+export async function calculateCashflow(
+  input: CalculateCashflowInput
+): Promise<CalculateCashflowOutput | CalculateCashflowError> {
+  try {
+    return await calculateCashflowFlow(input);
+  } catch (err) {
+    console.error('calculateCashflowFlow failed:', err);
+    return { error: 'Unable to calculate cashflow. Please try again later.' };
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -66,10 +75,15 @@ const calculateCashflowFlow = ai.defineFlow(
     outputSchema: CalculateCashflowOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from calculateCashflowFlow');
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('No output returned from calculateCashflowFlow');
+      }
+      return output;
+    } catch (err) {
+      console.error('calculateCashflowFlow prompt error:', err);
+      throw new Error('calculateCashflowFlow prompt failed');
     }
-    return output;
   }
 );

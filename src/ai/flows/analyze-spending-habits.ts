@@ -41,8 +41,17 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
 });
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
-export async function analyzeSpendingHabits(input: AnalyzeSpendingHabitsInput): Promise<AnalyzeSpendingHabitsOutput> {
-  return analyzeSpendingHabitsFlow(input);
+type AnalyzeSpendingHabitsError = { error: string };
+
+export async function analyzeSpendingHabits(
+  input: AnalyzeSpendingHabitsInput
+): Promise<AnalyzeSpendingHabitsOutput | AnalyzeSpendingHabitsError> {
+  try {
+    return await analyzeSpendingHabitsFlow(input);
+  } catch (err) {
+    console.error('analyzeSpendingHabitsFlow failed:', err);
+    return { error: 'Unable to analyze spending habits. Please try again later.' };
+  }
 }
 
 const prompt = ai.definePrompt({
@@ -82,10 +91,15 @@ const analyzeSpendingHabitsFlow = ai.defineFlow(
     outputSchema: AnalyzeSpendingHabitsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from analyzeSpendingHabitsPrompt');
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('No output returned from analyzeSpendingHabitsPrompt');
+      }
+      return output;
+    } catch (err) {
+      console.error('analyzeSpendingHabitsFlow prompt error:', err);
+      throw new Error('analyzeSpendingHabitsFlow prompt failed');
     }
-    return output;
   }
 );
