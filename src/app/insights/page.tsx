@@ -1,9 +1,9 @@
 
 "use client"
 
-import { useState } from "react"
-import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput } from "@/ai/flows/analyze-spending-habits"
-import { mockGoals } from "@/lib/data"; // Import mock goals
+import { useState, useEffect } from "react"
+import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput, predictSpending } from "@/ai/flows"
+import { mockGoals, mockTransactions } from "@/lib/data"; // Import mock data
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { showNetworkErrorToast } from "@/lib/network-error"
 
 export default function InsightsPage() {
@@ -18,10 +19,23 @@ export default function InsightsPage() {
   const [files, setFiles] = useState<File[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingHabitsOutput | null>(null)
-    const { toast } = useToast();
-  
-  // For this demo, we'll use the mockGoals. In a real app, this would be fetched.
+  const [forecastData, setForecastData] = useState<{ month: string; amount: number }[]>([])
+  const { toast } = useToast();
+
+  // For this demo, we'll use mock data. In a real app, this would be fetched.
   const goals = mockGoals;
+
+  useEffect(() => {
+    const loadForecast = async () => {
+      try {
+        const result = await predictSpending({ transactions: mockTransactions });
+        setForecastData(result.forecast);
+      } catch (error) {
+        console.error("Error predicting spending:", error);
+      }
+    };
+    loadForecast();
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -97,8 +111,18 @@ export default function InsightsPage() {
                 id="financial-documents"
                 type="file"
                 multiple
+                accept=".pdf,.jpg,.png"
                 onChange={handleFileChange}
               />
+              {files.length > 0 && (
+                <ul className="list-disc pl-5 text-sm">
+                  {files.map((file) => (
+                    <li key={file.name}>
+                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p className="text-sm text-muted-foreground">Upload documents like pay stubs or bank statements.</p>
             </div>
             <Button type="submit" disabled={isLoading} size="lg">
@@ -117,7 +141,28 @@ export default function InsightsPage() {
           </form>
         </CardContent>
       </Card>
-      
+
+      {forecastData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Spending Forecast</CardTitle>
+            <CardDescription>Projected spending for the next 3 months.</CardDescription>
+          </CardHeader>
+          <CardContent className="py-6">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={forecastData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="amount" stroke="var(--color-expenses)" name="Spending" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {analysisResult && (
         <div className="grid gap-6">
           <Card>
