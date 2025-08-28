@@ -3,7 +3,7 @@ import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Transaction } from "./types";
 
-const TransactionRow = z.object({
+export const TransactionRowSchema = z.object({
   date: z.string(),
   description: z.string(),
   amount: z.preprocess(
@@ -15,11 +15,11 @@ const TransactionRow = z.object({
   isRecurring: z.union([z.boolean(), z.string()]).optional(),
 });
 
-export type TransactionRowType = z.infer<typeof TransactionRow>;
+export type TransactionRowType = z.infer<typeof TransactionRowSchema>;
 
 export function validateTransactions(rows: TransactionRowType[]): Transaction[] {
   return rows.map((row, index) => {
-    const parsed = TransactionRow.safeParse(row);
+    const parsed = TransactionRowSchema.safeParse(row);
     if (!parsed.success) {
       throw new Error(`Invalid row ${index + 1}: ${parsed.error.message}`);
     }

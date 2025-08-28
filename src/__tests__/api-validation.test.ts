@@ -58,4 +58,26 @@ describe("/api/transactions/sync", () => {
     const res = await transactionsSync(req)
     expect(res.status).toBe(400)
   })
+
+  it("rejects malformed transactions", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({
+        transactions: [
+          {
+            date: "2024-01-01",
+            description: "Test",
+            amount: "not-a-number",
+            type: "Expense",
+            category: "misc",
+          },
+        ],
+      }),
+    })
+    const res = await transactionsSync(req)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/Invalid amount/)
+  })
 })
