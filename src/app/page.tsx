@@ -24,8 +24,8 @@ export default function LoginPage() {
   const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoginView, setIsLoginView] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoginView, setIsLoginView] = useState(true) // toggles between login and registration modes
+  const [isLoading, setIsLoading] = useState(false) // disables form while authenticating
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,14 +33,18 @@ export default function LoginPage() {
 
     try {
       if (isLoginView) {
+        // Existing user attempting to sign in
         await signInWithEmailAndPassword(auth, email, password)
       } else {
+        // New user creating an account
         await createUserWithEmailAndPassword(auth, email, password)
       }
       router.push("/dashboard")
     } catch (error) {
       const authError = error as AuthError
       const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
+      // If we don't have a user-friendly message for this error, log it for debugging
+      // while showing a generic message to the user to avoid exposing raw error codes.
       if (!authErrorMessages[authError.code]) {
         console.error(authError.code, authError.message)
       }
