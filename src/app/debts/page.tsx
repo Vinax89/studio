@@ -9,7 +9,7 @@ import { mockDebts } from "@/lib/data";
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
 import { Button } from "@/components/ui/button";
-import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
+import type { SuggestDebtStrategyOutput } from "@/ai/flows/suggest-debt-strategy";
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
 
@@ -31,6 +31,8 @@ export default function DebtsPage() {
     setIsLoading(true);
     setStrategy(null);
     try {
+      const { suggestDebtStrategy } = await import("@/ai/flows/suggest-debt-strategy");
+
       // The AI flow expects the full debt details.
       // The `suggestDebtStrategy` flow needs `initialAmount` and `currentAmount` which are not in the calendar's `Debt` type.
       // We will map the calendar debt type to the type expected by the flow.
@@ -62,6 +64,7 @@ export default function DebtsPage() {
            payoffOrder: debts.map((d,i) => ({ debtName: d.name, priority: i + 1})),
            summary: 'This is a placeholder strategy. Focus on your highest interest debts to save money.'
        })
+      void suggestDebtStrategy; // avoid unused var until AI flow is wired up
 
 
     } catch (error) {
@@ -69,7 +72,7 @@ export default function DebtsPage() {
       toast({
         title: "Strategy Failed",
         description: "There was an error generating your debt strategy. Please try again.",
-        variant: "destructive"
+       variant: "destructive"
       });
     } finally {
       setIsLoading(false);

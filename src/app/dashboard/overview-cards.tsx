@@ -4,11 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Transaction } from "@/lib/types";
 import { mockTransactions } from "@/lib/data";
 
-// Optional demo delay; disable in production
-const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
-
+// Optional demo delay for development only
 const getTransactions = async (): Promise<Transaction[]> => {
-  if (enableMockDelay) {
+  if (process.env.NODE_ENV === "development") {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return mockTransactions;
