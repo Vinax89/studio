@@ -1,8 +1,11 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import type { Transaction } from "@/lib/types";
+import type { Transaction } from "@/lib/types"
+import { useTranslation } from "@/lib/i18n"
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
@@ -10,12 +13,13 @@ interface RecentTransactionsProps {
 
 export default function RecentTransactions({ transactions }: RecentTransactionsProps) {
   const recentTransactions = transactions.slice(0, 5)
+  const { t } = useTranslation()
 
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
-        <CardDescription>Your 5 most recent transactions.</CardDescription>
+        <CardTitle>{t("transactions.recent")}</CardTitle>
+        <CardDescription>{t("transactions.recentDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
         {recentTransactions.map((transaction) => (
