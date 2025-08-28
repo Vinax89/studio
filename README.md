@@ -62,3 +62,8 @@ two-week pay period. It is used by the `PayPeriodSummary` utilities to group
 shifts into the correct pay cycle. A custom `anchor` date can be provided to
 align the cycle with organization-specific schedules. When omitted, the anchor
 defaults to the pay period beginning on January 7, 2024.
+
+## Tax Estimator
+
+The tax estimator uses 2025 federal brackets from the IRS and state brackets from individual state revenue departments.
+_Last updated: Oct 2024._

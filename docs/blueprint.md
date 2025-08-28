@@ -7,7 +7,7 @@
 - AI-Powered Financial Insights: AI-powered insights tool to analyze spending habits, identify potential savings, and offer personalized financial recommendations based on uploaded documents and user input.
 - Manual Transaction Tracking: Allow to manually track income and expenses with custom categories tailored to a nursing career (e.g., certifications, uniforms).
 - Goal Setting and Tracking: Set financial goals (e.g., buying a home, retirement) and track progress using visualizations.
-- Tax Estimation Tool: A tax estimation tool to provide insight, based on income, deductions, and location, of tax burden during the year, so the user can prepare.
+- Tax Estimation Tool: A tax estimation tool to provide insight, based on income and location, of tax burden during the year, so the user can prepare. Data sourced from the IRS and state revenue departments (updated Oct 2024).
 - Data Security: Secure storage for uploaded documents and financial data.
 
 ## Style Guidelines:

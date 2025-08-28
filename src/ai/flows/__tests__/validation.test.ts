@@ -26,7 +26,7 @@ describe('taxEstimation validation', () => {
     jest.resetModules();
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     await expect(
-      estimateTax({ income: -1, deductions: 0, location: 'NY', filingStatus: 'single' })
+      estimateTax({ income: -1, state: 'NY', filingStatus: 'single' })
     ).rejects.toThrow();
   });
 
@@ -35,12 +35,11 @@ describe('taxEstimation validation', () => {
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     const result = await estimateTax({
       income: 80000,
-      deductions: 0,
-      location: 'NY',
+      state: 'NY',
       filingStatus: 'single',
     });
-    expect(result.estimatedTax).toBeCloseTo(9214, 0);
-    expect(result.taxRate).toBeCloseTo(11.52, 2);
+    expect(result.estimatedTax).toBeCloseTo(13276.82, 2);
+    expect(result.taxRate).toBeCloseTo(16.6, 2);
   });
 });
 
