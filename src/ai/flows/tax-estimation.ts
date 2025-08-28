@@ -72,6 +72,9 @@ const taxEstimationFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await taxEstimationPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('No output returned from taxEstimationFlow');
+    }
+    return output;
   }
 );
