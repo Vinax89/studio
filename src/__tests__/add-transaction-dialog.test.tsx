@@ -32,25 +32,21 @@ jest.mock('@/components/ui/switch', () => ({
   ),
 }));
 
-jest.mock('@/ai/flows/categorize-transaction', () => ({
-  suggestCategory: jest.fn(),
-}));
-const { suggestCategory: suggestCategoryMock } = require('@/ai/flows/categorize-transaction') as {
-  suggestCategory: jest.Mock;
-};
-suggestCategoryMock.mockResolvedValue('Misc');
+const fetchMock = jest.fn();
 
 beforeEach(() => {
+  (global as any).fetch = fetchMock;
+  fetchMock.mockResolvedValue({ ok: true, json: async () => ({ category: 'Misc' }) });
   onSave.mockClear();
   toastMock.mockClear();
-  suggestCategoryMock.mockClear();
+  fetchMock.mockClear();
 });
 
 async function openAndFill(amount: string) {
   render(<AddTransactionDialog onSave={onSave} />);
   fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test' } });
   fireEvent.blur(screen.getByLabelText(/description/i));
-  await waitFor(() => expect(suggestCategoryMock).toHaveBeenCalled());
+  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: amount } });
   fireEvent.click(screen.getByText(/save transaction/i));
 }

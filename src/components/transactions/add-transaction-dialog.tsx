@@ -24,8 +24,7 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { getCategories } from "@/lib/categories"
-import { suggestCategory } from "@/ai/flows/categorize-transaction"
+import { getCategories, addCategory } from "@/lib/categories"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -48,16 +47,29 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         }
     }, [open])
 
-    const handleDescriptionBlur = async () => {
-        if (!description.trim()) return
+    const fetchSuggestedCategory = async (text: string) => {
         try {
-            const suggested = await suggestCategory(description)
-            if (suggested) {
-                setCategory(suggested)
-                setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
-            }
+            const res = await fetch("/api/suggest-category", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description: text })
+            })
+            if (!res.ok) return
+            const data: { category?: string } = await res.json()
+            return data.category
         } catch (err) {
             console.error("suggestCategory failed", err)
+            return undefined
+        }
+    }
+
+    const handleDescriptionBlur = async () => {
+        if (!description.trim()) return
+        const suggested = await fetchSuggestedCategory(description)
+        if (suggested) {
+            setCategory(suggested)
+            setCategories(prev => prev.includes(suggested) ? prev : [...prev, suggested])
+            addCategory(suggested)
         }
     }
 
@@ -77,6 +89,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             category,
             isRecurring
         })
+        addCategory(category)
         setOpen(false)
         // Reset form
         setDescription("")
@@ -144,18 +157,20 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <Select onValueChange={setCategory} value={category}>
-              <SelectTrigger id="category" className="col-span-3">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat} value={cat} className="capitalize">
-                    {cat}
-                  </SelectItem>
+            <div className="col-span-3">
+              <Input
+                id="category"
+                list="category-options"
+                placeholder="e.g. Groceries, Rent"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
+              <datalist id="category-options">
+                {categories.map((cat) => (
+                  <option key={cat} value={cat} />
                 ))}
-              </SelectContent>
-            </Select>
+              </datalist>
+            </div>
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">Recurring</Label>
