@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -25,5 +25,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-export { app, auth };
+export { app, auth, googleProvider };

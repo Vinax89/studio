@@ -5,6 +5,8 @@ export const authErrorMessages: Record<string, string> = {
   "auth/wrong-password": "Incorrect password. Please try again.",
   "auth/email-already-in-use": "This email is already registered. Please sign in.",
   "auth/weak-password": "The password is too weak. Please use at least 6 characters.",
+  "auth/invalid-email": "The email address is not valid.",
+  "auth/popup-closed-by-user": "Authentication popup closed before completion. Please try again.",
   "auth/configuration-not-found":
     "Firebase Authentication is not yet configured. Please ensure Email/Password sign-in is enabled in the Firebase console.",
 }
