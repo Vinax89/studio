@@ -7,6 +7,8 @@ import type { Transaction } from "@/lib/types";
 import { getDocs } from "firebase/firestore";
 import { transactionsCollection, chartDataCollection } from "@/lib/firebase";
 
+export const dynamic = "force-dynamic";
+
 type ChartData = { month: string; income: number; expenses: number };
 
 async function getTransactions(): Promise<Transaction[]> {
