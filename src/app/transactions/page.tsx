@@ -48,7 +48,6 @@ export default function TransactionsPage() {
     return ["all", ...Array.from(map.values())];
   }, [transactions]);
 
-<<<<<<< HEAD
   const addTransaction = useCallback(
     (transaction: Omit<Transaction, "id" | "date">) => {
       setTransactions((prev) => [
@@ -86,15 +85,6 @@ export default function TransactionsPage() {
       transactions.map(({ id, ...rest }) => rest),
       "transactions.csv"
     );
-=======
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    // Using a function with setTransactions ensures we get the latest state
-    // and correctly triggers re-renders for derived state like `categories`.
-    setTransactions(prev => [
-      { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
-      ...prev
-    ]);
->>>>>>> d96745a (code review)
   };
 
   const filteredTransactions = useMemo(() => {
