@@ -32,7 +32,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(key);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      const userSchema = z.object({ uid: z.string() }).passthrough();
+      const userSchema = z
+        .object({
+          uid: z.string(),
+          email: z.string().email(),
+          displayName: z.string().min(1),
+        })
+        .passthrough();
       const result = userSchema.safeParse(parsed);
       return result.success ? (result.data as User) : null;
     } catch {

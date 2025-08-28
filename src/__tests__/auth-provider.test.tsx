@@ -31,7 +31,7 @@ jest.mock('firebase/auth', () => ({
 
 function DisplayUser() {
   const { user } = useAuth();
-  return <div>{user ? user.uid : 'none'}</div>;
+  return <div>{user ? user.displayName : 'none'}</div>;
 }
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ beforeEach(() => {
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {
   mockPathname = '/';
-  mockUser = { uid: 'abc' } as any;
+  mockUser = { uid: 'abc', email: 'a@test.com', displayName: 'Test' } as any;
 
   render(
     <AuthProvider>
@@ -53,7 +53,7 @@ test('redirects to dashboard when authenticated on "/" and updates context', asy
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/dashboard'));
-  expect(screen.getByText('abc')).toBeInTheDocument();
+  expect(screen.getByText('Test')).toBeInTheDocument();
 });
 
 test('redirects to "/" when unauthenticated on protected route', async () => {
@@ -86,6 +86,19 @@ test('handles missing persisted user', () => {
 test('handles corrupted persisted user', () => {
   const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
   localStorage.setItem(key, '{bad json');
+  const renderComponent = () =>
+    render(
+      <AuthProvider>
+        <DisplayUser />
+      </AuthProvider>
+    );
+  expect(renderComponent).not.toThrow();
+  expect(screen.getByText('none')).toBeInTheDocument();
+});
+
+test('handles incomplete persisted user', () => {
+  const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
+  localStorage.setItem(key, JSON.stringify({ uid: 'abc' }));
   const renderComponent = () =>
     render(
       <AuthProvider>
