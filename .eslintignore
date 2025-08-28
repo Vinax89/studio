@@ -3,4 +3,5 @@ src/app
 src/components
 src/hooks
 src/lib
+src/__tests__
 tailwind.config.ts

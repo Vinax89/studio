@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows/analyze-receipt"
+import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
+import Image from "next/image"
 
 export default function ScanReceiptPage() {
   const router = useRouter()
@@ -73,17 +74,27 @@ export default function ScanReceiptPage() {
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const context = canvas.getContext('2d');
-      if(context){
+      if (context) {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const dataUri = canvas.toDataURL('image/png');
-        setImagePreview(dataUri);
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, "image/png")
+        );
+        if (blob) {
+          const dataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          setImagePreview(dataUri);
+        }
       }
     }
   };
@@ -173,8 +184,14 @@ export default function ScanReceiptPage() {
           <CardContent className="space-y-4">
             {imagePreview && (
               <div className="space-y-4">
-                  <div className="aspect-video w-full bg-muted rounded-md overflow-hidden border">
-                    <img src={imagePreview} alt="Receipt preview" className="w-full h-full object-contain" />
+                  <div className="relative aspect-video w-full bg-muted rounded-md overflow-hidden border">
+                    <Image
+                      src={imagePreview}
+                      alt="Receipt preview"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-contain"
+                    />
                   </div>
                   <Button onClick={analyzeImage} disabled={isLoading} className="w-full">
                     {isLoading ? (
