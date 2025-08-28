@@ -24,7 +24,9 @@ export default function LoginPage() {
   const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  // true displays the sign-in form; false switches to account creation mode
   const [isLoginView, setIsLoginView] = useState(true)
+  // indicates an auth request is in progress to disable UI and show a spinner
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,8 +35,10 @@ export default function LoginPage() {
 
     try {
       if (isLoginView) {
+        // Attempt to log in an existing user
         await signInWithEmailAndPassword(auth, email, password)
       } else {
+        // Create a new account for first-time users
         await createUserWithEmailAndPassword(auth, email, password)
       }
       router.push("/dashboard")
@@ -42,6 +46,7 @@ export default function LoginPage() {
       const authError = error as AuthError
       const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
       if (!authErrorMessages[authError.code]) {
+        // Log unexpected errors for debugging without exposing details to the user
         console.error(authError.code, authError.message)
       }
       toast({
