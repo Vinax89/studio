@@ -1,14 +1,27 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
+import type { TransactionRowType } from "@/lib/transactions"
 
 /**
  * Generic transaction syncing endpoint.
  * Unlike `/api/bank/import`, this expects transactions already retrieved
  * from any source and persists them to the database.
  */
+const transactionSchema: z.ZodType<TransactionRowType> = z.object({
+  date: z.string(),
+  description: z.string(),
+  amount: z.preprocess(
+    (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
+    z.string(),
+  ),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.union([z.boolean(), z.string()]).optional(),
+})
+
 const bodySchema = z.object({
-  transactions: z.array(z.any()),
+  transactions: z.array(transactionSchema),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
@@ -40,7 +53,13 @@ export async function POST(req: Request) {
 
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
+    const message = parsed.error.issues
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join("; ")
+    return NextResponse.json(
+      { error: `Invalid transaction payload: ${message}` },
+      { status: 400 },
+    )
   }
 
   const { transactions } = parsed.data
