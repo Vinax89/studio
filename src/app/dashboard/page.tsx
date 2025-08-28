@@ -8,14 +8,12 @@ import type { Transaction } from "@/lib/types";
 
 // Server-side data fetching now happens in the page component.
 const getTransactions = async (): Promise<Transaction[]> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Replace with real data fetching when an API is available
   return mockTransactions;
 };
 
 const getChartData = async () => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+  // Replace with real data fetching when an API is available
   return [
     { month: "Jan", income: 4000, expenses: 2400 },
     { month: "Feb", income: 3000, expenses: 1398 },
