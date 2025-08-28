@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useDeferredValue } from "react";
+import { useState, useMemo, useTransition, useDeferredValue, Profiler, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -47,7 +47,22 @@ export default function TransactionsPage() {
     startTransition(() => setSearchTerm(value));
   };
 
+  const onRender = useCallback(
+    (
+      id: string,
+      phase: "mount" | "update",
+      actualDuration: number,
+      baseDuration: number
+    ) => {
+      console.log(`[Profiler:${id}] ${phase} took ${actualDuration.toFixed(2)}ms`, {
+        baseDuration: baseDuration.toFixed(2),
+      });
+    },
+    []
+  );
+
   return (
+    <Profiler id="transactions-page" onRender={onRender}>
     <div className="space-y-6">
        <div className="flex items-center justify-between gap-4">
         <div>
@@ -86,5 +101,6 @@ export default function TransactionsPage() {
 
       <TransactionsTable transactions={filteredTransactions} />
     </div>
+    </Profiler>
   );
 }
