@@ -8,6 +8,7 @@
 - Manual Transaction Tracking: Allow to manually track income and expenses with custom categories tailored to a nursing career (e.g., certifications, uniforms).
 - Goal Setting and Tracking: Set financial goals (e.g., buying a home, retirement) and track progress using visualizations.
 - Tax Estimation Tool: A tax estimation tool to provide insight, based on income, deductions, and location, of tax burden during the year, so the user can prepare.
+- Cost of Living Estimator: Tool using BEA Regional Price Parities to estimate housing, food, and other regional expenses for different household sizes.
 - Data Security: Secure storage for uploaded documents and financial data.
 
 ## Style Guidelines:
@@ -19,3 +20,10 @@
 - Use clean, professional icons to represent different financial categories and actions.
 - Prioritize a clean and organized layout with clear data visualization for easy understanding of financial information.
 - Use subtle transitions and animations to enhance user engagement without being distracting.
+
+## Cost of Living Data
+
+Cost estimates derive from the **BEA Regional Price Parities** dataset. Annual
+figures for housing, groceries, utilities, transportation, healthcare, and
+miscellaneous expenses are stored for each region. Values represent yearly
+costs for a single adult and are scaled for household size in the application.
