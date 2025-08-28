@@ -1,16 +1,20 @@
 
 "use client"
 
-import { DollarSign, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
+import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { mockTransactions } from "@/lib/data"
+import type { Transaction } from "@/lib/types"
 
-export default function OverviewCards() {
-  const totalIncome = mockTransactions
+interface OverviewCardsProps {
+  transactions: Transaction[];
+}
+
+export default function OverviewCards({ transactions }: OverviewCardsProps) {
+  const totalIncome = transactions
     .filter(t => t.type === 'Income')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalExpenses = mockTransactions
+  const totalExpenses = transactions
     .filter(t => t.type === 'Expense')
     .reduce((acc, t) => acc + t.amount, 0);
 

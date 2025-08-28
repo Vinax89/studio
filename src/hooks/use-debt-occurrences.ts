@@ -9,10 +9,12 @@ export function useDebtOccurrences(
   to: Date,
   query: string
 ) {
+  const fromTime = from.getTime();
+  const toTime = to.getTime();
   const { occurrences, grouped } = useMemo(
-    () => computeDebtOccurrences(debts, from, to),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debts, from.toISOString(), to.toISOString()]
+    () =>
+      computeDebtOccurrences(debts, new Date(fromTime), new Date(toTime)),
+    [debts, fromTime, toTime]
   );
 
   const filtered = useMemo(() => {

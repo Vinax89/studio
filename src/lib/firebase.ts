@@ -1,13 +1,25 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { z } from "zod";
+
+const envSchema = z.object({
+  NEXT_PUBLIC_FIREBASE_API_KEY: z.string(),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string(),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string(),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string(),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string(),
+  NEXT_PUBLIC_FIREBASE_APP_ID: z.string()
+});
+
+const env = envSchema.parse(process.env);
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDkQ_CcJgWzojHkPOA-2hbO6zD_EH39CuY",
-  authDomain: "nursefinai.firebaseapp.com",
-  projectId: "nursefinai",
-  storageBucket: "nursefinai.appspot.com",
-  messagingSenderId: "18157000551",
-  appId: "1:18157000551:web:a565b5d1ff4537deb141c2"
+  apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
