@@ -3,7 +3,8 @@
 
 import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
-import DebtCalendar from "@/components/debts/DebtCalendar";
+import dynamic from "next/dynamic";
+const DebtCalendar = dynamic(() => import("@/components/debts/DebtCalendar"), { ssr: false });
 import { mockDebts } from "@/lib/data";
 import { DebtCard } from "@/components/debts/debt-card";
 import { DebtStrategyPlan } from "@/components/debts/debt-strategy-plan";
