@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
+import { mockAccounts } from "@/lib/data"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -34,15 +35,19 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [amount, setAmount] = useState("")
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
+    const [accountId, setAccountId] = useState(mockAccounts[0]?.id || "")
+    const [currency, setCurrency] = useState(mockAccounts[0]?.currency || "")
     const [isRecurring, setIsRecurring] = useState(false)
 
     const handleSave = () => {
-        if(description && amount && type && category) {
+        if(description && amount && type && category && accountId) {
             onSave({
                 description,
                 amount: parseFloat(amount),
                 type,
                 category,
+                accountId,
+                currency,
                 isRecurring
             })
             setOpen(false)
@@ -51,6 +56,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             setAmount("")
             setType("Expense")
             setCategory("")
+            setAccountId(mockAccounts[0]?.id || "")
+            setCurrency(mockAccounts[0]?.currency || "")
             setIsRecurring(false)
         }
     }
@@ -95,7 +102,28 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             <Label htmlFor="category" className="text-right">Category</Label>
             <Input id="category" placeholder="e.g. Uniforms, Salary" value={category} onChange={(e) => setCategory(e.target.value)} className="col-span-3" />
           </div>
-           <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="account" className="text-right">Account</Label>
+            <Select onValueChange={(value) => {
+              setAccountId(value);
+              const acc = mockAccounts.find(a => a.id === value);
+              if (acc) setCurrency(acc.currency);
+            }} value={accountId}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select account" />
+              </SelectTrigger>
+              <SelectContent>
+                {mockAccounts.map(acc => (
+                  <SelectItem key={acc.id} value={acc.id}>{acc.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="currency" className="text-right">Currency</Label>
+            <Input id="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">Recurring</Label>
             <Switch id="recurring" checked={isRecurring} onCheckedChange={setIsRecurring} className="col-span-3" />
           </div>

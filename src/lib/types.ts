@@ -1,11 +1,21 @@
 
+export type Account = {
+  id: string;
+  name: string;
+  type: string;
+  currency: string;
+  startingBalance: number;
+};
+
 export type Transaction = {
   id: string;
+  accountId: string;
   date: string;
   description: string;
   amount: number;
   type: "Income" | "Expense";
   category: string;
+  currency?: string;
   isRecurring?: boolean;
 };
 

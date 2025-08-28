@@ -82,6 +82,12 @@ export default function AppHeader() {
               Transactions
             </Link>
             <Link
+              href="/accounts"
+              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              Accounts
+            </Link>
+            <Link
               href="/debts"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >

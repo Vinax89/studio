@@ -28,7 +28,9 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalIncome)
+          }</div>
           <p className="text-xs text-muted-foreground">from salary and other sources</p>
         </CardContent>
       </Card>
@@ -38,7 +40,9 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <TrendingDown className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalExpenses)
+          }</div>
           <p className="text-xs text-muted-foreground">across all categories</p>
         </CardContent>
       </Card>
@@ -48,7 +52,9 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${savings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(savings)
+          }</div>
           <p className="text-xs text-muted-foreground">this period</p>
         </CardContent>
       </Card>

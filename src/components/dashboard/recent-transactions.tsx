@@ -35,7 +35,8 @@ export default function RecentTransactions({ transactions }: RecentTransactionsP
                 "ml-auto font-semibold",
                 transaction.type === 'Income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
             )}>
-              {transaction.type === 'Income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+              {transaction.type === 'Income' ? '+' : '-'}
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: transaction.currency ?? 'USD' }).format(transaction.amount)}
             </div>
           </div>
         ))}
