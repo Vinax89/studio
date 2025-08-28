@@ -1,5 +1,6 @@
 
 import OverviewCards from "@/components/dashboard/overview-cards";
+import CurrentTimeCard from "@/components/dashboard/current-time-card";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardCharts from '@/app/dashboard/dashboard-charts';
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
       </div>
+      <CurrentTimeCard />
       <Suspense fallback={<Skeleton className="h-[126px] w-full" />}>
         <OverviewCards transactions={transactions} />
       </Suspense>
