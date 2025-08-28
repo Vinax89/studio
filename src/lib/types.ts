@@ -6,7 +6,14 @@ export type Transaction = {
   amount: number;
   type: "Income" | "Expense";
   category: string;
+  categoryId?: string;
   isRecurring?: boolean;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  monthlyBudget?: number;
 };
 
 export type Goal = {
