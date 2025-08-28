@@ -1,6 +1,6 @@
 import { collection, doc, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
-import { db } from "./firebase";
-import type { Debt } from "./types";
+import { db } from "../firebase";
+import type { Debt } from "../types";
 
 // Firestore data converter for `Debt` documents.
 const debtConverter = {
