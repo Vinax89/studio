@@ -9,8 +9,8 @@
  * - SuggestDebtStrategyOutput - The return type for the suggestDebtStrategy function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { RecurrenceValues } from '@/lib/types';
 
 const DebtSchema = z.object({

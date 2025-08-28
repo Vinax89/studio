@@ -9,8 +9,8 @@
  * - CalculateCashflowOutput - The return type for the calculateCashflow function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const CalculateCashflowInputSchema = z.object({
   annualIncome: z

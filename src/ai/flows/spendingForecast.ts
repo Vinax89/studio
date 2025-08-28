@@ -9,8 +9,8 @@
  * - SpendingForecastOutput - The return type for the predictSpending function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const TransactionSchema = z.object({
   date: z.string().describe('ISO date of the transaction.'),
