@@ -2,8 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput } from "@/ai/flows/analyze-spending-habits"
-import { predictSpending } from "@/ai/flows"
+import { analyzeSpendingHabits, type AnalyzeSpendingHabitsOutput, predictSpending } from "@/ai/flows"
 import { mockGoals, mockTransactions } from "@/lib/data"; // Import mock data
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from "react"
-import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows/calculate-cashflow"
+import { calculateCashflow, type CalculateCashflowOutput } from "@/ai/flows"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
