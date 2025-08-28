@@ -1,7 +1,14 @@
 
 "use client";
 
-import { useState, useMemo, useTransition, useDeferredValue, useRef, useCallback } from "react";
+import {
+  useState,
+  useMemo,
+  useTransition,
+  useDeferredValue,
+  useRef,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
 import type { Transaction } from "@/lib/types";
@@ -11,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
+import { addCategory, getCategories } from "@/lib/categories";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
 
 export default function TransactionsPage() {
@@ -26,13 +34,23 @@ export default function TransactionsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = useMemo(() => {
-    const allCategories = transactions.map(t => t.category);
-    return ['all', ...Array.from(new Set(allCategories))];
+    // Start with categories stored externally (e.g. in localStorage)
+    const map = new Map<string, string>();
+    for (const cat of getCategories()) {
+      const key = cat.toLowerCase();
+      if (!map.has(key)) map.set(key, cat);
+    }
+    // Merge in categories from current transactions
+    for (const t of transactions) {
+      const key = t.category.toLowerCase();
+      if (!map.has(key)) map.set(key, t.category);
+    }
+    return ["all", ...Array.from(map.values())];
   }, [transactions]);
 
   const addTransaction = useCallback(
     (transaction: Omit<Transaction, "id" | "date">) => {
-      setTransactions(prev => [
+      setTransactions((prev) => [
         {
           ...transaction,
           id: crypto.randomUUID(),
@@ -40,6 +58,7 @@ export default function TransactionsPage() {
         },
         ...prev,
       ]);
+      addCategory(transaction.category);
     },
     [setTransactions]
   );
@@ -52,7 +71,8 @@ export default function TransactionsPage() {
     try {
       const rows = await parseCsv<TransactionRowType>(file);
       const parsed = validateTransactions(rows);
-      setTransactions(prev => [...parsed, ...prev]);
+      parsed.forEach((t) => addCategory(t.category));
+      setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -68,11 +88,16 @@ export default function TransactionsPage() {
   };
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(transaction => {
-        const matchesSearch = transaction.description.toLowerCase().includes(deferredSearchTerm.toLowerCase());
-        const matchesType = filterType === 'all' || transaction.type === filterType;
-        const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
-        return matchesSearch && matchesType && matchesCategory;
+    return transactions.filter((transaction) => {
+      const matchesSearch = transaction.description
+        .toLowerCase()
+        .includes(deferredSearchTerm.toLowerCase());
+      const matchesType =
+        filterType === "all" || transaction.type === filterType;
+      const matchesCategory =
+        filterCategory === "all" ||
+        transaction.category.toLowerCase() === filterCategory.toLowerCase();
+      return matchesSearch && matchesType && matchesCategory;
     });
   }, [transactions, deferredSearchTerm, filterType, filterCategory]);
 
