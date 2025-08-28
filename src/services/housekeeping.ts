@@ -52,10 +52,23 @@ export async function cleanupDebts(): Promise<void> {
   await runWithRetry(() => Promise.all(deletions));
 }
 
+/**
+ * Executes an async operation with retries using exponential backoff.
+ *
+ * @param op      The operation to execute.
+ * @param options Optional configuration for retries.
+ *                - retries: maximum number of retry attempts (default 3)
+ *                - baseDelayMs: initial delay before retrying (default 100ms)
+ *                - jitterPct: random jitter percentage applied to the delay
+ *                  (default 0.1 meaning ±10%)
+ */
 export async function runWithRetry<T>(
   op: () => Promise<T>,
-  retries = 1,
-  delayMs = 100
+  {
+    retries = 3,
+    baseDelayMs = 100,
+    jitterPct = 0.1,
+  }: { retries?: number; baseDelayMs?: number; jitterPct?: number } = {}
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -63,7 +76,10 @@ export async function runWithRetry<T>(
     } catch (err) {
       if (attempt === retries) throw err;
       console.error(`Attempt ${attempt + 1} failed:`, err);
-      const delay = delayMs * 2 ** attempt;
+      const baseDelay = baseDelayMs * 2 ** attempt;
+      const jitterRange = baseDelay * jitterPct;
+      const jitter = (Math.random() * 2 - 1) * jitterRange;
+      const delay = Math.round(baseDelay + jitter);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }

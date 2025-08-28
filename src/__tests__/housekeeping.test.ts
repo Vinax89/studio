@@ -166,7 +166,7 @@ describe('runWithRetry', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    const promise = runWithRetry(op, 2, 1000);
+    const promise = runWithRetry(op, { retries: 2, baseDelayMs: 1000, jitterPct: 0 });
 
     // allow first rejection to be processed
     await Promise.resolve();
