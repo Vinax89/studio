@@ -28,3 +28,6 @@ export type { SpendingForecastInput, SpendingForecastOutput } from './spendingFo
 
 export { calculateCostOfLiving } from './cost-of-living';
 export type { CostOfLivingInput, CostOfLivingOutput } from './cost-of-living';
+
+export { suggestCategory } from './suggest-category';
+export type { SuggestCategoryInput, SuggestCategoryOutput } from './suggest-category';
