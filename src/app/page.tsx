@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import {
   signInWithEmailAndPassword,
@@ -60,59 +61,78 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <NurseFinAILogo className="h-12 w-12 text-primary" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-3xl font-bold tracking-tight">
-              {isLoginView ? "Welcome Back" : "Create an Account"}
-            </CardTitle>
-            <CardDescription>
-              {isLoginView
-                  ? "Sign in to access your financial dashboard."
-                  : "Your personal finance companion for a successful nursing career."}
-            </CardDescription>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isLoginView ? "login-header" : "signup-header"}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-1"
+            >
+              <CardTitle className="text-3xl font-bold tracking-tight">
+                {isLoginView ? "Welcome Back" : "Create an Account"}
+              </CardTitle>
+              <CardDescription>
+                {isLoginView
+                    ? "Sign in to access your financial dashboard."
+                    : "Your personal finance companion for a successful nursing career."}
+              </CardDescription>
+            </motion.div>
+          </AnimatePresence>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nurse@hospital.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                {isLoading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Please wait...
-                    </>
-                ) : isLoginView ? (
-                    "Sign In"
-                ) : (
-                    "Sign Up"
-                )}
-            </Button>
-          </form>
-          <div className="mt-6 text-center text-sm">
-            {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
-              {isLoginView ? "Sign up" : "Sign in"}
-            </button>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isLoginView ? "login-form" : "signup-form"}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="nurse@hospital.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Please wait...
+                        </>
+                    ) : isLoginView ? (
+                        "Sign In"
+                    ) : (
+                        "Sign Up"
+                    )}
+                </Button>
+              </form>
+              <div className="mt-6 text-center text-sm">
+                {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
+                <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
+                  {isLoginView ? "Sign up" : "Sign in"}
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>
