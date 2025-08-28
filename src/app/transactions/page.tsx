@@ -1,20 +1,21 @@
-
 "use client";
 
 import { useState, useMemo, useTransition, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/lib/data";
+import { importTransactions } from "@/lib/transactions";
 import type { Transaction } from "@/lib/types";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
-import { File, ScanLine, Loader2 } from "lucide-react";
+import { File, ScanLine, Loader2, Download } from "lucide-react";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const router = useRouter();
   const [isTransitionPending, startTransition] = useTransition();
+  const [importing, setImporting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -32,6 +33,16 @@ export default function TransactionsPage() {
       { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
+  };
+
+  const handleImport = async () => {
+    setImporting(true);
+    try {
+      const imported = await importTransactions();
+      setTransactions(prev => [...imported, ...prev]);
+    } finally {
+      setImporting(false);
+    }
   };
 
   const filteredTransactions = useMemo(() => {
@@ -58,6 +69,10 @@ export default function TransactionsPage() {
             <Button variant="outline">
                 <File className="mr-2 h-4 w-4" />
                 Export
+            </Button>
+            <Button variant="outline" onClick={handleImport} disabled={importing}>
+                {importing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                Import
             </Button>
              <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
                 <ScanLine className="mr-2 h-4 w-4" />
