@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { Recurrence, Debt } from "@/lib/types";
 
@@ -99,7 +100,8 @@ export function useDebtOccurrences(
 ) {
   const { occurrences, grouped } = useMemo(
     () => computeDebtOccurrences(debts, from, to),
-    [debts, from, to]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [debts, from.toISOString(), to.toISOString()]
   );
 
   const filtered = useMemo(() => {
