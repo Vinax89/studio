@@ -6,9 +6,12 @@ const parseISO = (s: string) => {
   const [y, m, dd] = s.split("-").map(Number);
   return new Date(y, m - 1, dd);
 };
-const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+const addDays = (d: Date, days: number) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
 const isSameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
 function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOrAfter: Date): Date | null {
   const anchor = parseISO(anchorISO);
@@ -25,7 +28,7 @@ function nextOccurrenceOnOrAfter(anchorISO: string, recurrence: Recurrence, onOr
   return candidate < onOrAfter ? addDays(candidate, step) : candidate;
 }
 
-export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
+function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] {
   const out: Date[] = [];
   const maxIter = 400;
   if (debt.recurrence === "none") {
@@ -35,11 +38,16 @@ export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] 
   }
   let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
   let iter = 0;
-  const stepDays = debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 30;
+  const stepDays =
+    debt.recurrence === "weekly" ? 7 : debt.recurrence === "biweekly" ? 14 : 30;
   while (cur && cur <= to && iter < maxIter) {
     out.push(new Date(cur));
     if (debt.recurrence === "monthly") {
-      const nextMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, cur.getDate());
+      const nextMonth = new Date(
+        cur.getFullYear(),
+        cur.getMonth() + 1,
+        cur.getDate()
+      );
       cur = nextMonth;
     } else {
       cur = addDays(cur, stepDays);
@@ -49,33 +57,50 @@ export function allOccurrencesInRange(debt: Debt, from: Date, to: Date): Date[] 
   return out;
 }
 
+function computeDebtOccurrences(debts: Debt[], from: Date, to: Date) {
+  const occurrences: Occurrence[] = [];
+  const grouped = new Map<string, Occurrence[]>();
+  debts.forEach((d) => {
+    const occ = allOccurrencesInRange(d, from, to);
+    occ.forEach((dt) => {
+      const oc = { date: iso(dt), debt: d };
+      occurrences.push(oc);
+      const arr = grouped.get(oc.date) ?? [];
+      arr.push(oc);
+      grouped.set(oc.date, arr);
+    });
+  });
+  occurrences.sort((a, b) => a.date.localeCompare(b.date));
+  return { occurrences, grouped } as const;
+}
+
 export type Occurrence = { date: string; debt: Debt };
 
-export function useDebtOccurrences(debts: Debt[], from: Date, to: Date, query: string) {
-  const occurrences = useMemo<Occurrence[]>(() => {
-    const results: Occurrence[] = [];
-    debts.forEach((d) => {
-      const occ = allOccurrencesInRange(d, from, to);
-      occ.forEach((dt) => results.push({ date: iso(dt), debt: d }));
-    });
-    return results.sort((a, b) => a.date.localeCompare(b.date));
-  }, [debts, from, to]);
+export function useDebtOccurrences(
+  debts: Debt[],
+  from: Date,
+  to: Date,
+  query: string
+) {
+  const { occurrences, grouped } = useMemo(
+    () => computeDebtOccurrences(debts, from, to),
+    [debts, from, to]
+  );
 
-  const grouped = useMemo(() => {
+  const filtered = useMemo(() => {
+    if (!query) return grouped;
     const map = new Map<string, Occurrence[]>();
-    for (const oc of occurrences) {
-      if (
-        query &&
-        !(`${oc.debt.name} ${oc.debt.notes ?? ""}`.toLowerCase().includes(query.toLowerCase()))
-      )
-        continue;
-      const arr = map.get(oc.date) ?? [];
-      arr.push(oc);
-      map.set(oc.date, arr);
-    }
+    grouped.forEach((arr, date) => {
+      const filteredArr = arr.filter((oc) =>
+        `${oc.debt.name} ${oc.debt.notes ?? ""}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      );
+      if (filteredArr.length) map.set(date, filteredArr);
+    });
     return map;
-  }, [occurrences, query]);
+  }, [grouped, query]);
 
-  return { occurrences, grouped } as const;
+  return { occurrences, grouped: filtered } as const;
 }
 

@@ -14,6 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import type { Debt } from "@/lib/types";
 
+// Optional demo delay; disable in production
+const enableMockDelay = process.env.NEXT_PUBLIC_ENABLE_MOCK_DELAY === "true";
+
 interface DebtCardProps {
   debt: Debt;
   onDelete: (id: string) => void;
@@ -26,8 +29,11 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
   const progress = (debt.currentAmount / debt.initialAmount) * 100;
   const remainingAmount = debt.initialAmount - debt.currentAmount;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
+    if (enableMockDelay) {
+      await new Promise(res => setTimeout(res, 500));
+    }
     onDelete(debt.id);
     setIsDeleting(false);
   };
