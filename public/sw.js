@@ -1,16 +1,16 @@
-importScripts("https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js")
+importScripts("https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js");
 
-const DB_NAME = "offline-db"
-const STORE_NAME = "transactions"
+const DB_NAME = "offline-db";
+const STORE_NAME = "transactions";
 
 const dbPromise = idb.openDB(DB_NAME, 1, {
   upgrade(db) {
-    db.createObjectStore(STORE_NAME, { autoIncrement: true })
+    db.createObjectStore(STORE_NAME, { autoIncrement: true });
   },
-})
+});
 
-self.addEventListener("fetch", event => {
-  const { request } = event
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
   if (
     request.method === "POST" &&
     request.url.includes("/api/transactions") &&
@@ -19,18 +19,18 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       (async () => {
         try {
-          return await fetch(request)
+          return await fetch(request);
         } catch (err) {
-          const clone = request.clone()
-          const body = await clone.json()
-          const db = await dbPromise
-          await db.add(STORE_NAME, body)
+          const clone = request.clone();
+          const body = await clone.json();
+          const db = await dbPromise;
+          await db.add(STORE_NAME, body);
           return new Response(JSON.stringify({ offline: true }), {
             status: 202,
             headers: { "Content-Type": "application/json" },
-          })
+          });
         }
-      })()
-    )
+      })(),
+    );
   }
-})
+});

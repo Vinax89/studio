@@ -1,10 +1,9 @@
+"use client";
 
-"use client"
-
-import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Transaction } from "@/lib/types"
-import { useMemo } from "react"
+import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Transaction } from "@/lib/types";
+import { useMemo } from "react";
 
 interface OverviewCardsProps {
   transactions: Transaction[];
@@ -15,13 +14,13 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
     () =>
       transactions.reduce(
         (acc, t) => {
-          if (t.type === "Income") acc.totalIncome += t.amount
-          else if (t.type === "Expense") acc.totalExpenses += t.amount
-          return acc
+          if (t.type === "Income") acc.totalIncome += t.amount;
+          else if (t.type === "Expense") acc.totalExpenses += t.amount;
+          return acc;
         },
-        { totalIncome: 0, totalExpenses: 0 }
+        { totalIncome: 0, totalExpenses: 0 },
       ),
-    [transactions]
+    [transactions],
   );
 
   const savings = totalIncome - totalExpenses;
@@ -34,8 +33,16 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <p className="text-xs text-muted-foreground">from salary and other sources</p>
+          <div className="text-2xl font-bold">
+            $
+            {totalIncome.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            from salary and other sources
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -44,7 +51,13 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <TrendingDown className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">
+            $
+            {totalExpenses.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <p className="text-xs text-muted-foreground">across all categories</p>
         </CardContent>
       </Card>
@@ -54,10 +67,16 @@ export default function OverviewCards({ transactions }: OverviewCardsProps) {
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${savings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">
+            $
+            {savings.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </div>
           <p className="text-xs text-muted-foreground">this period</p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

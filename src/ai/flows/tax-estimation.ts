@@ -1,5 +1,5 @@
 // This file uses server-side code.
-'use server';
+"use server";
 
 /**
  * @fileOverview Provides a tax estimation based on user's income, deductions, and location.
@@ -9,45 +9,41 @@
  * - TaxEstimationOutput - The return type for the estimateTax function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const TaxEstimationInputSchema = z.object({
-  income: z
-    .number()
-    .describe('Annual income in USD.'),
-  deductions: z
-    .number()
-    .describe('Total deductions in USD.'),
-  location: z
-    .string()
-    .describe('The location of the user. e.g. city, state'),
-  filingStatus: z.enum(['single', 'married_jointly', 'married_separately', 'head_of_household'])
+  income: z.number().describe("Annual income in USD."),
+  deductions: z.number().describe("Total deductions in USD."),
+  location: z.string().describe("The location of the user. e.g. city, state"),
+  filingStatus: z
+    .enum([
+      "single",
+      "married_jointly",
+      "married_separately",
+      "head_of_household",
+    ])
     .describe("The user's tax filing status, which is a key part of the W-4."),
 });
 export type TaxEstimationInput = z.infer<typeof TaxEstimationInputSchema>;
 
 const TaxEstimationOutputSchema = z.object({
-  estimatedTax: z
-    .number()
-    .describe('Estimated total tax amount in USD.'),
-  taxRate: z
-    .number()
-    .describe('Estimated effective tax rate as a percentage.'),
-  breakdown: z
-    .string()
-    .describe('A detailed breakdown of the tax estimation.'),
+  estimatedTax: z.number().describe("Estimated total tax amount in USD."),
+  taxRate: z.number().describe("Estimated effective tax rate as a percentage."),
+  breakdown: z.string().describe("A detailed breakdown of the tax estimation."),
 });
 export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
-export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
+export async function estimateTax(
+  input: TaxEstimationInput,
+): Promise<TaxEstimationOutput> {
   return taxEstimationFlow(input);
 }
 
 const taxEstimationPrompt = ai.definePrompt({
-  name: 'taxEstimationPrompt',
-  input: {schema: TaxEstimationInputSchema},
-  output: {schema: TaxEstimationOutputSchema},
+  name: "taxEstimationPrompt",
+  input: { schema: TaxEstimationInputSchema },
+  output: { schema: TaxEstimationOutputSchema },
   prompt: `You are an expert tax estimator. Your calculations must be based on the official **2025 U.S. federal tax brackets**.
 
 Based on the user's income, filing status, deductions, and location, provide an estimate of their tax obligations.
@@ -66,15 +62,15 @@ Output the estimated tax, the tax rate, and the breakdown.`,
 
 const taxEstimationFlow = ai.defineFlow(
   {
-    name: 'taxEstimationFlow',
+    name: "taxEstimationFlow",
     inputSchema: TaxEstimationInputSchema,
     outputSchema: TaxEstimationOutputSchema,
   },
-  async input => {
-    const {output} = await taxEstimationPrompt(input);
+  async (input) => {
+    const { output } = await taxEstimationPrompt(input);
     if (!output) {
-      throw new Error('No output returned from taxEstimationFlow');
+      throw new Error("No output returned from taxEstimationFlow");
     }
     return output;
-  }
+  },
 );
