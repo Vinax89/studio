@@ -38,6 +38,14 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
   spendingAnalysis: z.string().describe('An analysis of the user spending habits.'),
   savingsOpportunities: z.string().describe('Identified potential savings opportunities.'),
   recommendations: z.string().describe('Personalized financial recommendations, taking goal importance into account.'),
+  categorySummaries: z
+    .array(
+      z.object({
+        name: z.string().describe('Spending category name'),
+        total: z.number().describe('Total amount spent in this category'),
+      })
+    )
+    .describe('Breakdown of spending totals by category.'),
 });
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
@@ -72,7 +80,8 @@ Financial Documents:
 Based on all this information, provide:
 1.  **spendingAnalysis**: A summary of spending patterns found in the documents.
 2.  **savingsOpportunities**: Areas where the user could potentially save money.
-3.  **recommendations**: Personalized, actionable recommendations that help the user achieve their *most important* goals faster.`,
+3.  **recommendations**: Personalized, actionable recommendations that help the user achieve their *most important* goals faster.
+4.  **categorySummaries**: A JSON array summarizing total spend for each category. Each item should contain `name` and `total` fields.`,
 });
 
 const analyzeSpendingHabitsFlow = ai.defineFlow(
