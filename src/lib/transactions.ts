@@ -4,7 +4,7 @@ import { db } from "./firebase";
 import type { Transaction } from "./types";
 
 const TransactionRow = z.object({
-  date: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   description: z.string(),
   amount: z.preprocess(
     (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
