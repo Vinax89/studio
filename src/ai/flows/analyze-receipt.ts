@@ -11,13 +11,12 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {dataUriSchema} from './utils';
 
 const AnalyzeReceiptInputSchema = z.object({
-  receiptImage: z
-    .string()
-    .describe(
-      "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
+  receiptImage: dataUriSchema.describe(
+    "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+  ),
 });
 export type AnalyzeReceiptInput = z.infer<typeof AnalyzeReceiptInputSchema>;
 
@@ -48,7 +47,14 @@ const analyzeReceiptFlow = ai.defineFlow(
     outputSchema: AnalyzeReceiptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const parsed = AnalyzeReceiptInputSchema.safeParse(input);
+    if (!parsed.success) {
+      const message = parsed.error.issues
+        .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+        .join('; ');
+      throw new Error(message);
+    }
+    const {output} = await prompt(parsed.data);
     if (!output) {
       throw new Error('No output returned from analyzeReceiptPrompt');
     }

@@ -13,6 +13,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {dataUriSchema} from './utils';
 
 const GoalSchema = z.object({
     id: z.string(),
@@ -25,7 +26,7 @@ const GoalSchema = z.object({
 
 const AnalyzeSpendingHabitsInputSchema = z.object({
   financialDocuments: z
-    .array(z.string())
+    .array(dataUriSchema)
     .describe(
       'An array of financial documents as data URIs that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
     ),
@@ -82,7 +83,14 @@ const analyzeSpendingHabitsFlow = ai.defineFlow(
     outputSchema: AnalyzeSpendingHabitsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const parsed = AnalyzeSpendingHabitsInputSchema.safeParse(input);
+    if (!parsed.success) {
+      const message = parsed.error.issues
+        .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+        .join('; ');
+      throw new Error(message);
+    }
+    const {output} = await prompt(parsed.data);
     if (!output) {
       throw new Error('No output returned from analyzeSpendingHabitsPrompt');
     }
