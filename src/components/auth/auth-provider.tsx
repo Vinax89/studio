@@ -21,6 +21,10 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Attempts to restore a previously signed-in user directly from
+  // Firebase's localStorage entry. The SDK stores authenticated users under
+  // a key that includes the app's API key and name, allowing us to read it
+  // synchronously before the auth listener fires on the client.
   const getPersistedUser = (): User | null => {
     if (typeof window === "undefined") return null;
     try {
@@ -40,6 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Keep the `user` state in sync with Firebase auth changes. This runs once
+  // on mount and updates whenever the user's sign-in state changes.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -48,6 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  // Redirect users based on their auth status. Using `startTransition` marks
+  // the navigation as low priority so UI updates remain responsive while
+  // redirects occur.
   useEffect(() => {
     const isAuthPage = pathname === "/";
     startTransition(() => {
