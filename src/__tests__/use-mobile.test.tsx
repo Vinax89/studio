@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { useIsMobile, MOBILE_BREAKPOINT } from "../hooks/use-mobile";
 
 describe("useIsMobile", () => {
@@ -39,5 +40,19 @@ describe("useIsMobile", () => {
     });
 
     expect(screen.getByText("mobile")).toBeInTheDocument();
+  });
+
+  it("renders on the server without warnings", () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    function TestComponent() {
+      useIsMobile();
+      return null;
+    }
+
+    renderToString(<TestComponent />);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 });
