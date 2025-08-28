@@ -20,6 +20,8 @@ import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
 import { addCategory, getCategories } from "@/lib/categories";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -32,6 +34,7 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const categories = useMemo(() => {
     // Start with categories stored externally (e.g. in localStorage)
@@ -74,7 +77,12 @@ export default function TransactionsPage() {
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
+      toast({
+        title: "Import Failed",
+        description: "Could not import transactions. Please check the file and try again.",
+        variant: "destructive",
+      });
     } finally {
       e.target.value = "";
     }

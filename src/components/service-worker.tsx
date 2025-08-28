@@ -2,11 +2,12 @@
 
 import { useEffect } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
+import { logger } from "@/lib/logger"
 
 export function ServiceWorker() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(console.error)
+      navigator.serviceWorker.register("/sw.js").catch((err) => logger.error(err))
     }
 
     let debounceId: ReturnType<typeof setTimeout> | null = null
@@ -25,7 +26,7 @@ export function ServiceWorker() {
             })
             await clearQueuedTransactions()
           } catch (error) {
-            console.error("Failed to sync queued transactions", error)
+            logger.error("Failed to sync queued transactions", error)
           }
         }
       }, 1000)

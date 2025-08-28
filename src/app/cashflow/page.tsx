@@ -17,6 +17,7 @@ import {
   getShiftsInPayPeriod,
   type Shift,
 } from "@/lib/payroll"
+import { logger } from "@/lib/logger"
 
 type ShiftDetails = Omit<Shift, 'date'>;
 
@@ -128,7 +129,7 @@ export default function CashflowPage() {
       })
       setCashflowResult(result)
     } catch (error) {
-      console.error("Error calculating cashflow:", error)
+      logger.error("Error calculating cashflow:", error)
       toast({
         title: "Calculation Failed",
         description: "There was an error calculating your cashflow. Please try again.",
