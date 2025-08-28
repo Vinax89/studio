@@ -21,6 +21,12 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {};
 }
 
+// Ensure Response.json helper exists for NextResponse.json in tests
+if (typeof (global as any).Response.json !== 'function') {
+  (global as any).Response.json = (data: any, init?: any) =>
+    new (global as any).Response(JSON.stringify(data), init);
+}
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test';
