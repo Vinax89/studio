@@ -133,7 +133,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
               value={category}
             >
               <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="Select category or add new" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
