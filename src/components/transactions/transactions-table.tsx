@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
-import { memo, useMemo } from "react"
+import { formatCurrency } from "@/lib/currency"
+import { memo, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
@@ -19,16 +21,21 @@ interface TransactionsTableProps {
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
 }: TransactionsTableProps) {
-  const formattedTransactions = useMemo(
+  const [page, setPage] = useState(0)
+  const pageSize = 20
+
+  const currentTransactions = useMemo(
     () =>
-      transactions.map((transaction) => ({
-        ...transaction,
-        formattedDate: new Date(transaction.date).toLocaleDateString(),
-        formattedAmount: `${
-          transaction.type === "Income" ? "+" : "-"
-        }$${transaction.amount.toFixed(2)}`,
-      })),
-    [transactions],
+      transactions
+        .slice(page * pageSize, page * pageSize + pageSize)
+        .map((transaction) => ({
+          ...transaction,
+          formattedDate: new Date(transaction.date).toLocaleDateString(),
+          formattedAmount: `${
+            transaction.type === "Income" ? "+" : "-"
+          }${formatCurrency(transaction.amount, transaction.currency)}`,
+        })),
+    [transactions, page, pageSize],
   )
 
   return (
@@ -44,7 +51,7 @@ export const TransactionsTable = memo(function TransactionsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {formattedTransactions.map((transaction) => (
+          {currentTransactions.map((transaction) => (
             <TableRow key={transaction.id}>
               <TableCell>{transaction.formattedDate}</TableCell>
               <TableCell className="font-medium">
@@ -73,6 +80,26 @@ export const TransactionsTable = memo(function TransactionsTable({
           ))}
         </TableBody>
       </Table>
+      <div className="flex justify-between p-4">
+        <Button
+          variant="outline"
+          onClick={() => setPage((p) => Math.max(p - 1, 0))}
+          disabled={page === 0}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            setPage((p) =>
+              (p + 1) * pageSize >= transactions.length ? p : p + 1,
+            )
+          }
+          disabled={(page + 1) * pageSize >= transactions.length}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   )
 })

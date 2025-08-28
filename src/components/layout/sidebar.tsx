@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Tooltip,
   TooltipContent,
@@ -33,9 +34,15 @@ const navItems = [
 
 export default function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+    navItems.forEach((item) => router.prefetch(item.href))
+    router.prefetch("/settings")
+  }, [router])
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background dark:border-r dark:bg-background sm:flex">
       <TooltipProvider>
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link

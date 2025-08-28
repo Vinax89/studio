@@ -1,18 +1,28 @@
 
 "use client"
 
-import { DollarSign, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
+import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { mockTransactions } from "@/lib/data"
+import type { Transaction } from "@/lib/types"
+import { useMemo } from "react"
 
-export default function OverviewCards() {
-  const totalIncome = mockTransactions
-    .filter(t => t.type === 'Income')
-    .reduce((acc, t) => acc + t.amount, 0);
+interface OverviewCardsProps {
+  transactions: Transaction[];
+}
 
-  const totalExpenses = mockTransactions
-    .filter(t => t.type === 'Expense')
-    .reduce((acc, t) => acc + t.amount, 0);
+export default function OverviewCards({ transactions }: OverviewCardsProps) {
+  const { totalIncome, totalExpenses } = useMemo(
+    () =>
+      transactions.reduce(
+        (acc, t) => {
+          if (t.type === "Income") acc.totalIncome += t.amount
+          else if (t.type === "Expense") acc.totalExpenses += t.amount
+          return acc
+        },
+        { totalIncome: 0, totalExpenses: 0 }
+      ),
+    [transactions]
+  );
 
   const savings = totalIncome - totalExpenses;
 
