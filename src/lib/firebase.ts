@@ -1,9 +1,14 @@
 import { config } from "dotenv";
-config(); // Load environment variables from .env file
+config();
 
-import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
+import {
+  initializeApp,
+  getApps,
+  getApp,
+  type FirebaseOptions,
+} from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection } from "firebase/firestore";
 import { z } from "zod";
 
 const nonPlaceholder = z
@@ -38,14 +43,18 @@ const firebaseConfig: FirebaseOptions = {
 // This provides a clearer error message than the generic Firebase error.
 function validateFirebaseConfig(config: FirebaseOptions): void {
   const requiredKeys: (keyof FirebaseOptions)[] = [
-    'apiKey',
-    'authDomain',
-    'projectId',
+    "apiKey",
+    "authDomain",
+    "projectId",
   ];
   for (const key of requiredKeys) {
     if (!config[key] || config[key] === "YOUR_API_KEY_HERE") {
-      const envVarName = `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`;
-      throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file for the ${envVarName} variable.`);
+      const envVarName = `NEXT_PUBLIC_FIREBASE_${key
+        .replace(/([A-Z])/g, "_$1")
+        .toUpperCase()}`;
+      throw new Error(
+        `Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file for the ${envVarName} variable.`
+      );
     }
   }
 }
@@ -58,4 +67,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { app, auth, db };
+// Firestore collection reference for categories
+const categoriesCollection = collection(db, "categories");
+
+export { app, auth, db, categoriesCollection };
+
