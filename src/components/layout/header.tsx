@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { auth } from "@/lib/firebase"
+import { useTranslation } from "@/lib/i18n"
 import { signOut } from "firebase/auth"
 import {
   CircleUser,
@@ -32,20 +33,21 @@ import { ThemeSwitcher } from "./theme-switcher"
 export default function AppHeader() {
   const router = useRouter()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const handleLogout = async () => {
     try {
       await signOut(auth)
       router.push("/")
       toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
+        title: t("logout.successTitle"),
+        description: t("logout.successDesc"),
       })
     } catch (error) {
       console.error("Logout failed:", error)
-       toast({
-        title: "Logout Failed",
-        description: "Could not log you out. Please try again.",
+      toast({
+        title: t("logout.failTitle"),
+        description: t("logout.failDesc"),
         variant: "destructive",
       })
     }
@@ -57,7 +59,7 @@ export default function AppHeader() {
         <SheetTrigger asChild>
           <Button size="icon" variant="outline" className="sm:hidden">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle Menu</span>
+            <span className="sr-only">{t("menu.toggle")}</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="sm:max-w-xs">
@@ -67,49 +69,49 @@ export default function AppHeader() {
               className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
             >
               <NurseFinAILogo className="h-6 w-6 transition-all group-hover:scale-110" />
-              <span className="sr-only">NurseFinAI</span>
+              <span className="sr-only">{t("app.name")}</span>
             </Link>
             <Link
               href="/dashboard"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Dashboard
+              {t("nav.dashboard")}
             </Link>
             <Link
               href="/transactions"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Transactions
+              {t("nav.transactions")}
             </Link>
             <Link
               href="/debts"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Debts
+              {t("nav.debts")}
             </Link>
             <Link
               href="/goals"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Goals
+              {t("nav.goals")}
             </Link>
             <Link
               href="/cashflow"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Cashflow
+              {t("nav.cashflow")}
             </Link>
             <Link
               href="/insights"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              AI Insights
+              {t("nav.insights")}
             </Link>
             <Link
               href="/taxes"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
-              Tax Estimator
+              {t("nav.tax")}
             </Link>
           </nav>
         </SheetContent>
@@ -118,7 +120,7 @@ export default function AppHeader() {
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search..."
+          placeholder={t("search.placeholder")}
           className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
@@ -134,13 +136,13 @@ export default function AppHeader() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("account.my")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
+          <DropdownMenuItem>{t("account.settings")}</DropdownMenuItem>
+          <DropdownMenuItem>{t("account.support")}</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
-            Logout
+            {t("account.logout")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
