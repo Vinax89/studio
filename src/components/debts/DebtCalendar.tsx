@@ -9,10 +9,10 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import { onSnapshot, setDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { debtsCollection, debtDoc } from "@/lib/debts";
 
 interface DebtCalendarProps {
-  storageKey?: string; 
-  initialDebts?: Debt[]; 
   onChange?: (debts: Debt[]) => void;
   startOn?: 0 | 1;
 }
@@ -38,35 +38,20 @@ function monthMatrix(year: number, month: number, startOn: 0 | 1) {
 }
 
 
-function useLocalStorage(key: string | undefined, value: Debt[] | undefined) {
-  useEffect(() => {
-    if (typeof window === 'undefined' || !key || value === undefined) return;
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
-  }, [key, value]);
-}
-
-function useLocalStorageSeed(key?: string, seed?: Debt[]) {
-  const [state, setState] = useState<Debt[]>(() => {
-    if (typeof window === 'undefined') return seed ?? [];
-    if (!key) return seed ?? [];
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return seed ?? [];
-  });
-  return [state, setState] as const;
-}
-
 // ---------- Component ----------
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function DebtCalendar({ storageKey = "debt.calendar", initialDebts = [], onChange, startOn = 0 }: DebtCalendarProps) {
-  const [debts, setDebts] = useLocalStorageSeed(storageKey, initialDebts);
-  useLocalStorage(storageKey, debts);
+export default function DebtCalendar({ onChange, startOn = 0 }: DebtCalendarProps) {
+  const [debts, setDebts] = useState<Debt[]>([]);
   useEffect(() => { onChange?.(debts); }, [debts, onChange]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(debtsCollection, (snap) => {
+      const items = snap.docs.map((d) => d.data());
+      setDebts(items);
+    });
+    return () => unsub();
+  }, []);
 
   const today = new Date();
   const [cursor, setCursor] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -96,21 +81,17 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
     return () => window.removeEventListener("keydown", handler);
   }, [selectedDate, today]);
 
-  function addOrUpdateDebt(next: Debt) {
-    setDebts((prev) => {
-      const idx = prev.findIndex((d) => d.id === next.id);
-      const updated = idx >= 0 ? [...prev.slice(0, idx), next, ...prev.slice(idx + 1)] : [...prev, next];
-      return updated;
-    });
+  async function addOrUpdateDebt(next: Debt) {
+    await setDoc(debtDoc(next.id), next);
   }
-  function deleteDebt(id: string) {
-    setDebts((prev) => prev.filter((d) => d.id !== id));
+  async function deleteDebt(id: string) {
+    await deleteDoc(debtDoc(id));
   }
-  function markPaid(dateISO: string, id: string) {
-    setDebts((prev) => prev.map((d) => d.id !== id ? d : { ...d, paidDates: Array.from(new Set([...(d.paidDates ?? []), dateISO])) }));
+  async function markPaid(dateISO: string, id: string) {
+    await updateDoc(debtDoc(id), { paidDates: arrayUnion(dateISO) });
   }
-  function unmarkPaid(dateISO: string, id: string) {
-    setDebts((prev) => prev.map((d) => d.id !== id ? d : { ...d, paidDates: (d.paidDates ?? []).filter((x) => x !== dateISO) }));
+  async function unmarkPaid(dateISO: string, id: string) {
+    await updateDoc(debtDoc(id), { paidDates: arrayRemove(dateISO) });
   }
 
   const monthTotals = useMemo(() => {
