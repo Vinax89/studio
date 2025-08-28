@@ -38,7 +38,9 @@ const CalculateCashflowOutputSchema = z.object({
 });
 export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
 
-export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
+export function calculateCashflow(
+  input: CalculateCashflowInput,
+): Promise<CalculateCashflowOutput> {
   return calculateCashflowFlow(input);
 }
 

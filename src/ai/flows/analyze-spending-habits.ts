@@ -41,7 +41,9 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
 });
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
-export async function analyzeSpendingHabits(input: AnalyzeSpendingHabitsInput): Promise<AnalyzeSpendingHabitsOutput> {
+export function analyzeSpendingHabits(
+  input: AnalyzeSpendingHabitsInput,
+): Promise<AnalyzeSpendingHabitsOutput> {
   return analyzeSpendingHabitsFlow(input);
 }
 
