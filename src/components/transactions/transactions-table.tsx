@@ -37,16 +37,19 @@ export const TransactionsTable = memo(function TransactionsTable({
 }: TransactionsTableProps) {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 })
 
-  const visibleTransactions = useMemo(() => {
-    const slice = transactions.slice(visibleRange.start, visibleRange.end + 1)
-    return slice.map((transaction) => ({
-      ...transaction,
-      formattedDate: new Date(transaction.date).toLocaleDateString(),
-      formattedAmount: `${
-        transaction.type === "Income" ? "+" : "-"
-      }$${transaction.amount.toFixed(2)}`,
-    }))
-  }, [transactions, visibleRange])
+  const visibleTransactions = useMemo(
+    () =>
+      transactions
+        .slice(visibleRange.start, visibleRange.end + 1)
+        .map((transaction) => ({
+          ...transaction,
+          formattedDate: new Date(transaction.date).toLocaleDateString(),
+          formattedAmount: `${
+            transaction.type === "Income" ? "+" : "-"
+          }$${transaction.amount.toFixed(2)}`,
+        })),
+    [transactions, visibleRange],
+  )
 
   const Row = ({ index, style }: ListChildComponentProps) => {
     const fallback = transactions[index]
