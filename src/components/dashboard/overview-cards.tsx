@@ -1,4 +1,3 @@
-
 "use client"
 
 import { TrendingUp, TrendingDown, PiggyBank } from "lucide-react"

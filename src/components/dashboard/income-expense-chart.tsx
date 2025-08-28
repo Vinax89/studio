@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Card,
@@ -7,7 +7,11 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { useTheme } from "next-themes";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { useState } from "react";
 import {
   AreaChart,
@@ -15,35 +19,42 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
+import type { ChartPoint } from "@/lib/types";
 
 interface IncomeExpenseChartProps {
-  data: { month: string; income: number; expenses: number; }[];
+  data: ChartPoint[];
 }
 
 export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
-  const { resolvedTheme } = useTheme();
-  const strokeColor =
-    resolvedTheme === "dark"
-      ? "hsl(var(--foreground))"
-      : "hsl(var(--muted-foreground))";
   const [hidden, setHidden] = useState<Record<string, boolean>>({});
 
   const handleLegendClick = (o: any) => {
     setHidden(prev => ({ ...prev, [o.dataKey]: !prev[o.dataKey] }));
   };
 
+  const chartConfig = {
+    income: {
+      label: "Income",
+      color: "hsl(var(--chart-1))",
+    },
+    expenses: {
+      label: "Expenses",
+      color: "hsl(var(--chart-2))",
+    },
+  } as const;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Income vs. Expenses</CardTitle>
-        <CardDescription>A look at your cash flow for the last 7 months.</CardDescription>
+        <CardDescription>
+          A look at your cash flow for the last 7 months.
+        </CardDescription>
       </CardHeader>
       <CardContent className="py-6">
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartContainer config={chartConfig} className="aspect-auto h-[300px] w-full">
           <AreaChart data={data}>
             <defs>
               <linearGradient id="incomeColor" x1="0" y1="0" x2="0" y2="1">
@@ -61,22 +72,18 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              stroke={strokeColor}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={value => `$${value / 1000}k`}
-              stroke={strokeColor}
+              tickFormatter={(value) => `$${value / 1000}k`}
             />
-            <Tooltip
-              cursor={{ fill: "hsl(var(--muted))", radius: "var(--radius)" }}
-              contentStyle={{
-                backgroundColor: "hsl(var(--background))",
-                borderColor: "hsl(var(--border))",
-                borderRadius: "var(--radius)",
-              }}
+            <ChartTooltip
+              cursor={{ fill: "hsl(var(--muted))", radius: 4 }}
+              content={
+                <ChartTooltipContent formatter={(value: number) => `$${value.toLocaleString()}`} />
+              }
             />
             <Legend wrapperStyle={{ paddingTop: "24px" }} onClick={handleLegendClick} />
             <Area
@@ -98,7 +105,7 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               hide={hidden["expenses"]}
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   );
