@@ -30,7 +30,7 @@ const AnalyzeReceiptOutputSchema = z.object({
 });
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
-export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
+export function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
   return analyzeReceiptFlow(input);
 }
 

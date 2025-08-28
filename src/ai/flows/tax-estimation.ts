@@ -45,7 +45,9 @@ const TaxEstimationOutputSchema = z.object({
 });
 export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
-export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
+export function estimateTax(
+  input: TaxEstimationInput,
+): Promise<TaxEstimationOutput> {
   return taxEstimationFlow(input);
 }
 

@@ -40,7 +40,9 @@ const SuggestDebtStrategyOutputSchema = z.object({
 });
 export type SuggestDebtStrategyOutput = z.infer<typeof SuggestDebtStrategyOutputSchema>;
 
-export async function suggestDebtStrategy(input: SuggestDebtStrategyInput): Promise<SuggestDebtStrategyOutput> {
+export function suggestDebtStrategy(
+  input: SuggestDebtStrategyInput,
+): Promise<SuggestDebtStrategyOutput> {
   return suggestDebtStrategyFlow(input);
 }
 
