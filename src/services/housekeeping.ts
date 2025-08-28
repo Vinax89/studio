@@ -154,11 +154,13 @@ export async function backupData(
     return items;
   }
 
-  const data = {
-    transactions: await fetchAll<Transaction>("transactions", "id"),
-    debts: await fetchAll<Debt>("debts", "id"),
-    goals: await fetchAll<Goal>("goals", "id"),
-  };
+  const [transactions, debts, goals] = await Promise.all([
+    fetchAll<Transaction>("transactions", "createdAt"),
+    fetchAll<Debt>("debts", "createdAt"),
+    fetchAll<Goal>("goals", "createdAt"),
+  ]);
+
+  const data = { transactions, debts, goals };
 
   await runWithRetry(
     () =>
