@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import type { Transaction } from '@/lib/types';
-import { saveTransactions } from '@/lib/transactions';
+import { NextResponse } from "next/server";
+import type { Transaction } from "@/lib/types";
+import { saveTransactions } from "@/lib/transactions";
 
 // This route would typically call a banking provider such as Plaid
 // to fetch recent transactions. For the purposes of this demo we
@@ -13,17 +13,20 @@ export async function POST() {
     const transactions: Transaction[] = [
       {
         id: crypto.randomUUID(),
-        date: new Date().toISOString().split('T')[0],
-        description: 'Imported Sample Transaction',
-        amount: 100.0,
-        type: 'Income',
-        category: 'Bank Import',
+        date: new Date().toISOString().split("T")[0],
+        description: "Imported Sample Transaction",
+        amount: 100,
+        type: "Income",
+        category: "Bank Import",
       },
     ];
 
     await saveTransactions(transactions);
     return NextResponse.json({ transactions });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to import transactions' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to import transactions" },
+      { status: 500 },
+    );
   }
 }
