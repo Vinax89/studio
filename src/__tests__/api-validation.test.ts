@@ -30,6 +30,16 @@ describe("/api/bank/import", () => {
     const res = await bankImport(req)
     expect(res.status).toBe(400)
   })
+
+  it("returns 400 when transactions contain invalid entries", async () => {
+    const req = new Request("http://localhost", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-token" },
+      body: JSON.stringify({ provider: "test", transactions: [{ id: "1" }] }),
+    })
+    const res = await bankImport(req)
+    expect(res.status).toBe(400)
+  })
 })
 
 describe("/api/transactions/sync", () => {
