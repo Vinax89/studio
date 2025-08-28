@@ -109,6 +109,10 @@ export const calculatePayPeriodSummary = (
     totalRegularHours += regularHours;
     totalOvertimeHours += overtimeHours;
 
+    if (weeklyHours === 0) {
+      return weeklyPremiumPay;
+    }
+
     const avgRate = weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
     const regularPay = regularHours * avgRate;
     const overtimePay = overtimeHours * avgRate * 1.5;
