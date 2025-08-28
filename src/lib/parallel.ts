@@ -21,6 +21,6 @@ export async function parallelSquare(
 
   const promises = chunks.map(chunk => pool.run(chunk))
   const results = await Promise.all(promises)
-
+  await pool.destroy()
   return results.flat()
 }
