@@ -9,8 +9,8 @@
  * - TaxEstimationOutput - The return type for the estimateTax function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const TaxEstimationInputSchema = z.object({
   income: z
