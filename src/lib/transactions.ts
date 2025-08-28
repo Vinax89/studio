@@ -3,6 +3,19 @@ import { collection, doc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Transaction } from "./types";
 
+export const TransactionPayloadSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string(),
+  isRecurring: z.boolean().optional(),
+});
+
+export type TransactionPayload = z.infer<typeof TransactionPayloadSchema>;
+
 const TransactionRow = z.object({
   date: z.string(),
   description: z.string(),
