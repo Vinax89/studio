@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
+import {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  startTransition,
+} from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { z } from "zod";
 
 interface AuthContextType {
   user: User | null;
@@ -15,68 +21,56 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Attempts to restore a previously signed-in user directly from
+  // Firebase's localStorage entry. The SDK stores authenticated users under
+  // a key that includes the app's API key and name, allowing us to read it
+  // synchronously before the auth listener fires on the client.
+  const getPersistedUser = (): User | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const key = `firebase:authUser:${auth.app.options.apiKey}:${auth.app.name}`;
+      const stored = localStorage.getItem(key);
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      const userSchema = z.object({ uid: z.string() }).passthrough();
+      const result = userSchema.safeParse(parsed);
+      return result.success ? (result.data as User) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState<User | null>(() => auth.currentUser ?? getPersistedUser());
   const router = useRouter();
   const pathname = usePathname();
 
+  // Keep the `user` state in sync with Firebase auth changes. This runs once
+  // on mount and updates whenever the user's sign-in state changes.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
     });
 
     return () => unsubscribe();
   }, []);
 
+  // Redirect users based on their auth status. Using `startTransition` marks
+  // the navigation as low priority so UI updates remain responsive while
+  // redirects occur.
   useEffect(() => {
-    if (loading) return;
-
     const isAuthPage = pathname === "/";
-    if (!user && !isAuthPage) {
-      router.push("/");
-    } else if (user && isAuthPage) {
-      router.push("/dashboard");
-    }
-  }, [user, loading, router, pathname]);
+    startTransition(() => {
+      if (!user && !isAuthPage) {
+        router.push("/");
+      } else if (user && isAuthPage) {
+        router.push("/dashboard");
+      }
+    });
+  }, [user, router, pathname]);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-  
-  const isAuthPage = pathname === "/";
-  // If the user is not logged in and not on the auth page, don't render anything until redirect happens.
-  if (!user && !isAuthPage) {
-    return null;
-  }
-  // If the user is logged in and on the auth page, don't render anything until redirect happens.
-  if (user && isAuthPage) {
-      return null;
-  }
-
-  // A 404 might occur if the user was on a page that no longer exists (e.g., /shifts)
-  // and the browser tries to navigate back. If the user is logged in but not on the auth page,
-  // we render the children, letting Next.js handle the valid routes.
-  if(user && !isAuthPage) {
-    return (
-      <AuthContext.Provider value={{ user }}>
-          {children}
-      </AuthContext.Provider>
-    );
-  }
-  
-  // Render login page for unauthenticated users
-  if(!user && isAuthPage){
-     return (
-        <AuthContext.Provider value={{ user }}>
-            {children}
-        </AuthContext.Provider>
-    );
-  }
-
-  return null;
+  return (
+    <AuthContext.Provider value={{ user }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

@@ -4,6 +4,7 @@ export type Transaction = {
   date: string;
   description: string;
   amount: number;
+  currency: string; // ISO currency code
   type: "Income" | "Expense";
   category: string;
   isRecurring?: boolean;
@@ -18,22 +19,16 @@ export type Goal = {
   importance: number; // New field: 1-5 rating
 };
 
-export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
-
-// This is the type used by the calendar component
-export type CalendarDebt = {
-  id: string;
-  name:string;
-  amount: number; // This represents the payment amount in the calendar
-  dueDate: string; // ISO anchor date (first due)
-  recurrence: Recurrence;
-  autopay: boolean;
-  notes?: string;
-  color?: string;
-  paidDates?: string[]; // ISO strings
+export interface ChartPoint {
+  month: string;
+  income: number;
+  expenses: number;
 }
 
-// This is the more detailed type needed for debt cards and AI analysis
+export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
+export type Recurrence = typeof RecurrenceValues[number];
+
+// This is the unified, authoritative Debt type used across the app.
 export type Debt = {
   id: string;
   name: string;
@@ -41,8 +36,13 @@ export type Debt = {
   currentAmount: number;
   interestRate: number;
   minimumPayment: number;
-  dueDate: string;
-  recurrence: "once" | "monthly";
-  autopay?: boolean;
+  // Due date handling:
+  // For recurring debts, this is the anchor date for recurrence calculation.
+  // For one-time debts, this is the specific due date.
+  dueDate: string; 
+  recurrence: Recurrence;
+  autopay: boolean;
+  notes?: string;
   color?: string;
+  paidDates?: string[]; // ISO strings of dates where a payment was manually marked as paid
 };

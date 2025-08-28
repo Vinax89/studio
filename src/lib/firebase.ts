@@ -1,32 +1,40 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { z } from "zod";
 
-function getEnvVar(key: string, defaultValue?: string): string {
-  const value = process.env[key];
-  if (value === undefined || value === "") {
-    if (defaultValue !== undefined) {
-      return defaultValue;
-    }
-    throw new Error(`Missing environment variable: ${key}`);
-  }
-  return value;
-}
+const nonPlaceholder = z
+  .string()
+  .min(1)
+  .refine(
+    (v) => v !== "REPLACE_WITH_VALUE",
+    "Set this Firebase env var in .env.local",
+  );
 
-function getFirebaseConfig() {
-  return {
-    apiKey: getEnvVar("NEXT_PUBLIC_FIREBASE_API_KEY"),
-    authDomain: getEnvVar("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"),
-    projectId: getEnvVar("NEXT_PUBLIC_FIREBASE_PROJECT_ID"),
-    storageBucket: getEnvVar("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
-    messagingSenderId: getEnvVar("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"),
-    appId: getEnvVar("NEXT_PUBLIC_FIREBASE_APP_ID"),
-  };
-}
+const envSchema = z.object({
+  NEXT_PUBLIC_FIREBASE_API_KEY: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: nonPlaceholder,
+  NEXT_PUBLIC_FIREBASE_APP_ID: nonPlaceholder,
+});
 
-const firebaseConfig = getFirebaseConfig();
+const env = envSchema.parse(process.env);
+
+const firebaseConfig = {
+  apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-export { app, auth };
+export { app, auth, db };
+
