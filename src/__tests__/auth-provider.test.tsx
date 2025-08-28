@@ -11,7 +11,12 @@ jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }));
 
-jest.mock('@/lib/firebase', () => ({ auth: { currentUser: null } }));
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: null,
+    app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
+  },
+}));
 const { auth: authStub } = require('@/lib/firebase');
 
 let mockUser: any = null;
@@ -34,6 +39,7 @@ beforeEach(() => {
   mockPathname = '/';
   pushMock.mockClear();
   onAuthStateChanged.mockClear();
+  localStorage.clear();
 });
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {
@@ -61,5 +67,31 @@ test('redirects to "/" when unauthenticated on protected route', async () => {
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/'));
+  expect(screen.getByText('none')).toBeInTheDocument();
+});
+
+test('handles missing persisted user', () => {
+  const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
+  localStorage.removeItem(key);
+  const renderComponent = () =>
+    render(
+      <AuthProvider>
+        <DisplayUser />
+      </AuthProvider>
+    );
+  expect(renderComponent).not.toThrow();
+  expect(screen.getByText('none')).toBeInTheDocument();
+});
+
+test('handles corrupted persisted user', () => {
+  const key = `firebase:authUser:${authStub.app.options.apiKey}:${authStub.app.name}`;
+  localStorage.setItem(key, '{bad json');
+  const renderComponent = () =>
+    render(
+      <AuthProvider>
+        <DisplayUser />
+      </AuthProvider>
+    );
+  expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();
 });
