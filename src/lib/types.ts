@@ -4,6 +4,7 @@ export type Transaction = {
   date: string;
   description: string;
   amount: number;
+  currency: string; // ISO currency code
   type: "Income" | "Expense";
   category: string;
   isRecurring?: boolean;
@@ -18,7 +19,14 @@ export type Goal = {
   importance: number; // New field: 1-5 rating
 };
 
-export type Recurrence = "none" | "weekly" | "biweekly" | "monthly";
+export interface ChartPoint {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
+export const RecurrenceValues = ["none", "weekly", "biweekly", "monthly"] as const;
+export type Recurrence = typeof RecurrenceValues[number];
 
 // This is the unified, authoritative Debt type used across the app.
 export type Debt = {
