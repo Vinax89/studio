@@ -64,7 +64,7 @@ export default function AppHeader() {
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/dashboard"
-              className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+              className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-blueprint text-lg font-semibold text-blueprint-foreground md:text-base"
             >
               <NurseFinAILogo className="h-6 w-6 transition-all group-hover:scale-110" />
               <span className="sr-only">NurseFinAI</span>
@@ -119,7 +119,7 @@ export default function AppHeader() {
         <Input
           type="search"
           placeholder="Search..."
-          className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]"
+          className="w-full rounded-lg bg-blueprint-light pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
       <ThemeSwitcher />

@@ -58,7 +58,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <NurseFinAILogo className="h-12 w-12 text-primary" />
+            <NurseFinAILogo className="h-12 w-12 text-blueprint" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-3xl font-bold tracking-tight">
@@ -109,7 +109,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-6 text-center text-sm">
             {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
+            <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-blueprint">
               {isLoginView ? "Sign up" : "Sign in"}
             </button>
           </div>

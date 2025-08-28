@@ -61,7 +61,7 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
           </div>
           <span
             className="w-4 h-4 rounded-full"
-            style={{ backgroundColor: debt.color || 'hsl(var(--primary))' }}
+            style={{ backgroundColor: debt.color || 'hsl(var(--blueprint))' }}
             title={`Color: ${debt.color}`}
            />
         </div>

@@ -47,7 +47,7 @@ export default function AppSidebar() {
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
             href="/dashboard"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-blueprint text-lg font-semibold text-blueprint-foreground md:h-8 md:w-8 md:text-base"
           >
             <NurseFinAILogo className="h-5 w-5 transition-all group-hover:scale-110" />
             <span className="sr-only">NurseFinAI</span>
@@ -59,7 +59,7 @@ export default function AppSidebar() {
                   href={item.href}
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
-                    pathname.startsWith(item.href) && "bg-accent text-accent-foreground"
+                    pathname.startsWith(item.href) && "bg-blueprint-accent text-blueprint-accent-foreground"
                   )}
                 >
                   <item.icon className="h-5 w-5" />

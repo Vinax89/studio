@@ -177,7 +177,7 @@ export default function DebtCalendar({ storageKey = "debt.calendar", initialDebt
               className={
                 "relative min-h-[110px] rounded-lg p-2 bg-background border cursor-pointer " +
                 (inMonth ? "border-border " : "border-transparent opacity-50 ") +
-                (isToday ? " ring-2 ring-primary " : "")
+                (isToday ? " ring-2 ring-blueprint " : "")
               }
               role="gridcell"
               aria-label={`${date.toDateString()} — ${currency(sumForDay)} due`}
@@ -381,7 +381,7 @@ function FormLabel({ label, children, full }: { label: string; children: React.R
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
-      className={"w-12 h-7 rounded-full border transition relative " + (checked ? "bg-primary border-primary" : "bg-muted border-border")}
+      className={"w-12 h-7 rounded-full border transition relative " + (checked ? "bg-blueprint border-blueprint" : "bg-muted border-border")}
     >
       <span className={"absolute top-0.5 transition-transform duration-200 ease-in-out " + (checked ? "translate-x-5" : "translate-x-0.5")}
         style={{ width: 24, height: 24 }}>
