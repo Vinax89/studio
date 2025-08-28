@@ -1,34 +1,34 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('../components/ui/button', () => ({
-  Button: (props: any) => <button {...props} />,
+  Button: (props: React.ComponentProps<'button'>) => <button {...props} />,
 }));
 jest.mock('../components/ui/input', () => ({
-  Input: (props: any) => <input {...props} />,
+  Input: (props: React.ComponentProps<'input'>) => <input {...props} />,
 }));
 jest.mock('../components/ui/label', () => ({
-  Label: (props: any) => <label {...props} />,
+  Label: (props: React.ComponentProps<'label'>) => <label {...props} />,
 }));
 jest.mock('../components/ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children }: any) => <div>{children}</div>,
+  Select: (props: React.ComponentProps<'div'>) => <div {...props} />,
+  SelectTrigger: (props: React.ComponentProps<'div'>) => <div {...props} />,
+  SelectContent: (props: React.ComponentProps<'div'>) => <div {...props} />,
+  SelectItem: (props: React.ComponentProps<'div'>) => <div {...props} />,
   SelectValue: () => null,
 }));
 jest.mock('../components/ui/textarea', () => ({
-  Textarea: (props: any) => <textarea {...props} />,
+  Textarea: (props: React.ComponentProps<'textarea'>) => <textarea {...props} />,
 }));
 
 describe.skip('DebtCalendar', () => {
 beforeAll(() => {
   if (!global.crypto) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    global.crypto = require('crypto').webcrypto as any;
+    global.crypto = webcrypto as Crypto;
   }
 });
 
