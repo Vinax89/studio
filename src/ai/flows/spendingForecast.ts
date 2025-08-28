@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { ensureAuth } from '@/ai/auth';
 
 const TransactionSchema = z.object({
   date: z
@@ -42,6 +43,7 @@ export const SpendingForecastOutputSchema = z.object({
 export type SpendingForecastOutput = z.infer<typeof SpendingForecastOutputSchema>;
 
 export async function predictSpending(input: SpendingForecastInput): Promise<SpendingForecastOutput> {
+  await ensureAuth();
   return spendingForecastFlow(input);
 }
 

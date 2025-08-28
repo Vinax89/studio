@@ -12,6 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
+import { ensureAuth } from '@/ai/auth';
 
 export const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
@@ -31,6 +32,7 @@ const AnalyzeReceiptOutputSchema = z.object({
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
 export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
+  await ensureAuth();
   return analyzeReceiptFlow(input);
 }
 

@@ -14,6 +14,7 @@
 import {ai} from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
+import { ensureAuth } from '@/ai/auth';
 
 const GoalSchema = z.object({
     id: z.string(),
@@ -50,6 +51,7 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
 export async function analyzeSpendingHabits(input: AnalyzeSpendingHabitsInput): Promise<AnalyzeSpendingHabitsOutput> {
+  await ensureAuth();
   return analyzeSpendingHabitsFlow(input);
 }
 

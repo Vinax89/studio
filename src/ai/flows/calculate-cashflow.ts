@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { ensureAuth } from '@/ai/auth';
 
 const CalculateCashflowInputSchema = z.object({
   annualIncome: z
@@ -44,6 +45,7 @@ const CalculateCashflowOutputSchema = z.object({
 export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
 
 export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
+  await ensureAuth();
   return calculateCashflowFlow(input);
 }
 
