@@ -10,11 +10,16 @@ export function ServiceWorker() {
   const retryTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(null)
   const retryCount = useRef(0)
   const notified = useRef(false)
+  const abortController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     const syncQueued = async () => {
       const queued = await getQueuedTransactions()
       if (!queued.length) return
+
+      abortController.current?.abort()
+      const controller = new AbortController()
+      abortController.current = controller
 
       try {
         const user = auth.currentUser
@@ -31,6 +36,7 @@ export function ServiceWorker() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ transactions: queued }),
+          signal: controller.signal,
         })
 
         if (!response.ok) {
@@ -41,6 +47,8 @@ export function ServiceWorker() {
         retryCount.current = 0
         notified.current = false
       } catch (error) {
+        if (controller.signal.aborted) return
+
         retryCount.current += 1
         const delay = Math.min(1000 * 2 ** (retryCount.current - 1), 30000)
 
@@ -60,6 +68,7 @@ export function ServiceWorker() {
     }
 
     const handleOnline = () => {
+      abortController.current?.abort()
       if (debounceId.current) clearTimeout(debounceId.current)
       if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
       retryCount.current = 0
@@ -86,6 +95,7 @@ export function ServiceWorker() {
       window.removeEventListener("online", handleOnline)
       if (debounceId.current) clearTimeout(debounceId.current)
       if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
+      abortController.current?.abort()
     }
   }, [])
 
