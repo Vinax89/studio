@@ -54,7 +54,8 @@ function validateFirebaseConfig(config: FirebaseOptions): void {
   ];
   for (const key of requiredKeys) {
     if (!config[key] || config[key] === "YOUR_API_KEY") {
-      throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file.`);
+      const envVarName = `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`;
+      throw new Error(`Firebase configuration error: Missing or invalid value for ${key}. Please check your .env file for the ${envVarName} variable.`);
     }
   }
 }
