@@ -9,6 +9,7 @@ import {
   limit,
   startAfter,
   writeBatch,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -21,9 +22,9 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const cutoff = new Date(cutoffDate).toISOString();
   const transCol = collection(db, "transactions");
   const pageSize = 100;
-  let lastDoc: any | undefined;
+  let lastDoc: QueryDocumentSnapshot<Transaction> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           transCol,
@@ -51,7 +52,9 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
 
     await runWithRetry(() => batch.commit());
 
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    lastDoc = snapshot.docs[
+      snapshot.docs.length - 1
+    ] as QueryDocumentSnapshot<Transaction>;
     if (snapshot.size < pageSize) break;
   }
 }
@@ -62,9 +65,9 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
 export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const pageSize = 100;
-  let lastDoc: any | undefined;
+  let lastDoc: QueryDocumentSnapshot<Debt> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           debtsCol,
@@ -90,7 +93,9 @@ export async function cleanupDebts(): Promise<void> {
 
     await runWithRetry(() => batch.commit());
 
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    lastDoc = snapshot.docs[
+      snapshot.docs.length - 1
+    ] as QueryDocumentSnapshot<Debt>;
     if (snapshot.size < pageSize) break;
   }
 }
@@ -134,9 +139,9 @@ export async function backupData(
     const col = collection(db, colName);
     const pageSize = 100;
     const items: T[] = [];
-    let lastDoc: any | undefined;
+    let lastDoc: QueryDocumentSnapshot<T> | undefined;
 
-    while (true) {
+    for (;;) {
       const q = lastDoc
         ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
         : query(col, orderBy(orderField), limit(pageSize));
@@ -148,7 +153,9 @@ export async function backupData(
         items.push(d.data() as T);
       }
 
-      lastDoc = snap.docs[snap.docs.length - 1];
+      lastDoc = snap.docs[
+        snap.docs.length - 1
+      ] as QueryDocumentSnapshot<T>;
       if (snap.size < pageSize) break;
     }
     return items;
