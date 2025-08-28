@@ -119,7 +119,7 @@ export default function AppHeader() {
         <Input
           type="search"
           placeholder="Search..."
-          className="w-full rounded-lg bg-blueprint-light pl-8 md:w-[200px] lg:w-[336px]"
+          className="w-full rounded-lg bg-blueprintLight pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
       <ThemeSwitcher />
