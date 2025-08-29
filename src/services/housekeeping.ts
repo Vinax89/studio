@@ -20,11 +20,17 @@ import { getCurrentTime } from "../lib/internet-time";
  * and removes them from the main transactions collection.
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const parsed = new Date(cutoffDate);
-  if (isNaN(parsed.getTime())) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(cutoffDate)) {
     throw new Error(`Invalid cutoff date: ${cutoffDate}`);
   }
-  const cutoff = parsed.toISOString().slice(0, 10);
+  const parsed = new Date(cutoffDate);
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== cutoffDate
+  ) {
+    throw new Error(`Invalid cutoff date: ${cutoffDate}`);
+  }
+  const cutoff = cutoffDate;
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
