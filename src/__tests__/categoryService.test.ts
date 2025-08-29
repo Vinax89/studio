@@ -29,4 +29,12 @@ describe("categoryService", () => {
     expect(getCategories()).toEqual(["Groceries"]);
     expect(deleteDoc).not.toHaveBeenCalled();
   });
+
+  it("does not write to Firestore when category already exists", () => {
+    addCategory("Groceries");
+    expect(setDoc).toHaveBeenCalledTimes(1);
+    addCategory("groceries");
+    expect(getCategories()).toEqual(["Groceries"]);
+    expect(setDoc).toHaveBeenCalledTimes(1);
+  });
 });
