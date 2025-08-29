@@ -20,21 +20,29 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const now = (await getCurrentTime()).getTime();
-  const allowed = await runTransaction(db, async (tx) => {
-    const snap = await tx.get(STATE_DOC);
-    const last = snap.exists() ? snap.data().lastRun ?? 0 : 0;
-    if (now - last < WINDOW_MS) {
-      return false;
+  try {
+    const now = (await getCurrentTime()).getTime();
+    const allowed = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(STATE_DOC);
+      const last = snap.exists() ? snap.data().lastRun ?? 0 : 0;
+      if (now - last < WINDOW_MS) {
+        return false;
+      }
+      tx.set(STATE_DOC, { lastRun: now });
+      return true;
+    });
+
+    if (!allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
-    tx.set(STATE_DOC, { lastRun: now });
-    return true;
-  });
 
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    await runHousekeeping();
+    return NextResponse.json({ status: "ok" });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  await runHousekeeping();
-  return NextResponse.json({ status: "ok" });
 }
