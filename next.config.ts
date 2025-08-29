@@ -1,6 +1,6 @@
-
 import type { NextConfig } from 'next'
 import crypto from 'crypto'
+
 const nextConfig: NextConfig = {
   // Enforce type checking and linting during builds
   typescript: { ignoreBuildErrors: false },
