@@ -15,22 +15,35 @@ export interface PayPeriodSummary {
   totalHours: number;
 }
 
-// Helper to find the start of a 2-week pay period (a Sunday) for any given date.
-// The optional `anchor` parameter lets different organizations align pay periods
-// to their own reference Sunday. By default, January 7, 2024 is used as the anchor
-// date for calculations.
+/**
+ * Find the Sunday that starts the biweekly pay period containing `date`.
+ *
+ * The optional `anchor` lets organizations align pay periods to their own
+ * reference Sunday. By default, January 7, 2024 is used as the anchor date.
+ *
+ * Both `date` and `anchor` are interpreted in the local timezone. If your
+ * inputs are in another timezone, convert them to the same zone or normalize
+ * with `Date.UTC` before calling.
+ *
+ * @param date - Any date within the pay period.
+ * @param anchor - Reference Sunday used to align pay periods.
+ * @returns The start date (Sunday) of the pay period.
+ */
 export const getPayPeriodStart = (
   date: Date,
-  anchor: Date = new Date('2024-01-07T00:00:00.000Z')
+  anchor: Date = new Date('2024-01-07')
 ): Date => {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
+  const a = new Date(anchor);
+  a.setHours(0, 0, 0, 0);
   const dayOfWeek = d.getDay();
   d.setDate(d.getDate() - dayOfWeek);
 
-  const diffWeeks = Math.floor((d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const diffWeeks = Math.floor((d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const parity = Math.abs(diffWeeks) % 2;
 
-  if (diffWeeks % 2 !== 0) {
+  if (parity !== 0) {
     // It's in the second week of a pay period, so the start was the *previous* Sunday
     d.setDate(d.getDate() - 7);
   }
@@ -41,17 +54,17 @@ export const getPayPeriodStart = (
 // Determine the next pay day for a biweekly schedule. If the provided date is
 // already the start of a pay period, that date is considered the pay day.
 export const getNextPayDay = (date: Date = new Date()): Date => {
-  const start = getPayPeriodStart(date)
-  const today = new Date(date)
-  today.setHours(0, 0, 0, 0)
+  const payDayStart = getPayPeriodStart(date)
+  const startOfDay = new Date(date)
+  startOfDay.setHours(0, 0, 0, 0)
 
-  if (today > start) {
-    const next = new Date(start)
-    next.setDate(start.getDate() + 14)
+  if (payDayStart < startOfDay) {
+    const next = new Date(payDayStart)
+    next.setDate(payDayStart.getDate() + 14)
     return next
   }
 
-  return start
+  return payDayStart
 }
 
 export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {

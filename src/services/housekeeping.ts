@@ -46,7 +46,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
 
     const batch = writeBatch(db);
     for (const snap of snapshot.docs) {
-      const data = snap.data() as Transaction;
+      const data = { id: snap.id, ...(snap.data() as Omit<Transaction, "id">) };
       batch.set(doc(db, "transactions_archive", snap.id), data);
       batch.delete(doc(db, "transactions", snap.id));
     }
@@ -154,7 +154,9 @@ export async function backupData(
       if (snap.empty) break;
 
       for (const d of snap.docs) {
-        items.push(d.data() as T);
+        const data = d.data() as T;
+        (data as any).id = d.id;
+        items.push(data);
       }
 
       lastDoc = snap.docs[snap.docs.length - 1];

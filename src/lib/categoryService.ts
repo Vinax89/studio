@@ -98,10 +98,10 @@ export function addCategory(category: string): string[] {
   if (!exists) {
     categories.push(trimmed);
     save(categories);
+    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+      console.error
+    );
   }
-  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error
-  );
   return categories;
 }
 

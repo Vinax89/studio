@@ -36,5 +36,12 @@ describe("categoryService validation", () => {
     expect(getCategories()).toEqual(["Food"]);
     expect(mockDeleteDoc).not.toHaveBeenCalled();
   });
-});
 
+  it("does not write to Firestore when category already exists", () => {
+    addCategory("Groceries");
+    expect(mockSetDoc).toHaveBeenCalledTimes(1);
+    addCategory("groceries");
+    expect(getCategories()).toEqual(["Groceries"]);
+    expect(mockSetDoc).toHaveBeenCalledTimes(1);
+  });
+});

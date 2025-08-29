@@ -1,5 +1,4 @@
-import { config } from "dotenv";
-config();
+// Environment variables are provided by Next.js at build time.
 
 import {
   initializeApp,

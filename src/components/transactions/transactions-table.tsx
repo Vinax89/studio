@@ -1,5 +1,4 @@
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -11,8 +10,18 @@ import { cn } from "@/lib/utils"
 import type { Transaction } from "@/lib/types"
 import { Repeat } from "lucide-react"
 import { formatCurrency } from "@/lib/currency"
-import { memo, useMemo, forwardRef } from "react"
-import { FixedSizeList as List, type ListChildComponentProps } from "react-window"
+import {
+  memo,
+  useMemo,
+  forwardRef,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react"
+import {
+  FixedSizeList as List,
+  type ListChildComponentProps,
+  areEqual,
+} from "react-window"
 
 interface TransactionsTableProps {
   transactions: Transaction[]
@@ -21,25 +30,16 @@ interface TransactionsTableProps {
 const ROW_HEIGHT = 56
 const LIST_HEIGHT = 400
 
-export const TransactionsTable = memo(function TransactionsTable({
-  transactions,
-}: TransactionsTableProps) {
-  const formattedTransactions = useMemo(
-    () =>
-      transactions.map((transaction) => ({
-        ...transaction,
-        formattedDate: new Date(transaction.date).toLocaleDateString(),
-        formattedAmount: `${
-          transaction.type === "Income" ? "+" : "-"
-        }${formatCurrency(transaction.amount, transaction.currency)}`,
-      })),
-    [transactions],
-  )
+type FormattedTransaction = Transaction & {
+  formattedDate: string
+  formattedAmount: string
+}
 
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    const transaction = formattedTransactions[index]
+const Row = memo(
+  ({ data, index, style }: ListChildComponentProps<FormattedTransaction[]>) => {
+    const transaction = data[index]
     return (
-      <TableRow key={transaction.id} style={style}>
+      <TableRow style={style}>
         <TableCell>{transaction.formattedDate}</TableCell>
         <TableCell className="font-medium">{transaction.description}</TableCell>
         <TableCell>
@@ -61,34 +61,54 @@ export const TransactionsTable = memo(function TransactionsTable({
         </TableCell>
       </TableRow>
     )
-  }
+  },
+  areEqual,
+)
 
-  const InnerTable = memo(
-    forwardRef<
-      HTMLTableSectionElement,
-      React.HTMLAttributes<HTMLTableSectionElement> & { children: React.ReactNode }
-    >(({ children, style, ...rest }, ref) => (
-      <table className="w-full caption-bottom text-sm">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Recurring</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody
-          ref={ref}
-          style={style}
-          className="[&_tr:last-child]:border-0"
-          {...rest}
-        >
-          {children}
-        </TableBody>
-      </table>
-    )),
+const InnerTable = memo(
+  forwardRef<
+    HTMLTableSectionElement,
+    HTMLAttributes<HTMLTableSectionElement> & { children: ReactNode }
+  >(({ children, style, ...rest }, ref) => (
+    <table className="w-full caption-bottom text-sm">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Date</TableHead>
+          <TableHead>Description</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Recurring</TableHead>
+          <TableHead className="text-right">Amount</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody
+        ref={ref}
+        style={style}
+        className="[&_tr:last-child]:border-0"
+        {...rest}
+      >
+        {children}
+      </TableBody>
+    </table>
+  )),
+) as React.ComponentType<
+  HTMLAttributes<HTMLTableSectionElement> & { children: ReactNode }
+>
+
+export const TransactionsTable = memo(function TransactionsTable({
+  transactions,
+}: TransactionsTableProps) {
+  const formattedTransactions = useMemo(
+    () =>
+      transactions.map((transaction) => ({
+        ...transaction,
+        formattedDate: new Date(transaction.date).toLocaleDateString(),
+        formattedAmount: `${
+          transaction.type === "Income" ? "+" : "-"
+        }${formatCurrency(transaction.amount, transaction.currency)}`,
+      })),
+    [transactions],
   )
+
 
   return (
     <div className="rounded-lg border">
@@ -97,7 +117,9 @@ export const TransactionsTable = memo(function TransactionsTable({
         itemCount={formattedTransactions.length}
         itemSize={ROW_HEIGHT}
         width="100%"
-        innerElementType={InnerTable as any}
+        itemData={formattedTransactions}
+        itemKey={(i) => formattedTransactions[i].id}
+        innerElementType={InnerTable}
         className="relative w-full overflow-auto"
       >
         {Row}

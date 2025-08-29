@@ -26,7 +26,6 @@ import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { addCategory, getCategories } from "@/lib/categoryService"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
-import { suggestCategoryAction } from "@/app/actions"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -52,25 +51,27 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     }, [open])
 
     useEffect(() => {
-        userModifiedCategory.current = false
         if (!description) {
             setSuggestedCategory(null)
             setCategory("")
+            userModifiedCategory.current = false
             return
         }
         if (process.env.NODE_ENV === "test") {
             return
         }
         let active = true
-        suggestCategoryAction(description).then(category => {
-            if (active) {
-                setSuggestedCategory(category)
-                if (!userModifiedCategory.current) {
-                    setCategory(category)
+        import("@/ai/flows/suggest-category").then(({ suggestCategory }) =>
+            suggestCategory({ description }).then(res => {
+                if (active) {
+                    setSuggestedCategory(res.category)
+                    if (!userModifiedCategory.current) {
+                        setCategory(res.category)
+                    }
+                    setCategories(addCategory(res.category))
                 }
-                setCategories(addCategory(category))
-            }
-        })
+            })
+        )
         return () => { active = false }
     }, [description])
 
@@ -124,12 +125,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
-            <Input
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="col-span-3"
-            />
+            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="amount" className="text-right">Amount</Label>
@@ -193,4 +189,3 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     </Dialog>
   )
 }
-
