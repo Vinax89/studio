@@ -53,7 +53,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             return
         }
         let active = true
-        import("@/ai/flows").then(({ suggestCategory }) =>
+        import("@/ai/flows/suggest-category").then(({ suggestCategory }) =>
             suggestCategory({ description }).then(res => {
                 if (active) {
                     setSuggestedCategory(res.category)
