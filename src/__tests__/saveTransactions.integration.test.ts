@@ -38,6 +38,35 @@ describe("saveTransactions integration", () => {
     store.clear();
   });
 
+  it("stores documents under their transaction ids", async () => {
+    const txs: Transaction[] = [
+      {
+        id: "a1",
+        date: "2024-01-01",
+        description: "one",
+        amount: 1,
+        type: "Income",
+        category: "Misc",
+        currency: "USD",
+        isRecurring: false,
+      },
+      {
+        id: "a2",
+        date: "2024-01-02",
+        description: "two",
+        amount: 2,
+        type: "Expense",
+        category: "Misc",
+        currency: "USD",
+        isRecurring: false,
+      },
+    ];
+
+    await saveTransactions(txs);
+
+    expect(Array.from(store.keys()).sort()).toEqual(["a1", "a2"]);
+  });
+
   it("overwrites existing documents with the same id", async () => {
     const tx: Transaction = {
       id: "t1",
