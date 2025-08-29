@@ -1,4 +1,5 @@
-let offsetMs: number | null = null;
+const offsetCache = new Map<string, { offset: number; ts: number }>();
+const OFFSET_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function resolveTimezone(tz?: string): string {
   return (
@@ -38,21 +39,29 @@ export async function fetchInternetTime(tz: string): Promise<Date> {
   const data = await res.json();
   const networkDate = new Date(data.datetime);
   const deviceDate = new Date();
-  offsetMs = networkDate.getTime() - deviceDate.getTime();
+  const offset = networkDate.getTime() - deviceDate.getTime();
+  offsetCache.set(tz, { offset, ts: Date.now() });
   return networkDate;
 }
 
 export async function getCurrentTime(tz?: string): Promise<Date> {
-  if (offsetMs === null) {
+  const timezone = resolveTimezone(tz);
+  const now = Date.now();
+  const cache = offsetCache.get(timezone);
+  if (!cache || now - cache.ts > OFFSET_TTL_MS) {
     try {
-      await fetchInternetTime(resolveTimezone(tz));
+      await fetchInternetTime(timezone);
     } catch {
       return new Date();
     }
   }
-  return new Date(Date.now() + (offsetMs ?? 0));
+  const offset = offsetCache.get(timezone)?.offset ?? 0;
+  return new Date(Date.now() + offset);
 }
 
-export function __resetInternetTimeOffset() {
-  offsetMs = null;
+export function __clearInternetTimeCache() {
+  offsetCache.clear();
 }
+
+// Backwards compatibility for existing tests
+export const __resetInternetTimeOffset = __clearInternetTimeCache;
