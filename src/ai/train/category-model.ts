@@ -81,13 +81,15 @@ export function classifyCategory(description: string): string | null {
   return classifier.predict(description);
 }
 
-// Initial training
-trainCategoryModel();
-// Retrain when new feedback is added
-onSnapshot(collection(db, "categoryFeedback"), () => {
+if (process.env.NODE_ENV !== "test") {
+  // Initial training
   trainCategoryModel();
-});
-// Periodic retraining as a safety net (every hour)
-setInterval(() => {
-  trainCategoryModel();
-}, 60 * 60 * 1000);
+  // Retrain when new feedback is added
+  onSnapshot(collection(db, "categoryFeedback"), () => {
+    trainCategoryModel();
+  });
+  // Periodic retraining as a safety net (every hour)
+  setInterval(() => {
+    trainCategoryModel();
+  }, 60 * 60 * 1000);
+}
