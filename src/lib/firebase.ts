@@ -1,4 +1,4 @@
-// Environment variables are provided by Next.js at build time.
+// Environment variables are provided by Next.js (e.g., via .env.local) at build time.
 
 import {
   initializeApp,
