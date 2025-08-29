@@ -47,4 +47,16 @@ describe("WorkerPool", () => {
 
     await pool.destroy()
   })
+
+  it("does not accumulate exit listeners", async () => {
+    const pool = new WorkerPool<number, number>("fake", 1)
+
+    for (let i = 0; i < 50; i++) {
+      await pool.run(i)
+      const worker = (pool as any).workers[0]
+      expect(worker.listenerCount("exit")).toBe(1)
+    }
+
+    await pool.destroy()
+  })
 })
