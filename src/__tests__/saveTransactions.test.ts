@@ -6,7 +6,7 @@ const mockSet = jest.fn();
 const mockCommit = jest.fn();
 const mockWriteBatch = jest.fn(() => ({ set: mockSet, commit: mockCommit }));
 const mockDoc = jest.fn(() => ({}));
-const mockCollection = jest.fn();
+const mockCollection = jest.fn(() => ({}));
 
 jest.mock("firebase/firestore", () => ({
   writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
@@ -48,6 +48,8 @@ describe("saveTransactions", () => {
     expect(mockSet).toHaveBeenCalledTimes(transactions.length);
     expect(mockWriteBatch).toHaveBeenCalledTimes(1);
     expect(mockCommit).toHaveBeenCalledTimes(1);
+    expect(mockDoc).toHaveBeenNthCalledWith(1, expect.anything(), "1");
+    expect(mockDoc).toHaveBeenNthCalledWith(2, expect.anything(), "2");
   });
 
   it("splits transactions into multiple batches when over 500", async () => {
