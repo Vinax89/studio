@@ -20,12 +20,16 @@ import { getCurrentTime } from "../lib/internet-time";
  * and removes them from the main transactions collection.
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const cutoff = new Date(cutoffDate).toISOString();
+  const parsed = new Date(cutoffDate);
+  if (isNaN(parsed.getTime())) {
+    throw new Error(`Invalid cutoff date: ${cutoffDate}`);
+  }
+  const cutoff = parsed.toISOString().slice(0, 10);
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           transCol,
@@ -66,7 +70,7 @@ export async function cleanupDebts(): Promise<void> {
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           debtsCol,
@@ -145,7 +149,7 @@ export async function backupData(
     const items: T[] = [];
     let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-    while (true) {
+    for (;;) {
       const q = lastDoc
         ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
         : query(col, orderBy(orderField), limit(pageSize));
@@ -154,8 +158,7 @@ export async function backupData(
       if (snap.empty) break;
 
       for (const d of snap.docs) {
-        const data = d.data() as T;
-        (data as any).id = d.id;
+        const data = { ...(d.data() as T), id: d.id } as T;
         items.push(data);
       }
 
