@@ -47,4 +47,30 @@ describe("WorkerPool", () => {
 
     await pool.destroy()
   })
+
+  it("does not accumulate exit listeners", async () => {
+    const pool = new WorkerPool<number, number>("fake", 1)
+
+    for (let i = 0; i < 50; i++) {
+      await pool.run(i)
+      const worker = (pool as any).workers[0]
+      expect(worker.listenerCount("exit")).toBe(1)
+    }
+
+    await pool.destroy()
+  })
+
+  it("rejects queued tasks when destroyed", async () => {
+    const pool = new WorkerPool<number, number>("fake", 0)
+
+    const first = pool.run(1)
+    const second = pool.run(2)
+
+    const destroyPromise = pool.destroy()
+
+    await expect(first).rejects.toThrow("Worker pool destroyed")
+    await expect(second).rejects.toThrow("Worker pool destroyed")
+
+    await destroyPromise
+  })
 })

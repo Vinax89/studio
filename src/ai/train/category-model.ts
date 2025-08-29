@@ -82,7 +82,7 @@ export function classifyCategory(description: string): string | null {
 }
 
 // Avoid side effects like Firestore access during tests
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   // Initial training
   trainCategoryModel();
   // Retrain when new feedback is added

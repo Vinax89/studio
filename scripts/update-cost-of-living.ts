@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 interface RawRow {
@@ -18,7 +18,11 @@ async function fetchRpp(year: number, apiKey: string) {
 
 async function main() {
   const year = new Date().getFullYear();
-  const apiKey = process.env.BEA_API_KEY || 'DEMO';
+  const apiKey = process.env.BEA_API_KEY;
+  if (!apiKey) {
+    throw new Error('BEA_API_KEY environment variable is required');
+  }
+  const dryRun = process.argv.includes('--dry-run');
   const rows = await fetchRpp(year, apiKey);
   const regions = rows.reduce((acc, row) => {
     const index = Number(row.DataValue.replace(/,/g, '')) / 100; // convert index to multiplier
@@ -34,9 +38,21 @@ async function main() {
   }, {} as Record<string, any>);
 
   const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: 'BEA Regional Price Parities',\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
-  const target = join(__dirname, '..', 'src', 'data', `costOfLiving${year}.ts`);
-  writeFileSync(target, content);
-  console.log(`Updated dataset for ${year}`);
+  const dir = join(__dirname, '..', 'src', 'data');
+  if (!existsSync(dir)) {
+    if (dryRun) {
+      console.log(`Dry run - would create directory ${dir}`);
+    } else {
+      mkdirSync(dir, { recursive: true });
+    }
+  }
+  const target = join(dir, `costOfLiving${year}.ts`);
+  if (dryRun) {
+    console.log(`Dry run - would write to ${target}:\n${content}`);
+  } else {
+    writeFileSync(target, content);
+    console.log(`Updated dataset for ${year}`);
+  }
 }
 
 main().catch((err) => {
