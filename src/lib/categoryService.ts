@@ -17,7 +17,7 @@ const hasLocalStorage = () =>
 const normalize = (value: string) => value.trim().toLowerCase();
 
 const INVALID_KEY_CHARS = /[./#$\[\]]/;
-const isValidCategoryName = (value: string) =>
+export const isValidCategoryName = (value: string) =>
   value.trim().length > 0 && !INVALID_KEY_CHARS.test(value);
 
 function load(): string[] {
