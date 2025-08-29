@@ -90,7 +90,7 @@ export default function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               cursor={{ fill: "hsl(var(--muted))", radius: 4 }}
               content={
                 <ChartTooltipContent
-                  formatter={(value: number) => `$${value.toLocaleString()}`}
+                  formatter={(value) => `$${value.toLocaleString()}`}
                 />
               }
             />

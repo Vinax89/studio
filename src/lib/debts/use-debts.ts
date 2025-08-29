@@ -9,7 +9,7 @@ export function useDebts() {
 
   useEffect(() => {
     const unsub = onSnapshot(debtsCollection, snap => {
-      const items = snap.docs.map(d => d.data());
+      const items = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Debt, "id">) }));
       setDebts(items);
     });
     return () => unsub();
