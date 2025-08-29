@@ -91,7 +91,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             isRecurring
         })
         setCategories(addCategory(category))
-        if(suggestedCategory && category !== suggestedCategory){
+        if (suggestedCategory && category !== suggestedCategory) {
             recordCategoryFeedback(description, category)
         }
         setOpen(false)
