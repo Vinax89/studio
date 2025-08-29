@@ -8,6 +8,9 @@
  * ```
  */
 
+// Exports in this module are grouped with their associated types and
+// kept in alphabetical order for easier maintenance.
+
 export {
   analyzeReceipt,
   type AnalyzeReceiptInput,
