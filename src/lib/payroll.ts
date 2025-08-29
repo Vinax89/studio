@@ -161,7 +161,7 @@ export const getShiftsInPayPeriod = (
 ): Shift[] => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
   return shifts
-    .filter(shift => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
+    .filter(shift => shift.date >= payPeriod.from! && shift.date <= payPeriod.to!)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
