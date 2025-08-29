@@ -3,5 +3,6 @@
 import { suggestCategory } from '@/ai/flows'
 
 export async function suggestCategoryAction(description: string): Promise<string> {
-  return suggestCategory(description)
+  const { category } = await suggestCategory({ description })
+  return category
 }

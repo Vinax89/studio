@@ -28,13 +28,14 @@ export function DebtCard({ debt, onDelete, onUpdate }: DebtCardProps) {
   const progress = debt.initialAmount > 0 ? (debt.currentAmount / debt.initialAmount) * 100 : 0;
   const remainingAmount = debt.initialAmount - debt.currentAmount;
 
-  // Fix: Explicitly parse the date as UTC to prevent timezone shift issues
-  // that cause hydration errors. The '.split('T')[0]' ensures we only get the date part.
-  const displayDate = new Date(debt.dueDate).toLocaleDateString('en-US', {
-    timeZone: 'UTC',
+  // By default, JS date constructor uses browser's local timezone.
+  // Appending 'T00:00:00Z' to the date string ensures it is parsed as UTC,
+  // preventing timezone-related discrepancies between server and client.
+  const displayDate = new Date(`${debt.dueDate}T00:00:00Z`).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'UTC'
   });
 
 
