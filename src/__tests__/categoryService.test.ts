@@ -37,4 +37,11 @@ describe("categoryService", () => {
     expect(getCategories()).toEqual(["Groceries"]);
     expect(setDoc).toHaveBeenCalledTimes(1);
   });
+
+  it("does not write to Firestore for duplicate category with same casing", () => {
+    addCategory("Utilities");
+    expect(setDoc).toHaveBeenCalledTimes(1);
+    addCategory("Utilities");
+    expect(setDoc).toHaveBeenCalledTimes(1);
+  });
 });
