@@ -99,4 +99,3 @@ if (hasRequiredEnv()) {
 }
 
 export { app, auth, db, categoriesCollection, firebaseReady };
-
