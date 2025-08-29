@@ -32,9 +32,12 @@ export type TransactionRowType = z.infer<typeof BaseTransactionRow>;
 
 function createTransactionRowSchema(validCategories: string[]) {
   return BaseTransactionRow.extend({
-    category: z.string().refine((cat) => validCategories.includes(cat), {
-      message: "Unknown category",
-    }),
+    category: z
+      .string()
+      .transform((cat) => cat.trim().toLowerCase())
+      .refine((cat) => validCategories.includes(cat), {
+        message: "Unknown category",
+      }),
   });
 }
 
