@@ -25,3 +25,6 @@ export type { CalculateCashflowInput, CalculateCashflowOutput } from './calculat
 
 export { predictSpending } from './spendingForecast';
 export type { SpendingForecastInput, SpendingForecastOutput } from './spendingForecast';
+
+export { suggestCategory } from './suggest-category';
+export type { SuggestCategoryInput, SuggestCategoryOutput } from './suggest-category';
