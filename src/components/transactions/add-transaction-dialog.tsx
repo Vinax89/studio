@@ -166,7 +166,10 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
               id="category"
               placeholder="e.g. Uniforms, Salary"
               value={category}
-              onChange={(e) => {setCategory(e.target.value); userModifiedCategory.current = true;}}
+              onChange={(e) => {
+                setCategory(e.target.value)
+                userModifiedCategory.current = true
+              }}
               list="category-options"
               className="col-span-3 capitalize"
             />
