@@ -103,15 +103,18 @@ export class WorkerPool<T = unknown, R = unknown> {
   }
 
   /**
-   * Shut down all workers and discard pending tasks.
+   * Shut down all workers and reject pending tasks.
    *
    * Workers are terminated and the internal queues are cleared. Any tasks that
-   * have not yet started will never run, and callers waiting on their promises
-   * will not receive a resolution.
+   * have not yet started are rejected with an error so that callers waiting on
+   * their promises are notified the pool has been destroyed.
    */
   async destroy(): Promise<void> {
     this.destroyed = true
     await Promise.all(this.workers.map(worker => worker.terminate()))
+    for (const task of this.queue) {
+      task.reject(new Error("Worker pool destroyed"))
+    }
     this.queue = []
     this.idle.length = 0
   }

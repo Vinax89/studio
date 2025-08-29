@@ -59,4 +59,16 @@ describe("WorkerPool", () => {
 
     await pool.destroy()
   })
+
+  it("rejects queued tasks when destroyed", async () => {
+    const pool = new WorkerPool<number, number>("fake", 0)
+
+    const first = pool.run(1)
+    const second = pool.run(2)
+
+    await pool.destroy()
+
+    await expect(first).rejects.toThrow("Worker pool destroyed")
+    await expect(second).rejects.toThrow("Worker pool destroyed")
+  })
 })
