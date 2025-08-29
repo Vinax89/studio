@@ -35,6 +35,8 @@ jest.mock('firebase/firestore', () => ({
   updateDoc: jest.fn(),
   arrayUnion: jest.fn(),
   arrayRemove: jest.fn(),
+  getDocs: jest.fn(async () => ({ forEach: () => {} })),
+  writeBatch: () => ({ delete: jest.fn(), commit: jest.fn() }),
 }))
 
 // Stub Firebase environment variables expected by zod validation

@@ -111,6 +111,12 @@ export default function AppHeader() {
             >
               Tax Estimator
             </Link>
+            <Link
+              href="/cost-of-living"
+              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              Cost of Living
+            </Link>
           </nav>
         </SheetContent>
       </Sheet>

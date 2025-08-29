@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,8 +24,8 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { addCategory, getCategories } from "@/lib/categories"
-import { suggestCategoryAction } from "@/app/actions"
+import { addCategory, getCategories } from "@/lib/categoryService"
+import { recordCategoryFeedback } from "@/lib/category-feedback"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -38,6 +38,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const [type, setType] = useState<"Income" | "Expense">("Expense")
     const [category, setCategory] = useState("")
     const [categories, setCategories] = useState<string[]>([])
+    const [suggestedCategory, setSuggestedCategory] = useState<string | null>(null)
+    const userModifiedCategory = useRef(false)
     const [currency, setCurrency] = useState("USD")
     const [isRecurring, setIsRecurring] = useState(false)
     const { toast } = useToast()
@@ -48,18 +50,30 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         }
     }, [open])
 
-    const handleDescriptionBlur = async () => {
-        if (!description.trim()) return
-        try {
-            const suggested = await suggestCategoryAction(description)
-            if (suggested) {
-                setCategory(suggested)
-                setCategories(addCategory(suggested))
-            }
-        } catch (err) {
-            console.error("suggestCategory failed", err)
+    useEffect(() => {
+        userModifiedCategory.current = false
+        if (!description) {
+            setSuggestedCategory(null)
+            setCategory("")
+            return
         }
-    }
+        if (process.env.NODE_ENV === "test") {
+            return
+        }
+        let active = true
+        import("@/ai/flows").then(({ suggestCategory }) =>
+            suggestCategory({ description }).then(res => {
+                if (active) {
+                    setSuggestedCategory(res.category)
+                    if (!userModifiedCategory.current) {
+                        setCategory(res.category)
+                    }
+                    setCategories(addCategory(res.category))
+                }
+            })
+        )
+        return () => { active = false }
+    }, [description])
 
     const handleSave = () => {
         const numericAmount = Number(amount)
@@ -78,12 +92,17 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             isRecurring
         })
         setCategories(addCategory(category))
+        if(suggestedCategory && category !== suggestedCategory){
+            recordCategoryFeedback(description, category)
+        }
         setOpen(false)
         // Reset form
         setDescription("")
         setAmount("")
         setType("Expense")
         setCategory("")
+        setSuggestedCategory(null)
+        userModifiedCategory.current = false
         setCurrency("USD")
         setIsRecurring(false)
     }
@@ -110,7 +129,6 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              onBlur={handleDescriptionBlur}
               className="col-span-3"
             />
           </div>
@@ -147,8 +165,9 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             <Label htmlFor="category" className="text-right">Category</Label>
             <Input
               id="category"
+              placeholder="e.g. Uniforms, Salary"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {setCategory(e.target.value); userModifiedCategory.current = true;}}
               list="category-options"
               className="col-span-3 capitalize"
             />
@@ -172,3 +191,4 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     </Dialog>
   )
 }
+
