@@ -28,6 +28,19 @@ describe('taxEstimation validation', () => {
       TaxEstimationInputSchema.parse({ income: -1, deductions: 0, state: 'NY', filingStatus: 'single' })
     ).toThrow();
   });
+
+  it('calculates tax using 2025 brackets', async () => {
+    jest.resetModules();
+    const { estimateTax } = await import('@/ai/flows/tax-estimation');
+    const result = await estimateTax({
+      income: 80000,
+      deductions: 0,
+      state: 'NY',
+      filingStatus: 'single',
+    });
+    expect(result.estimatedTax).toBeCloseTo(17193.42, 2);
+    expect(result.taxRate).toBeCloseTo(21.49, 2);
+  });
 });
 
 describe('suggestDebtStrategy validation', () => {
