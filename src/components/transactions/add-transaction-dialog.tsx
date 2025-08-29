@@ -43,10 +43,10 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     const { toast } = useToast()
 
     useEffect(() => {
-        userModifiedCategory.current = false
         if (!description) {
             setSuggestedCategory(null)
             setCategory("")
+            userModifiedCategory.current = false
             return
         }
         if (process.env.NODE_ENV === "test") {
