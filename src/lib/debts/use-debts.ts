@@ -2,20 +2,30 @@ import { useEffect, useState } from "react";
 import { onSnapshot, setDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import type { Debt } from "../types";
 import { debtsCollection, debtDoc } from ".";
+import { logger } from "../logger";
 
 // Hook to subscribe to debts collection and expose helpers for CRUD operations.
 export function useDebts() {
   const [debts, setDebts] = useState<Debt[]>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const unsub = onSnapshot(debtsCollection, snap => {
-      const items = snap.docs.map(d => d.data());
-      setDebts(items);
-    });
+    const unsub = onSnapshot(
+      debtsCollection,
+      snap => {
+        const items = snap.docs.map(d => d.data());
+        setDebts(items);
+        setError(false);
+      },
+      err => {
+        logger.info("Error subscribing to debts", err);
+        setError(true);
+      }
+    );
     return () => unsub();
   }, []);
 
-  return { debts, addOrUpdateDebt, deleteDebt, markPaid, unmarkPaid };
+  return { debts, error, addOrUpdateDebt, deleteDebt, markPaid, unmarkPaid };
 }
 
 export async function addOrUpdateDebt(next: Debt) {
