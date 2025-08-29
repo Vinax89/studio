@@ -15,20 +15,32 @@ export interface PayPeriodSummary {
   totalHours: number;
 }
 
-// Helper to find the start of a 2-week pay period (a Sunday) for any given date.
-// The optional `anchor` parameter lets different organizations align pay periods
-// to their own reference Sunday. By default, January 7, 2024 is used as the anchor
-// date for calculations.
+/**
+ * Find the Sunday that starts the biweekly pay period containing `date`.
+ *
+ * The optional `anchor` lets organizations align pay periods to their own
+ * reference Sunday. By default, January 7, 2024 is used as the anchor date.
+ *
+ * Both `date` and `anchor` are interpreted in the local timezone. If your
+ * inputs are in another timezone, convert them to the same zone or normalize
+ * with `Date.UTC` before calling.
+ *
+ * @param date - Any date within the pay period.
+ * @param anchor - Reference Sunday used to align pay periods.
+ * @returns The start date (Sunday) of the pay period.
+ */
 export const getPayPeriodStart = (
   date: Date,
-  anchor: Date = new Date('2024-01-07T00:00:00.000Z')
+  anchor: Date = new Date('2024-01-07')
 ): Date => {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
+  const a = new Date(anchor);
+  a.setHours(0, 0, 0, 0);
   const dayOfWeek = d.getDay();
   d.setDate(d.getDate() - dayOfWeek);
 
-  const diffWeeks = Math.floor((d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const diffWeeks = Math.floor((d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7));
   const parity = Math.abs(diffWeeks) % 2;
 
   if (parity !== 0) {
