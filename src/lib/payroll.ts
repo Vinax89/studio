@@ -60,18 +60,18 @@ export const getPayPeriodStart = (
 // Determine the next pay day for a biweekly schedule. If the provided date is
 // already the start of a pay period, that date is considered the pay day.
 export const getNextPayDay = (date: Date = new Date()): Date => {
-  const payDayStart = getPayPeriodStart(date)
-  const startOfDay = new Date(date)
-  startOfDay.setHours(0, 0, 0, 0)
+  const payDayStart = getPayPeriodStart(date);
+  const startOfDay = new Date(date);
+  startOfDay.setUTCHours(0, 0, 0, 0);
 
   if (payDayStart < startOfDay) {
-    const next = new Date(payDayStart)
-    next.setDate(payDayStart.getDate() + 14)
-    return next
+    const next = new Date(payDayStart);
+    next.setUTCDate(payDayStart.getUTCDate() + 14);
+    return next;
   }
 
-  return payDayStart
-}
+  return payDayStart;
+};
 
 export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
   const weeklyShifts: Record<string, Shift[]> = {};
