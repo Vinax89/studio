@@ -4,11 +4,23 @@ const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
 const DEFAULT_MAX_QUEUE_SIZE = 100
 
-const dbPromise = openDB(DB_NAME, 1, {
-  upgrade(db) {
-    db.createObjectStore(STORE_NAME, { autoIncrement: true })
-  },
-})
+let dbPromise: ReturnType<typeof openDB> | null = null
+
+export async function getDb() {
+  if (typeof indexedDB === "undefined") {
+    console.error("IndexedDB is not supported in this environment")
+    return null
+  }
+
+  if (!dbPromise) {
+    dbPromise = openDB(DB_NAME, 1, {
+      upgrade(db) {
+        db.createObjectStore(STORE_NAME, { autoIncrement: true })
+      },
+    })
+  }
+  return dbPromise
+}
 
 /**
  * Enqueue a transaction in IndexedDB for offline processing.
@@ -25,7 +37,8 @@ export async function queueTransaction(
   maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
 ) {
   try {
-    const db = await dbPromise
+    const db = await getDb()
+    if (!db) return false
     await db.add(STORE_NAME, tx)
 
     const total = await db.count(STORE_NAME)
@@ -55,7 +68,8 @@ export async function queueTransaction(
  */
 export async function getQueuedTransactions<T = unknown>() {
   try {
-    const db = await dbPromise
+    const db = await getDb()
+    if (!db) return null
     return (await db.getAll(STORE_NAME)) as T[]
   } catch (error) {
     console.error("getQueuedTransactions error", error)
@@ -72,7 +86,8 @@ export async function getQueuedTransactions<T = unknown>() {
  */
 export async function clearQueuedTransactions() {
   try {
-    const db = await dbPromise
+    const db = await getDb()
+    if (!db) return false
     await db.clear(STORE_NAME)
     return true
   } catch (error) {

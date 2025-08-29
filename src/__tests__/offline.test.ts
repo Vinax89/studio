@@ -38,6 +38,14 @@ import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
 import React from "react"
 
+beforeAll(() => {
+  ;(global as any).indexedDB = {}
+})
+
+afterAll(() => {
+  delete (global as any).indexedDB
+})
+
 describe("offline fallbacks", () => {
   it("queues and retrieves transactions", async () => {
     expect(await queueTransaction({ id: 1 })).toBe(true)
