@@ -25,7 +25,6 @@ import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
-import { logger } from "@/lib/logger"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -65,7 +64,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                     }
                 }
             } catch (error) {
-                logger.error("Failed to suggest category", error)
+                console.error("Failed to suggest category", error)
                 toast({
                     title: "Failed to suggest category",
                     description: "Could not fetch category suggestion.",
