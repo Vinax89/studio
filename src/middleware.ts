@@ -1,9 +1,13 @@
-import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const cspNonce = randomBytes(16).toString('base64url')
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  const cspNonce = btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', cspNonce)
