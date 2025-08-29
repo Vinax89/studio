@@ -31,7 +31,6 @@ export type {
   CalculateCostOfLivingInput,
   CostOfLivingBreakdown,
 } from './cost-of-living';
-
 export { suggestCategory } from './suggest-category';
 export type { SuggestCategoryInput, SuggestCategoryOutput } from './suggest-category';
 
