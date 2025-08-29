@@ -24,7 +24,9 @@ export async function getFxRate(from: string, to: string): Promise<number> {
     );
   } catch (err) {
     if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) {
-      throw new Error('FX rate request timed out after 5s');
+      throw new Error(
+        `FX rate request from ${fromCode} to ${toCode} timed out after 5s`,
+      );
     }
     throw new Error(
       `Network error while fetching FX rates: ${
