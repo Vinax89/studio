@@ -16,6 +16,10 @@ const hasLocalStorage = () =>
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
+const INVALID_KEY_CHARS = /[./#$\[\]]/;
+const isValidCategoryName = (value: string) =>
+  value.trim().length > 0 && !INVALID_KEY_CHARS.test(value);
+
 function load(): string[] {
   if (hasLocalStorage()) {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -65,6 +69,7 @@ export function getCategories(): string[] {
   const map = new Map<string, string>();
   for (const cat of categories) {
     const trimmed = cat.trim();
+    if (!isValidCategoryName(trimmed)) continue;
     const key = normalize(trimmed);
     if (!map.has(key)) {
       map.set(key, trimmed);
@@ -84,6 +89,10 @@ export function getCategories(): string[] {
 export function addCategory(category: string): string[] {
   const categories = getCategories();
   const trimmed = category.trim();
+  if (!isValidCategoryName(trimmed)) {
+    console.error('Invalid category name:', category);
+    return categories;
+  }
   const key = normalize(trimmed);
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
@@ -101,6 +110,9 @@ export function addCategory(category: string): string[] {
  * writes are performed in the background.
  */
 export function removeCategory(category: string): string[] {
+  if (!isValidCategoryName(category)) {
+    return getCategories();
+  }
   const key = normalize(category);
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
