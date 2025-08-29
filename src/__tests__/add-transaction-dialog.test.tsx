@@ -32,6 +32,9 @@ jest.mock('@/components/ui/switch', () => ({
     <input type="checkbox" onChange={onCheckedChange} {...props} />
   ),
 }));
+jest.mock('@/app/actions', () => ({
+  suggestCategoryAction: jest.fn().mockResolvedValue('Test'),
+}));
 
 beforeEach(() => {
   onSave.mockClear();

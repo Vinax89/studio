@@ -3,7 +3,7 @@
 // case-insensitive manner while preserving their original casing for display.
 
 import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
-import { db, categoriesCollection } from "./firebase";
+import { db, categoriesCollection, firebaseReady } from "./firebase";
 
 const STORAGE_KEY = "categories";
 
@@ -39,8 +39,9 @@ function save(categories: string[]) {
 
 // Synchronize the local cache with Firestore in the background.
 async function syncFromServer() {
+  if (!firebaseReady) return;
   try {
-    const snap = await getDocs(categoriesCollection);
+    const snap = await getDocs(categoriesCollection!);
     const list: string[] = [];
     snap.forEach((d) => {
       const data = d.data() as { name?: string };
@@ -90,9 +91,11 @@ export function addCategory(category: string): string[] {
     categories.push(trimmed);
     save(categories);
   }
-  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error
-  );
+  if (firebaseReady) {
+    void setDoc(doc(categoriesCollection!, key), { name: trimmed }).catch(
+      console.error
+    );
+  }
   return categories;
 }
 
@@ -104,17 +107,20 @@ export function removeCategory(category: string): string[] {
   const key = normalize(category);
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
-  void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
+  if (firebaseReady) {
+    void deleteDoc(doc(categoriesCollection!, key)).catch(console.error);
+  }
   return categories;
 }
 
 /** Clear all categories locally and in Firestore. */
 export function clearCategories() {
   save([]);
+  if (!firebaseReady) return;
   void (async () => {
     try {
-      const snap = await getDocs(categoriesCollection);
-      const batch = writeBatch(db);
+      const snap = await getDocs(categoriesCollection!);
+      const batch = writeBatch(db!);
       snap.forEach((d) => batch.delete(d.ref));
       await batch.commit();
     } catch (err) {
