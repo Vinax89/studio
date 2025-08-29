@@ -19,33 +19,39 @@ export interface PayPeriodSummary {
  * Find the Sunday that starts the biweekly pay period containing `date`.
  *
  * The optional `anchor` lets organizations align pay periods to their own
- * reference Sunday. By default, January 7, 2024 is used as the anchor date.
+ * reference Sunday. By default, January 7, 2024 (UTC) is used as the anchor
+ * date.
  *
- * Both `date` and `anchor` are interpreted in the local timezone. If your
- * inputs are in another timezone, convert them to the same zone or normalize
- * with `Date.UTC` before calling.
+ * Both `date` and `anchor` are normalized to midnight UTC using `Date.UTC` to
+ * ensure consistent calculations across timezones. The returned `Date` is also
+ * at midnight UTC.
  *
  * @param date - Any date within the pay period.
  * @param anchor - Reference Sunday used to align pay periods.
- * @returns The start date (Sunday) of the pay period.
+ * @returns The start date (Sunday) of the pay period in UTC.
  */
 export const getPayPeriodStart = (
   date: Date,
-  anchor: Date = new Date('2024-01-07')
+  anchor: Date = new Date(Date.UTC(2024, 0, 7))
 ): Date => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  const a = new Date(anchor);
-  a.setHours(0, 0, 0, 0);
-  const dayOfWeek = d.getDay();
-  d.setDate(d.getDate() - dayOfWeek);
+  const d = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
+  const a = new Date(
+    Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), anchor.getUTCDate())
+  );
 
-  const diffWeeks = Math.floor((d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const dayOfWeek = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - dayOfWeek);
+
+  const diffWeeks = Math.floor(
+    (d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7)
+  );
   const parity = Math.abs(diffWeeks) % 2;
 
   if (parity !== 0) {
     // It's in the second week of a pay period, so the start was the *previous* Sunday
-    d.setDate(d.getDate() - 7);
+    d.setUTCDate(d.getUTCDate() - 7);
   }
 
   return d;
