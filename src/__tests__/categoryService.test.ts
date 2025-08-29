@@ -1,0 +1,32 @@
+import { addCategory, getCategories, removeCategory, clearCategories } from "@/lib/categoryService";
+import { setDoc, deleteDoc } from "firebase/firestore";
+
+jest.mock("@/lib/firebase", () => ({ db: {}, categoriesCollection: {} }));
+
+jest.mock("firebase/firestore", () => ({
+  doc: jest.fn(() => ({})),
+  setDoc: jest.fn(() => Promise.resolve()),
+  deleteDoc: jest.fn(() => Promise.resolve()),
+  getDocs: jest.fn(async () => ({ forEach: () => {} })),
+  writeBatch: jest.fn(() => ({ delete: jest.fn(), commit: jest.fn() })),
+}));
+
+describe("categoryService", () => {
+  beforeEach(() => {
+    clearCategories();
+    jest.clearAllMocks();
+  });
+
+  it("rejects categories with illegal Firestore characters", () => {
+    addCategory("Food/Drink");
+    expect(getCategories()).toEqual([]);
+    expect(setDoc).not.toHaveBeenCalled();
+  });
+
+  it("ignores removal of invalid category names", () => {
+    addCategory("Groceries");
+    removeCategory("Bad[Cat]");
+    expect(getCategories()).toEqual(["Groceries"]);
+    expect(deleteDoc).not.toHaveBeenCalled();
+  });
+});

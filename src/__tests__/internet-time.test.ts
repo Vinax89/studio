@@ -69,4 +69,33 @@ describe("internet time", () => {
     await getCurrentTime("Asia/Tokyo");
     expect((fetch as jest.Mock).mock.calls[0][0]).toContain("/Asia/Tokyo");
   });
+
+  it("times out after 5s", async () => {
+    (fetch as jest.Mock).mockImplementation(
+      (_url: string, opts: { signal: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          opts.signal.addEventListener("abort", () => {
+            const err = new Error("aborted");
+            (err as any).name = "AbortError";
+            reject(err);
+          });
+        })
+    );
+
+    const promise = fetchInternetTime("Etc/UTC");
+    jest.advanceTimersByTime(5000);
+    await expect(promise).rejects.toThrow("timed out");
+  });
+
+  it("throws detailed error for non-200 responses", async () => {
+    (fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Error",
+      text: async () => "bad",
+    });
+    await expect(fetchInternetTime("Etc/UTC")).rejects.toThrow(
+      "500 Internal Error bad"
+    );
+  });
 });

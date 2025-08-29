@@ -29,8 +29,9 @@ export const getPayPeriodStart = (
   d.setDate(d.getDate() - dayOfWeek);
 
   const diffWeeks = Math.floor((d.getTime() - anchor.getTime()) / (1000 * 60 * 60 * 24 * 7));
+  const parity = Math.abs(diffWeeks) % 2;
 
-  if (diffWeeks % 2 !== 0) {
+  if (parity !== 0) {
     // It's in the second week of a pay period, so the start was the *previous* Sunday
     d.setDate(d.getDate() - 7);
   }
