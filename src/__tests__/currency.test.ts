@@ -17,6 +17,7 @@ describe('currency code validation', () => {
     expect(rate).toBe(0.85);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.exchangerate.host/latest?base=USD&symbols=EUR',
+      expect.objectContaining({ signal: expect.any(Object) }),
     );
   });
 

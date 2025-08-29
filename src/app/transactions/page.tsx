@@ -58,7 +58,7 @@ export default function TransactionsPage() {
       ]);
       addCategory(transaction.category);
     },
-    [] 
+    []
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();
@@ -160,3 +160,4 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
