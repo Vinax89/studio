@@ -18,7 +18,7 @@ export function useDebts() {
         setError(false);
       },
       err => {
-        logger.info("Error subscribing to debts", err);
+        logger.error("Error subscribing to debts", err);
         setError(true);
       }
     );
