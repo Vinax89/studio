@@ -56,12 +56,12 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         let active = true
         const fetchSuggestion = async () => {
             try {
-                const { suggestCategory } = await import("@/ai/flows/suggest-category")
-                const res = await suggestCategory({ description })
+                const { suggestCategoryAction } = await import("@/app/actions")
+                const res = await suggestCategoryAction(description)
                 if (active) {
-                    setSuggestedCategory(res.category)
+                    setSuggestedCategory(res)
                     if (!userModifiedCategory.current) {
-                        setCategory(res.category)
+                        setCategory(res)
                     }
                 }
             } catch (error) {
