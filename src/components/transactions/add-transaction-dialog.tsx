@@ -233,4 +233,3 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     </Dialog>
   )
 }
-
