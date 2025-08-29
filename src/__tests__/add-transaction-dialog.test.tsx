@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
-import { clearCategories } from '@/lib/categories';
+import { clearCategories } from '@/lib/categoryService';
 
 const onSave = jest.fn();
 const toastMock = jest.fn();

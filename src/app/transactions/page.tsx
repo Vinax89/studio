@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { TransactionsFilter } from "@/components/transactions/transactions-filter";
 import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
-import { addCategory, getCategories } from "@/lib/categories";
+import { addCategory, getCategories } from "@/lib/categoryService";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
 
 export default function TransactionsPage() {
@@ -48,7 +48,6 @@ export default function TransactionsPage() {
     return ["all", ...Array.from(map.values())];
   }, [transactions]);
 
-<<<<<<< HEAD
   const addTransaction = useCallback(
     (transaction: Omit<Transaction, "id" | "date">) => {
       setTransactions((prev) => [
@@ -71,7 +70,7 @@ export default function TransactionsPage() {
     if (!file) return;
     try {
       const rows = await parseCsv<TransactionRowType>(file);
-      const parsed = validateTransactions(rows);
+      const parsed = validateTransactions(rows, getCategories());
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {
@@ -86,15 +85,6 @@ export default function TransactionsPage() {
       transactions.map(({ id, ...rest }) => rest),
       "transactions.csv"
     );
-=======
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    // Using a function with setTransactions ensures we get the latest state
-    // and correctly triggers re-renders for derived state like `categories`.
-    setTransactions(prev => [
-      { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] },
-      ...prev
-    ]);
->>>>>>> d96745a (code review)
   };
 
   const filteredTransactions = useMemo(() => {
