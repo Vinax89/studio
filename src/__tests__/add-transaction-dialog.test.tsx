@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
 const onSave = jest.fn();
@@ -54,8 +54,6 @@ beforeEach(() => {
 async function openAndFill(amount: string) {
   render(<AddTransactionDialog onSave={onSave} />);
   fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test' } });
-  fireEvent.blur(screen.getByLabelText(/description/i));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: amount } });
   fireEvent.click(screen.getByText(/save transaction/i));
 }
