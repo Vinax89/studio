@@ -1,8 +1,9 @@
+import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const cspNonce = btoa(crypto.randomUUID())
+  const cspNonce = randomBytes(16).toString('base64url')
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', cspNonce)
@@ -34,11 +35,19 @@ export function middleware(request: NextRequest) {
     'max-age=63072000; includeSubDomains; preload'
   )
 
-  if (process.env.NODE_ENV === 'development') {
-    response.headers.set(
-      'Access-Control-Allow-Origin',
-      'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006'
+  const origin = request.headers.get('origin')
+  const allowedOrigins = [
+    /^https:\/\/.*-firebase-studio-.*\.cloudworkstations\.dev$/,
+    'http://localhost:6006',
+  ]
+
+  if (
+    origin &&
+    allowedOrigins.some((allowed) =>
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
     )
+  ) {
+    response.headers.set('Access-Control-Allow-Origin', origin)
   }
 
   return response

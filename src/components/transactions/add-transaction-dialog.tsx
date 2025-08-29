@@ -25,6 +25,7 @@ import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
+import { logger } from "@/lib/logger"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -53,16 +54,26 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             return
         }
         let active = true
-        import("@/ai/flows/suggest-category").then(({ suggestCategory }) =>
-            suggestCategory({ description }).then(res => {
+        const fetchSuggestion = async () => {
+            try {
+                const { suggestCategory } = await import("@/ai/flows/suggest-category")
+                const res = await suggestCategory({ description })
                 if (active) {
                     setSuggestedCategory(res.category)
                     if (!userModifiedCategory.current) {
                         setCategory(res.category)
                     }
                 }
-            })
-        )
+            } catch (error) {
+                logger.error("Failed to suggest category", error)
+                toast({
+                    title: "Failed to suggest category",
+                    description: "Could not fetch category suggestion.",
+                    variant: "destructive",
+                })
+            }
+        }
+        fetchSuggestion()
         return () => { active = false }
     }, [description])
 
