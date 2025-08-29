@@ -1,7 +1,7 @@
 'use server'
 
-import { suggestCategory } from '@/ai/flows'
-
 export async function suggestCategoryAction(description: string): Promise<string> {
-  return suggestCategory(description)
+  const { suggestCategory } = await import('@/ai/flows')
+  const { category } = await suggestCategory({ description })
+  return category
 }
