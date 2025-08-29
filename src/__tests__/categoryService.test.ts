@@ -1,5 +1,3 @@
-import { addCategory, getCategories, removeCategory, clearCategories } from "@/lib/categoryService";
-
 jest.mock("@/lib/firebase", () => ({ db: {}, categoriesCollection: {} }));
 
 const mockSetDoc = jest.fn().mockResolvedValue(undefined);
@@ -17,6 +15,15 @@ jest.mock("firebase/firestore", () => ({
 }));
 
 describe("categoryService validation", () => {
+  let addCategory: typeof import("@/lib/categoryService").addCategory;
+  let getCategories: typeof import("@/lib/categoryService").getCategories;
+  let removeCategory: typeof import("@/lib/categoryService").removeCategory;
+  let clearCategories: typeof import("@/lib/categoryService").clearCategories;
+
+  beforeAll(async () => {
+    ({ addCategory, getCategories, removeCategory, clearCategories } = await import("@/lib/categoryService"));
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     clearCategories();
