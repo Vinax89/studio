@@ -9,6 +9,7 @@ jest.mock("node:worker_threads", () => {
       postMessage(data: unknown) {
         if (data === "crash") {
           this.emit("error", new Error("boom"))
+          this.emit("exit", 1)
         } else {
           this.emit("message", (data as number) * 2)
         }
