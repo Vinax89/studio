@@ -51,7 +51,7 @@ export class WorkerPool<T = unknown, R = unknown> {
         }
       }
 
-      const finalize = () => {
+      const finalizeSuccess = () => {
         worker.off("exit", handleExit)
         this.idle.push(worker)
         this.process()
@@ -60,13 +60,13 @@ export class WorkerPool<T = unknown, R = unknown> {
       worker.once("message", (result: R) => {
         settled = true
         task.resolve(result)
-        finalize()
+        finalizeSuccess()
       })
 
       worker.once("error", err => {
         settled = true
         task.reject(err)
-        finalize()
+        this.process()
       })
 
       worker.on("exit", handleExit)
