@@ -1,7 +1,6 @@
 
 import type { NextConfig } from 'next'
 import crypto from 'crypto'
-
 const nextConfig: NextConfig = {
   // Enforce type checking and linting during builds
   typescript: { ignoreBuildErrors: false },
@@ -12,9 +11,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'picsum.photos', pathname: '/**' },
     ],
   },
-
   async headers() {
-    const cspNonce = crypto.randomBytes(16).toString('base64')
+    const cspNonce = crypto.randomBytes(16).toString('base64');
     const securityHeaders = [
       {
         key: 'Content-Security-Policy',
@@ -37,13 +35,14 @@ const nextConfig: NextConfig = {
         key: 'Strict-Transport-Security',
         value: 'max-age=63072000; includeSubDomains; preload',
       },
-    ]
-    
+    ];
+
     if (process.env.NODE_ENV === 'development') {
-        securityHeaders.push({
-            key: 'Access-Control-Allow-Origin',
-            value: 'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
-        })
+      securityHeaders.push({
+        key: 'Access-Control-Allow-Origin',
+        value:
+          'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
+      });
     }
 
     return [
@@ -51,9 +50,8 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
-    ]
+    ];
   },
-
   experimental: {},
   webpack: (config, { isServer, webpack }) => {
     if (isServer) {

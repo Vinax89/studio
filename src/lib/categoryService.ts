@@ -16,11 +16,7 @@ const hasLocalStorage = () =>
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-// Firestore document IDs cannot contain forward slashes and must not be empty
-function isValidCategoryName(value: string) {
-  const trimmed = value.trim();
-  return trimmed.length > 0 && !trimmed.includes("/");
-}
+const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key);
 
 function load(): string[] {
   if (hasLocalStorage()) {
@@ -90,18 +86,19 @@ export function getCategories(): string[] {
 export function addCategory(category: string): string[] {
   const categories = getCategories();
   const trimmed = category.trim();
-  if (!isValidCategoryName(trimmed)) {
+  const key = normalize(trimmed);
+  if (!isValidKey(key)) {
+    console.error("Invalid category name");
     return categories;
   }
-  const key = normalize(trimmed);
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
-    save(categories);
+    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+      console.error
+    );
   }
-  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error
-  );
+  save(categories);
   return categories;
 }
 
@@ -110,10 +107,11 @@ export function addCategory(category: string): string[] {
  * writes are performed in the background.
  */
 export function removeCategory(category: string): string[] {
-  if (!isValidCategoryName(category)) {
+  const key = normalize(category);
+  if (!isValidKey(key)) {
+    console.error("Invalid category name");
     return getCategories();
   }
-  const key = normalize(category);
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
   void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
