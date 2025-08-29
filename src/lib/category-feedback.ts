@@ -18,8 +18,10 @@ export async function recordCategoryFeedback(
       createdAt: serverTimestamp(),
     });
     return true;
-  } catch (error) {
-    logger.error("Failed to record category feedback", error);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : String(err);
+    logger.error(`Failed to record category feedback: ${message}`);
     return false;
   }
 }
