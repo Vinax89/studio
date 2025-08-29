@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const json = await req.json();
     const { description } = bodySchema.parse(json);
-    const category = await suggestCategory(description);
+    const { category } = await suggestCategory({ description });
     return NextResponse.json({ category });
   } catch (err) {
     return NextResponse.json({ error: "Failed to suggest category" }, { status: 500 });
