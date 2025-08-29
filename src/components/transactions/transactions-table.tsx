@@ -35,64 +35,67 @@ type FormattedTransaction = Transaction & {
   formattedAmount: string
 }
 
-const Row = memo(
-  ({ data, index, style }: ListChildComponentProps<FormattedTransaction[]>) => {
-    const transaction = data[index]
-    return (
-      <TableRow style={style}>
-        <TableCell>{transaction.formattedDate}</TableCell>
-        <TableCell className="font-medium">{transaction.description}</TableCell>
-        <TableCell>
-          <Badge variant="outline">{transaction.category}</Badge>
-        </TableCell>
-        <TableCell>
-          {transaction.isRecurring && (
-            <Repeat className="h-4 w-4 text-muted-foreground" />
-          )}
-        </TableCell>
-        <TableCell
-          className={cn(
-            "text-right",
-            transaction.type === "Income" ? "text-green-600" : "text-red-600",
-            "dark:text-inherit",
-          )}
-        >
-          {transaction.formattedAmount}
-        </TableCell>
-      </TableRow>
-    )
-  },
-  areEqual,
-)
+interface InnerTableProps
+  extends HTMLAttributes<HTMLTableSectionElement> {
+  children: ReactNode
+}
+
+const Row = memo(function Row({
+  data,
+  index,
+  style,
+}: ListChildComponentProps<FormattedTransaction[]>) {
+  const transaction = data[index]
+  return (
+    <TableRow style={style}>
+      <TableCell>{transaction.formattedDate}</TableCell>
+      <TableCell className="font-medium">{transaction.description}</TableCell>
+      <TableCell>
+        <Badge variant="outline">{transaction.category}</Badge>
+      </TableCell>
+      <TableCell>
+        {transaction.isRecurring && (
+          <Repeat className="h-4 w-4 text-muted-foreground" />
+        )}
+      </TableCell>
+      <TableCell
+        className={cn(
+          "text-right",
+          transaction.type === "Income" ? "text-green-600" : "text-red-600",
+          "dark:text-inherit",
+        )}
+      >
+        {transaction.formattedAmount}
+      </TableCell>
+    </TableRow>
+  )
+}, areEqual)
 
 const InnerTable = memo(
-  forwardRef<
-    HTMLTableSectionElement,
-    HTMLAttributes<HTMLTableSectionElement> & { children: ReactNode }
-  >(({ children, style, ...rest }, ref) => (
-    <table className="w-full caption-bottom text-sm">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Recurring</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody
-        ref={ref}
-        style={style}
-        className="[&_tr:last-child]:border-0"
-        {...rest}
-      >
-        {children}
-      </TableBody>
-    </table>
-  )),
-) as React.ComponentType<
-  HTMLAttributes<HTMLTableSectionElement> & { children: ReactNode }
->
+  forwardRef<HTMLTableSectionElement, InnerTableProps>(
+    ({ children, style, ...rest }, ref) => (
+      <table className="w-full caption-bottom text-sm">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Recurring</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody
+          ref={ref}
+          style={style}
+          className="[&_tr:last-child]:border-0"
+          {...rest}
+        >
+          {children}
+        </TableBody>
+      </table>
+    ),
+  ),
+) as React.ComponentType<InnerTableProps>
 
 export const TransactionsTable = memo(function TransactionsTable({
   transactions,
