@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { analyzeReceipt, type AnalyzeReceiptOutput } from "@/ai/flows"
+import { recordCategoryFeedback } from "@/lib/category-feedback"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -17,6 +18,7 @@ export default function ScanReceiptPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalyzeReceiptOutput | null>(null)
+  const [suggestedCategory, setSuggestedCategory] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -109,6 +111,7 @@ export default function ScanReceiptPage() {
     try {
       const result = await analyzeReceipt({ receiptImage: imagePreview });
       setAnalysisResult(result);
+      setSuggestedCategory(result.category);
     } catch (error) {
       console.error("Error analyzing receipt:", error);
       toast({ title: "Analysis Failed", description: "Could not analyze the receipt. Please try again.", variant: "destructive" });
@@ -122,6 +125,9 @@ export default function ScanReceiptPage() {
     // to save the transaction to the main state in the parent page.
     // For this example, we'll just show a toast and navigate back.
     if(analysisResult){
+        if(suggestedCategory && analysisResult.category !== suggestedCategory){
+            recordCategoryFeedback(analysisResult.description, analysisResult.category)
+        }
         toast({
             title: "Transaction Saved (Simulated)",
             description: `${analysisResult.description} for $${analysisResult.amount.toFixed(2)}`,

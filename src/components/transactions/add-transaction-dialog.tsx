@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { addCategory, getCategories } from "@/lib/categories"
+import { addCategory, getCategories } from "@/lib/categoryService"
 import { suggestCategoryAction } from "@/app/actions"
 
 interface AddTransactionDialogProps {
