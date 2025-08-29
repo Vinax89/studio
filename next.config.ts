@@ -40,10 +40,10 @@ const nextConfig: NextConfig = {
     ]
     
     if (process.env.NODE_ENV === 'development') {
-        securityHeaders.push({
-            key: 'Access-Control-Allow-Origin',
-            value: 'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
-        })
+      securityHeaders.push({
+        key: 'Access-Control-Allow-Origin',
+        value: '*',
+      })
     }
 
     return [
