@@ -20,6 +20,12 @@ describe('payroll utilities', () => {
     expect(start.toISOString().slice(0, 10)).toBe('2024-01-14');
   });
 
+  test('getPayPeriodStart handles dates before the anchor', () => {
+    const date = new Date('2023-12-31T12:00:00Z');
+    const start = getPayPeriodStart(date);
+    expect(start.toISOString().slice(0, 10)).toBe('2023-12-24');
+  });
+
   test('calculateOvertimeDates identifies shifts after 40 hours', () => {
     const shifts: Shift[] = [
       { date: new Date('2024-01-08'), hours: 8, rate: 10 },
