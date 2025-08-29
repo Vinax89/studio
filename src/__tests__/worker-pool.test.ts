@@ -66,9 +66,11 @@ describe("WorkerPool", () => {
     const first = pool.run(1)
     const second = pool.run(2)
 
-    await pool.destroy()
+    const destroyPromise = pool.destroy()
 
     await expect(first).rejects.toThrow("Worker pool destroyed")
     await expect(second).rejects.toThrow("Worker pool destroyed")
+
+    await destroyPromise
   })
 })
