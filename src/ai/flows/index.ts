@@ -8,21 +8,40 @@
  * ```
  */
 
-export { analyzeReceipt } from './analyze-receipt';
-export type { AnalyzeReceiptInput, AnalyzeReceiptOutput } from './analyze-receipt';
+export {
+  analyzeReceipt,
+  type AnalyzeReceiptInput,
+  type AnalyzeReceiptOutput,
+} from './analyze-receipt';
 
-export { analyzeSpendingHabits } from './analyze-spending-habits';
-export type { AnalyzeSpendingHabitsInput, AnalyzeSpendingHabitsOutput } from './analyze-spending-habits';
+export {
+  analyzeSpendingHabits,
+  type AnalyzeSpendingHabitsInput,
+  type AnalyzeSpendingHabitsOutput,
+} from './analyze-spending-habits';
 
-export { calculateCashflow } from './calculate-cashflow';
-export type { CalculateCashflowInput, CalculateCashflowOutput } from './calculate-cashflow';
+export {
+  calculateCashflow,
+  type CalculateCashflowInput,
+  type CalculateCashflowOutput,
+} from './calculate-cashflow';
 
-export { estimateTax } from './tax-estimation';
-export type { TaxEstimationInput, TaxEstimationOutput } from './tax-estimation';
+export {
+  estimateTax,
+  type TaxEstimationInput,
+  type TaxEstimationOutput,
+} from './tax-estimation';
 
-export { predictSpending } from './spendingForecast';
-export type { SpendingForecastInput, SpendingForecastOutput } from './spendingForecast';
+export {
+  predictSpending,
+  type SpendingForecastInput,
+  type SpendingForecastOutput,
+} from './spendingForecast';
 
 export { suggestCategory } from './categorize-transaction';
-export { suggestDebtStrategy } from './suggest-debt-strategy';
-export type { SuggestDebtStrategyInput, SuggestDebtStrategyOutput } from './suggest-debt-strategy';
+
+export {
+  suggestDebtStrategy,
+  type SuggestDebtStrategyInput,
+  type SuggestDebtStrategyOutput,
+} from './suggest-debt-strategy';
