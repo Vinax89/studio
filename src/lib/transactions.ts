@@ -128,8 +128,7 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
-      const docRef = doc(colRef);
-      batch.set(docRef, tx);
+      batch.set(doc(colRef, tx.id), tx);
     });
 
     try {

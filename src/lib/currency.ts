@@ -14,17 +14,27 @@ export async function getFxRate(from: string, to: string): Promise<number> {
   const fromCode = parseCurrencyCode(from);
   const toCode = parseCurrencyCode(to);
   if (fromCode === toCode) return 1;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   let res: Response;
   try {
     res = await fetch(
       `https://api.exchangerate.host/latest?base=${fromCode}&symbols=${toCode}`,
+      { signal: controller.signal },
     );
   } catch (err) {
+    if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) {
+      throw new Error(
+        `FX rate request from ${fromCode} to ${toCode} timed out after 5s`,
+      );
+    }
     throw new Error(
       `Network error while fetching FX rates: ${
         err instanceof Error ? err.message : err
       }`,
     );
+  } finally {
+    clearTimeout(timeout);
   }
   if (!res.ok) {
     throw new Error('Failed to fetch FX rates');

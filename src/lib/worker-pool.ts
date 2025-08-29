@@ -18,14 +18,39 @@ interface Task<T, R> {
 export class WorkerPool<T = unknown, R = unknown> {
   private readonly workers: Worker[] = []
   private readonly idle: Worker[] = []
+  private readonly tasks = new Map<Worker, Task<T, R>>()
   private queue: Task<T, R>[] = []
+  private destroyed = false
 
   constructor(private readonly file: string, size: number) {
     for (let i = 0; i < size; i++) {
-      const worker = new Worker(file)
-      this.workers.push(worker)
-      this.idle.push(worker)
+      this.spawn()
     }
+  }
+
+  private spawn() {
+    const worker = new Worker(this.file)
+    worker.once("exit", code => {
+      this.workers.splice(this.workers.indexOf(worker), 1)
+      const idleIndex = this.idle.indexOf(worker)
+      if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
+
+      const task = this.tasks.get(worker)
+      this.tasks.delete(worker)
+
+      if (!this.destroyed) {
+        this.spawn()
+        this.process()
+      }
+
+      if (code !== 0 && task) {
+        task.reject(new Error(`Worker stopped with exit code ${code}`))
+      }
+    })
+
+    this.workers.push(worker)
+    this.idle.push(worker)
+    return worker
   }
 
   /**
@@ -55,7 +80,10 @@ export class WorkerPool<T = unknown, R = unknown> {
       const worker = this.idle.shift()!
       const task = this.queue.shift()!
 
+      this.tasks.set(worker, task)
+
       const finalize = () => {
+        this.tasks.delete(worker)
         this.idle.push(worker)
         this.process()
       }
@@ -70,39 +98,25 @@ export class WorkerPool<T = unknown, R = unknown> {
         finalize()
       })
 
-      worker.once("exit", code => {
-        this.workers.splice(this.workers.indexOf(worker), 1)
-        const idleIndex = this.idle.indexOf(worker)
-        if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
-
-        if (code !== 0) {
-          const replacement = new Worker(this.file)
-          this.workers.push(replacement)
-          this.idle.push(replacement)
-          this.process()
-          task.reject(new Error(`Worker stopped with exit code ${code}`))
-        } else {
-          // A zero exit code indicates a graceful shutdown. No need to reject
-          // the pending task; just continue processing with the remaining
-          // workers.
-          this.process()
-        }
-      })
-
       worker.postMessage(task.data)
     }
   }
 
   /**
-   * Shut down all workers and discard pending tasks.
+   * Shut down all workers and reject pending tasks.
    *
-   * Workers are terminated and the internal queues are cleared. Any tasks that
-   * have not yet started will never run, and callers waiting on their promises
-   * will not receive a resolution.
+   * Any work still waiting in the queue is rejected with a
+   * `Worker pool destroyed` error <em>before</em> the queue is cleared so that
+   * callers receive a rejection instead of hanging indefinitely. All workers
+   * are terminated and removed from the pool afterwards.
    */
   async destroy(): Promise<void> {
+    this.destroyed = true
     await Promise.all(this.workers.map(worker => worker.terminate()))
-    this.queue = []
+    for (const task of this.queue) {
+      task.reject(new Error("Worker pool destroyed"))
+    }
+    this.queue.length = 0
     this.idle.length = 0
   }
 }
