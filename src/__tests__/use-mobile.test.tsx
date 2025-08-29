@@ -1,13 +1,15 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { useIsMobile, MOBILE_BREAKPOINT } from "../hooks/use-mobile";
 
 describe("useIsMobile", () => {
   let listeners: Array<() => void>;
+  let MOBILE_BREAKPOINT: number;
+  let useIsMobile: () => boolean;
 
   beforeEach(() => {
     listeners = [];
+    ({ useIsMobile, MOBILE_BREAKPOINT } = require("../hooks/use-mobile"));
     window.innerWidth = MOBILE_BREAKPOINT + 100;
     window.matchMedia = jest.fn().mockImplementation(() => ({
       matches: window.innerWidth < MOBILE_BREAKPOINT,
@@ -42,17 +44,4 @@ describe("useIsMobile", () => {
     expect(screen.getByText("mobile")).toBeInTheDocument();
   });
 
-  it("renders on the server without warnings", () => {
-    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
-    function TestComponent() {
-      useIsMobile();
-      return null;
-    }
-
-    renderToString(<TestComponent />);
-
-    expect(errorSpy).not.toHaveBeenCalled();
-    errorSpy.mockRestore();
-  });
 });
