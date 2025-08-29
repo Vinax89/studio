@@ -148,3 +148,13 @@ export const getShiftsInPayPeriod = (
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
+
+export const getNextPayDay = (date: Date): Date => {
+  const start = getPayPeriodStart(date);
+  const payDay = new Date(start);
+  payDay.setDate(payDay.getDate() + 12); // Friday of the second week
+  if (payDay <= date) {
+    payDay.setDate(payDay.getDate() + 14);
+  }
+  return payDay;
+};
