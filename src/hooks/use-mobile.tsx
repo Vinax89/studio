@@ -18,9 +18,17 @@ export function useIsMobile() {
     const onChange = (event: MediaQueryListEvent) => {
       setIsMobile(event.matches)
     }
-    mql.addEventListener("change", onChange)
+    const supportsEventListener = typeof mql.addEventListener === "function"
+    if (supportsEventListener) {
+      mql.addEventListener("change", onChange)
+    } else {
+      mql.addListener(onChange)
+    }
     setIsMobile(mql.matches)
-    return () => mql.removeEventListener("change", onChange)
+    return () =>
+      supportsEventListener
+        ? mql.removeEventListener("change", onChange)
+        : mql.removeListener(onChange)
   }, [])
 
   return isMobile
