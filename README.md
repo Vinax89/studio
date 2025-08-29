@@ -6,6 +6,11 @@ To get started, take a look at src/app/page.tsx.
 - `npm test` – run unit tests with Jest.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
+If your local setup needs to call APIs hosted on a different origin, configure a
+development-only proxy or middleware to route those requests. Avoid adding
+custom Next.js config keys for CORS; unknown properties will trigger build
+warnings.
+
 ## Color input
 When supplying colors to chart configuration, only the following formats are allowed:
 
