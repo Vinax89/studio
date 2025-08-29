@@ -25,6 +25,12 @@ export function ServiceWorker() {
       const controller = new AbortController()
       abortController.current = controller
 
+      let timedOut = false
+      const timeoutId = setTimeout(() => {
+        timedOut = true
+        controller.abort()
+      }, 10000)
+
       try {
         const user = auth.currentUser
         const token = user ? await user.getIdToken() : null
@@ -51,7 +57,7 @@ export function ServiceWorker() {
         retryCount.current = 0
         notified.current = false
       } catch (error) {
-        if (controller.signal.aborted) return
+        if (controller.signal.aborted && !timedOut) return
 
         retryCount.current += 1
         const delay = Math.min(1000 * 2 ** (retryCount.current - 1), 30000)
@@ -68,6 +74,8 @@ export function ServiceWorker() {
         console.error("Failed to sync queued transactions", error)
         if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
         retryTimeoutId.current = setTimeout(syncQueued, delay)
+      } finally {
+        clearTimeout(timeoutId)
       }
     }
 
