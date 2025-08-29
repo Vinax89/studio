@@ -15,6 +15,7 @@ import {
   Target,
   Sparkles,
   Landmark,
+  Globe,
   Settings,
   CreditCard,
   Wallet,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/cashflow", icon: Wallet, label: "Cashflow" },
   { href: "/insights", icon: Sparkles, label: "AI Insights" },
   { href: "/taxes", icon: Landmark, label: "Tax Estimator" },
+  { href: "/cost-of-living", icon: Globe, label: "Cost of Living" },
 ]
 
 export default function AppSidebar() {

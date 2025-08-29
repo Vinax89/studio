@@ -4,6 +4,7 @@ To get started, take a look at src/app/page.tsx.
 ## Development
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
+- `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
 ## Color input
 When supplying colors to chart configuration, only the following formats are allowed:
@@ -62,3 +63,12 @@ two-week pay period. It is used by the `PayPeriodSummary` utilities to group
 shifts into the correct pay cycle. A custom `anchor` date can be provided to
 align the cycle with organization-specific schedules. When omitted, the anchor
 defaults to the pay period beginning on January 7, 2024.
+
+## Cost of Living Dataset
+
+Annual expense benchmarks are sourced from the **BEA Regional Price Parities**
+release. The data file `src/data/costOfLiving2024.ts` stores per-adult yearly
+costs for housing, groceries, utilities, transportation, healthcare, and
+miscellaneous categories. Use `calculateCostOfLiving` to scale values by
+household composition. Run `node scripts/update-cost-of-living.ts` each year to
+fetch new figures.
