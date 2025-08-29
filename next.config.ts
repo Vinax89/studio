@@ -1,4 +1,3 @@
-
 import type { NextConfig } from 'next'
 import crypto from 'crypto'
 
@@ -38,12 +37,13 @@ const nextConfig: NextConfig = {
         value: 'max-age=63072000; includeSubDomains; preload',
       },
     ]
-    
+
     if (process.env.NODE_ENV === 'development') {
-        securityHeaders.push({
-            key: 'Access-Control-Allow-Origin',
-            value: 'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
-        })
+      securityHeaders.push({
+        key: 'Access-Control-Allow-Origin',
+        value:
+          'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
+      })
     }
 
     return [
@@ -62,14 +62,14 @@ const nextConfig: NextConfig = {
           /handlebars/,
           (resource: { request: string }) => {
             if (resource.request === 'handlebars') {
-              resource.request = 'handlebars/dist/cjs/handlebars.js';
+              resource.request = 'handlebars/dist/cjs/handlebars.js'
             }
           }
         )
-      );
+      )
     }
-    return config;
-  }
-};
+    return config
+  },
+}
 
-export default nextConfig;
+export default nextConfig

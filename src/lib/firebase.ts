@@ -1,5 +1,4 @@
-import { config } from "dotenv";
-config();
+// Environment variables are provided by Next.js at build time.
 
 import {
   initializeApp,
@@ -71,4 +70,3 @@ const db = getFirestore(app);
 const categoriesCollection = collection(db, "categories");
 
 export { app, auth, db, categoriesCollection };
-
