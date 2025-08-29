@@ -18,7 +18,7 @@ export async function recordCategoryFeedback(
       createdAt: serverTimestamp(),
     });
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to record category feedback", error);
     return false;
   }
