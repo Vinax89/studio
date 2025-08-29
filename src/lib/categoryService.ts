@@ -16,6 +16,8 @@ const hasLocalStorage = () =>
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
+const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key);
+
 function load(): string[] {
   if (hasLocalStorage()) {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -85,6 +87,10 @@ export function addCategory(category: string): string[] {
   const categories = getCategories();
   const trimmed = category.trim();
   const key = normalize(trimmed);
+  if (!isValidKey(key)) {
+    console.error("Invalid category name");
+    return categories;
+  }
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
@@ -102,6 +108,10 @@ export function addCategory(category: string): string[] {
  */
 export function removeCategory(category: string): string[] {
   const key = normalize(category);
+  if (!isValidKey(key)) {
+    console.error("Invalid category name");
+    return getCategories();
+  }
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
   void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
