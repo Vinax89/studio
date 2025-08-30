@@ -8,9 +8,7 @@ import {
   createUserWithEmailAndPassword,
   type AuthError,
 } from "firebase/auth"
-import { auth, initFirebase } from "@/lib/firebase"
-
-initFirebase()
+import { initFirebase } from "@/lib/firebase"
 import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +31,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    const { auth } = initFirebase()
 
     try {
       if (isLoginView) {
