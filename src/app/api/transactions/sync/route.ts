@@ -4,6 +4,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 import { logger } from "@/lib/logger"
+import { isOriginAllowed } from "@/lib/allowed-origins"
 
 /**
  * Generic transaction syncing endpoint.
@@ -19,6 +20,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  if (!isOriginAllowed(req.headers.get("origin"))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
   try {
     await verifyFirebaseToken(req)
   } catch (err) {
