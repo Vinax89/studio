@@ -30,7 +30,8 @@ export class WorkerPool<T = unknown, R = unknown> {
 
   private spawn() {
     const worker = new Worker(this.file)
-    worker.once("exit", code => {
+
+    const cleanup = () => {
       this.workers.splice(this.workers.indexOf(worker), 1)
       const idleIndex = this.idle.indexOf(worker)
       if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
@@ -43,10 +44,27 @@ export class WorkerPool<T = unknown, R = unknown> {
         this.process()
       }
 
+      return task
+    }
+
+    const onExit = (code: number) => {
+      worker.off("error", onError)
+      const task = cleanup()
       if (code !== 0 && task) {
         task.reject(new Error(`Worker stopped with exit code ${code}`))
       }
-    })
+    }
+
+    const onError = (err: Error) => {
+      worker.off("exit", onExit)
+      const task = cleanup()
+      if (task) {
+        task.reject(err)
+      }
+    }
+
+    worker.once("exit", onExit)
+    worker.on("error", onError)
 
     this.workers.push(worker)
     this.idle.push(worker)
@@ -94,8 +112,10 @@ export class WorkerPool<T = unknown, R = unknown> {
       })
 
       worker.once("error", err => {
-        task.reject(err)
-        finalize()
+        if (this.tasks.has(worker)) {
+          task.reject(err)
+          finalize()
+        }
       })
 
       worker.postMessage(task.data)
