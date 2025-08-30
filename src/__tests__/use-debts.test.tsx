@@ -10,8 +10,8 @@ import type {
 jest.mock("@/lib/logger", () => ({ logger: { error: jest.fn() } }));
 // Mock debts index module
 jest.mock("@/lib/debts", () => ({
-  debtsCollection: {},
-  debtDoc: (id: string) => ({ id })
+  getDebtsCollection: () => ({}),
+  getDebtDoc: (id: string) => ({ id }),
 }));
 
 const onSnapshotMock = jest.fn();
