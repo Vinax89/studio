@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p ${PORT:-3000}",
-    "build": "next build",
+    "build": "npm run build:sw && next build",
+    "build:sw": "esbuild src/sw.ts --bundle --outfile=public/sw.js --format=esm",
     "start": "next start",
     "lint": "next lint",
     "test": "jest"
@@ -70,6 +71,7 @@
     "@typescript-eslint/parser": "^8.41.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
+    "esbuild": "^0.25.9",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.2",
     "genkit-cli": "^1.14.1",
