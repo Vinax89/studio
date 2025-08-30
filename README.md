@@ -8,6 +8,14 @@ To get started, take a look at src/app/page.tsx.
 - `npm test` – run unit tests with Jest.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
+## Package manager
+
+This project uses **npm** exclusively. Install dependencies with `npm ci` and
+commit changes to `package-lock.json`. Yarn and pnpm are not supported—the
+`preinstall` hook fails if another package manager is detected. The repository's
+`.npmrc` enables `engine-strict=true` to enforce the Node version specified in
+`package.json`.
+
 ## Color input
 When supplying colors to chart configuration, only the following formats are allowed:
 
