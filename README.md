@@ -1,4 +1,5 @@
 This is a NextJS starter in Firebase Studio.
+This project uses npm as the canonical package manager. Use npm for all dependency management tasks.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
@@ -6,7 +7,16 @@ To get started, take a look at src/app/page.tsx.
 - On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
+- Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
+
+## Package manager
+
+This project uses **npm** exclusively. Install dependencies with `npm ci` and
+commit changes to `package-lock.json`. Yarn and pnpm are not supported—the
+`preinstall` hook fails if another package manager is detected. The repository's
+`.npmrc` enables `engine-strict=true` to enforce the Node version specified in
+`package.json`.
 
 ## Color input
 When supplying colors to chart configuration, only the following formats are allowed:
