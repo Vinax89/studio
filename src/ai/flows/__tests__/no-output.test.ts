@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function setupNoOutputMocks() {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
   const defineFlowMock = jest.fn((_config: any, handler: any) => handler);

@@ -37,7 +37,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Here's a high-level overview of your finances.</p>
+          <p className="text-muted-foreground">Here&apos;s a high-level overview of your finances.</p>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
         <TimeCard />

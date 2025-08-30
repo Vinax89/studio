@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function setupSuccessMocks(output: any) {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
   const defineFlowMock = jest.fn((config: any, handler: any) => {

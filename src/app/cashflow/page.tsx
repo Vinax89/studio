@@ -81,8 +81,8 @@ export default function CashflowPage() {
             weeklyPremiumPay += shift.premiumPay || 0;
         });
 
-        let regularHours = Math.min(weeklyHours, 40);
-        let overtimeHours = Math.max(0, weeklyHours - 40);
+        const regularHours = Math.min(weeklyHours, 40);
+        const overtimeHours = Math.max(0, weeklyHours - 40);
         totalMonthlyHours += weeklyHours;
         totalMonthlyOvertimeHours += overtimeHours;
         
@@ -171,7 +171,8 @@ export default function CashflowPage() {
           setShifts([...shifts, newShift]);
       }
       
-      const { date, ...shiftDetails } = newShift;
+      const { date: unusedDate, ...shiftDetails } = newShift;
+      void unusedDate;
       setLastEnteredShift(shiftDetails);
   }
   

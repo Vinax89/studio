@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
+import { Loader2, Camera, Sparkles, Wand2 } from "lucide-react"
 import Image from "next/image"
 
 export default function ScanReceiptPage() {
@@ -24,15 +23,16 @@ export default function ScanReceiptPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
-    return () => {
-      // Stop camera stream when component unmounts
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
+    useEffect(() => {
+      const videoElement = videoRef.current;
+      return () => {
+        // Stop camera stream when component unmounts
+        if (videoElement && videoElement.srcObject) {
+          const stream = videoElement.srcObject as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+        }
+      };
+    }, []);
 
   const requestCamera = async () => {
       if (hasCameraPermission) {
