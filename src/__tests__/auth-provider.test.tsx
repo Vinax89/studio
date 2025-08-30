@@ -5,6 +5,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
 
+jest.mock('lucide-react', () => ({ X: () => null }));
+
 let mockPathname = '/';
 const pushMock = jest.fn();
 
@@ -65,6 +67,14 @@ beforeEach(() => {
   pushMock.mockClear();
   onAuthStateChanged.mockClear();
   localStorage.clear();
+  (window as unknown as { matchMedia?: unknown }).matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
 });
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {

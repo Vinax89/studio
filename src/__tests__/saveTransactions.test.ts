@@ -23,6 +23,7 @@ jest.mock("firebase/firestore", () => ({
   writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
   doc: (...args: unknown[]) => mockDoc(...args),
   collection: (...args: unknown[]) => mockCollection(...args),
+  Timestamp: { fromDate: (d: Date) => d },
 }));
 
 const transactions = [

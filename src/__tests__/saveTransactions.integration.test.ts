@@ -42,6 +42,7 @@ jest.mock("firebase/firestore", () => ({
   collection: mockCollection,
   doc: mockDoc,
   writeBatch: mockWriteBatch,
+  Timestamp: { fromDate: (d: Date) => d },
 }));
 
 describe("saveTransactions integration", () => {
