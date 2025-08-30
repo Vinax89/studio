@@ -8,6 +8,11 @@ import { handleCors, withCors } from "@/lib/cors";
 
 const HEADER_NAME = "X-CRON-SECRET";
 const WINDOW_MS = 60_000; // 1 minute
+if (!process.env.CRON_SECRET) {
+  const message = "CRON_SECRET environment variable is required";
+  logger.error(message);
+  throw new Error(message);
+}
 initFirebase();
 const STATE_DOC = doc(db, "cron", "housekeeping");
 

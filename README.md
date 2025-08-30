@@ -56,7 +56,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Cloud Messaging sender ID for push notifications. |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase application ID for the web client. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
-| `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
+| `CRON_SECRET` | **Required.** Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. The service logs a fatal error at startup if unset. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed request origins for CORS. Regex patterns may be wrapped in `/`. |
 | `LOG_LEVEL` | Minimum log level to output (`info`, `warn`, or `error`). Defaults to `info`. |

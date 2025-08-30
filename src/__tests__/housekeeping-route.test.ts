@@ -1,7 +1,6 @@
 /**
  * @jest-environment node
  */
-import { GET, resetRateLimit } from "@/app/api/cron/housekeeping/route";
 import { runHousekeeping } from "@/lib/housekeeping";
 import { getCurrentTime } from "@/lib/internet-time";
 
@@ -16,14 +15,22 @@ jest.mock("@/lib/internet-time", () => ({
 jest.mock("@/lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
 import { initFirebase } from "@/lib/firebase";
 
-beforeAll(() => {
+const secret = "test-secret";
+let GET: typeof import("@/app/api/cron/housekeeping/route").GET;
+let resetRateLimit: typeof import("@/app/api/cron/housekeeping/route").resetRateLimit;
+
+beforeAll(async () => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test";
   process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "test";
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = "test";
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "test";
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "test";
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = "test";
+  process.env.CRON_SECRET = secret;
   initFirebase();
+  const mod = await import("@/app/api/cron/housekeeping/route");
+  GET = mod.GET;
+  resetRateLimit = mod.resetRateLimit;
 });
 
 jest.mock("firebase/firestore", () => {
@@ -74,8 +81,6 @@ jest.mock("firebase/firestore", () => {
 });
 
 describe("/api/cron/housekeeping", () => {
-  const secret = "test-secret";
-
   beforeEach(async () => {
     process.env.CRON_SECRET = secret;
     await resetRateLimit();
