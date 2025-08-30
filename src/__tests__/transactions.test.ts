@@ -15,6 +15,16 @@ describe("validateTransactions", () => {
     );
   });
 
+  it.each(["123abc", "12.34.56"])(
+    "throws for malformed numeric string '%s'",
+    (amount) => {
+      const rows = [{ ...baseRow, amount }];
+      expect(() => validateTransactions(rows, ["Misc"])).toThrow(
+        /Invalid amount in row 1/
+      );
+    }
+  );
+
   it("accepts valid ISO date", () => {
     const rows = [{ ...baseRow, amount: "10.00", date: "2024-12-31" }];
     expect(() => validateTransactions(rows, ["Misc"])).not.toThrow();
