@@ -1,7 +1,7 @@
 
 /** @jest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
 import { mockDebts } from '@/lib/data';
