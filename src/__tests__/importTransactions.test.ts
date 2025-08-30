@@ -12,7 +12,7 @@ jest.mock("firebase/firestore", () => {
 describe("importTransactions", () => {
   it("throws a descriptive error when fetching categories fails", async () => {
     (getDocs as jest.Mock).mockRejectedValue(new Error("network failure"));
-    await expect(importTransactions([])).rejects.toThrow(
+    await expect(importTransactions([], "u1")).rejects.toThrow(
       /Failed to fetch categories: network failure/
     );
   });

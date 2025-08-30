@@ -22,6 +22,22 @@ jest.mock('@/lib/firebase', () => ({
 }));
 import { auth as authStub, initFirebase } from '@/lib/firebase';
 
+jest.mock('lucide-react', () => ({ X: () => null }));
+
+if (!window.matchMedia) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(() => ({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
+
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test';

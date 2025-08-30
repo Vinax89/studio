@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema } from "@/lib/transactions"
+import type { Transaction } from "@/lib/types"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
@@ -17,8 +18,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  let decoded
   try {
-    await verifyFirebaseToken(req)
+    decoded = await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
     return NextResponse.json({ error: message }, { status: 401 })
@@ -50,11 +52,15 @@ export async function POST(req: Request) {
   }
 
   const { provider, transactions } = parsed.data
+  const txWithUser: Transaction[] = transactions.map((tx) => ({
+    ...tx,
+    userId: decoded.uid,
+  }))
 
   try {
     return NextResponse.json({
       provider,
-      imported: transactions.length,
+      imported: txWithUser.length,
     })
   } catch {
     return NextResponse.json(

@@ -53,6 +53,7 @@ describe("saveTransactions integration", () => {
     const txs: Transaction[] = [
       {
         id: "a1",
+        userId: "u1",
         date: "2024-01-01",
         description: "one",
         amount: 1,
@@ -63,6 +64,7 @@ describe("saveTransactions integration", () => {
       },
       {
         id: "a2",
+        userId: "u1",
         date: "2024-01-02",
         description: "two",
         amount: 2,
@@ -81,6 +83,7 @@ describe("saveTransactions integration", () => {
   it("overwrites existing documents with the same id", async () => {
     const tx: Transaction = {
       id: "t1",
+      userId: "u1",
       date: "2024-01-01",
       description: "first",
       amount: 100,

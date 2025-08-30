@@ -178,6 +178,7 @@ describe('housekeeping services', () => {
   test('archiveOldTransactions moves old records', async () => {
     store.transactions.set('t1', {
       id: 't1',
+      userId: 'u1',
       date: '2020-01-01',
       description: 'old',
       amount: 1,
@@ -186,6 +187,7 @@ describe('housekeeping services', () => {
     });
     store.transactions.set('t2', {
       id: 't2',
+      userId: 'u1',
       date: '2024-01-01',
       description: 'new',
       amount: 2,
@@ -244,6 +246,7 @@ describe('housekeeping services', () => {
   test('backupData stores snapshot', async () => {
     store.transactions.set('t1', {
       id: 't1',
+      userId: 'u1',
       date: '2024-01-01',
       description: 'test',
       amount: 1,
@@ -283,6 +286,7 @@ describe('housekeeping services', () => {
       const date = new Date(2020, 0, i + 1).toISOString().slice(0, 10);
       store.transactions.set(`o${i}`, {
         id: `o${i}`,
+        userId: 'u1',
         date,
         description: 'old',
         amount: i,
@@ -293,6 +297,7 @@ describe('housekeeping services', () => {
     for (let i = 0; i < 50; i++) {
       store.transactions.set(`n${i}`, {
         id: `n${i}`,
+        userId: 'u1',
         date: '2024-01-01',
         description: 'new',
         amount: i,
