@@ -3,6 +3,7 @@ import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
+import { isAllowedOrigin } from "@/lib/allowed-origins"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -17,6 +18,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  if (!isAllowedOrigin(req.headers.get("origin"))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
   try {
     await verifyFirebaseToken(req)
   } catch (err) {
