@@ -78,14 +78,10 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
   // Group shifts by week
   shifts.forEach(shift => {
-    const shiftDay = shift.date.getUTCDay(); // Sunday = 0
-    const weekStart = new Date(
-      Date.UTC(
-        shift.date.getUTCFullYear(),
-        shift.date.getUTCMonth(),
-        shift.date.getUTCDate() - shiftDay
-      )
-    );
+    const shiftDay = shift.date.getDay(); // Sunday = 0
+    const weekStart = new Date(shift.date);
+    weekStart.setDate(shift.date.getDate() - shiftDay);
+    weekStart.setHours(0, 0, 0, 0);
     const weekStartStr = weekStart.toISOString();
 
     if (!weeklyShifts[weekStartStr]) {
@@ -120,25 +116,17 @@ export const calculatePayPeriodSummary = (
     return { totalIncome: 0, regularHours: 0, overtimeHours: 0, totalHours: 0 };
   }
 
-  const week1Start = new Date(
-    Date.UTC(
-      payPeriod.from.getUTCFullYear(),
-      payPeriod.from.getUTCMonth(),
-      payPeriod.from.getUTCDate()
-    )
-  );
+  const week1Start = new Date(payPeriod.from);
+  week1Start.setHours(0, 0, 0, 0);
   const week1End = new Date(week1Start);
-  week1End.setUTCDate(week1End.getUTCDate() + 6);
+  week1End.setDate(week1End.getDate() + 6);
+  week1End.setHours(23, 59, 59, 999);
 
   const week2Start = new Date(week1Start);
-  week2Start.setUTCDate(week1Start.getUTCDate() + 7);
-  const week2End = new Date(
-    Date.UTC(
-      payPeriod.to.getUTCFullYear(),
-      payPeriod.to.getUTCMonth(),
-      payPeriod.to.getUTCDate()
-    )
-  );
+  week2Start.setDate(week1Start.getDate() + 7);
+  week2Start.setHours(0, 0, 0, 0);
+  const week2End = new Date(payPeriod.to);
+  week2End.setHours(23, 59, 59, 999);
 
   let totalIncome = 0;
   let totalRegularHours = 0;
