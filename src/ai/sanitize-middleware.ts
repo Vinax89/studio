@@ -8,22 +8,22 @@ function hashPlaceholder(value: string) {
   return `[hash:${crypto.createHash('sha256').update(value).digest('hex').slice(0, 8)}]`
 }
 
-function sanitizeValue(value: any): any {
+function sanitizeValue<T>(value: T): T {
   if (typeof value === 'string') {
     if (emailRegex.test(value) || phoneRegex.test(value) || accountRegex.test(value)) {
-      return hashPlaceholder(value)
+      return hashPlaceholder(value) as unknown as T
     }
     return value
   }
   if (Array.isArray(value)) {
-    return value.map((v) => sanitizeValue(v))
+    return value.map(v => sanitizeValue(v)) as unknown as T
   }
   if (value && typeof value === 'object') {
-    const result: any = {}
-    for (const key of Object.keys(value)) {
-      result[key] = sanitizeValue((value as any)[key])
+    const result: Record<string, unknown> = {}
+    for (const key of Object.keys(value as Record<string, unknown>)) {
+      result[key] = sanitizeValue((value as Record<string, unknown>)[key])
     }
-    return result
+    return result as T
   }
   return value
 }
