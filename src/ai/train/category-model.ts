@@ -64,30 +64,42 @@ class NaiveBayesClassifier {
 }
 
 let classifier: NaiveBayesClassifier | null = null;
+let unsubscribe: (() => void) | null = null;
+let intervalId: ReturnType<typeof setInterval> | null = null;
 
 async function fetchPairs(): Promise<FeedbackPair[]> {
   const snap = await getDocs(collection(db, "categoryFeedback"));
   return snap.docs.map((d) => d.data() as FeedbackPair);
 }
 
-export async function trainCategoryModel(): Promise<void> {
+async function trainCategoryModel(): Promise<void> {
   const pairs = await fetchPairs();
   classifier = new NaiveBayesClassifier();
   classifier.train(pairs);
+}
+
+export async function initCategoryModel(): Promise<void> {
+  if (classifier) return;
+  await trainCategoryModel();
+  unsubscribe = onSnapshot(collection(db, "categoryFeedback"), () => {
+    trainCategoryModel();
+  });
+  intervalId = setInterval(() => {
+    trainCategoryModel();
+  }, 60 * 60 * 1000);
+}
+
+export function teardownCategoryModel(): void {
+  unsubscribe?.();
+  unsubscribe = null;
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  classifier = null;
 }
 
 export function classifyCategory(description: string): string | null {
   if (!classifier) return null;
   return classifier.predict(description);
 }
-
-// Initial training
-trainCategoryModel();
-// Retrain when new feedback is added
-onSnapshot(collection(db, "categoryFeedback"), () => {
-  trainCategoryModel();
-});
-// Periodic retraining as a safety net (every hour)
-setInterval(() => {
-  trainCategoryModel();
-}, 60 * 60 * 1000);
