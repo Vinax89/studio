@@ -33,12 +33,24 @@ describe("categoryService", () => {
     jest.clearAllMocks();
   });
 
-  it("rejects categories with illegal Firestore characters", () => {
+  it.each(["/", "*", "[", "]"])(
+    "rejects categories containing %s",
+    (char) => {
+      const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
+      addCategory(`Bad${char}Cat`);
+      expect(getCategories()).toEqual([]);
+      expect(setDoc).not.toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalledWith("Invalid category name");
+      errorSpy.mockRestore();
+    },
+  );
+
+  it("accepts valid category names", () => {
     const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
-    addCategory("Food/Drink");
-    expect(getCategories()).toEqual([]);
-    expect(setDoc).not.toHaveBeenCalled();
-    expect(errorSpy).toHaveBeenCalledWith("Invalid category name");
+    addCategory("Groceries");
+    expect(getCategories()).toEqual(["Groceries"]);
+    expect(setDoc).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
 

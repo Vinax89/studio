@@ -18,8 +18,9 @@ const hasLocalStorage = () =>
   typeof window !== "undefined" && !!window.localStorage;
 
 const normalize = (value: string) => value.trim().toLowerCase();
+const INVALID_KEY = /[\/\*\[\]]/;
 
-const isValidKey = (key: string) => key.length > 0 && !/[/*[\]]/.test(key);
+const isValidKey = (key: string) => key.length > 0 && !INVALID_KEY.test(key);
 
 function load(): string[] {
   if (hasLocalStorage()) {
