@@ -82,10 +82,31 @@ describe("saveTransactions", () => {
     expect(mockCommit).toHaveBeenCalledTimes(2);
   });
 
-  it("throws detailed error when commit fails", async () => {
+  it("throws detailed error when a batch commit fails", async () => {
     mockCommit.mockRejectedValueOnce(new Error("commit failed"));
     await expect(saveTransactions(transactions)).rejects.toThrow(
-      "Failed to save transactions batch: commit failed"
+      "Failed to save transactions: batch 1: commit failed"
+    );
+  });
+
+  it("aggregates errors from multiple failing batches", async () => {
+    const manyTransactions = Array.from({ length: 1000 }, (_, i) => ({
+      id: String(i),
+      date: "2024-01-01",
+      description: `Test${i}`,
+      amount: i,
+      type: "Income" as const,
+      category: "Misc",
+      currency: "USD",
+      isRecurring: false,
+    }));
+
+    mockCommit
+      .mockRejectedValueOnce(new Error("first"))
+      .mockRejectedValueOnce(new Error("second"));
+
+    await expect(saveTransactions(manyTransactions)).rejects.toThrow(
+      "Failed to save transactions: batch 1: first; batch 2: second"
     );
   });
 });

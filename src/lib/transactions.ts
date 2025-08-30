@@ -130,30 +130,44 @@ export function validateTransactions(
 }
 
 /**
- * Persist a collection of transactions to Firestore using a batch write.
+ * Persist a collection of transactions to Firestore using batch writes.
+ *
+ * Transactions are chunked into batches of at most 500 writes (the Firestore
+ * limit) and all batches are committed concurrently. If any commit fails, an
+ * aggregated error is thrown detailing which batch(es) failed.
  *
  * @param transactions - Validated transaction objects to be written.
- * @throws {Error} If the Firestore batch commit fails.
+ * @throws {Error} If any batch commit fails.
  * @remarks Writes to Firestore and performs network I/O.
  */
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
-  for (const chunk of chunks) {
+
+  type CommitResult = { index: number; error?: unknown };
+
+  const commitPromises: Promise<CommitResult>[] = chunks.map((chunk, index) => {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
 
-    try {
-      await batch.commit();
-    } catch (err) {
-      throw new Error(
-        `Failed to save transactions batch: ${
-          err instanceof Error ? err.message : String(err)
-        }`
-      );
-    }
+    return batch
+      .commit()
+      .then(() => ({ index }))
+      .catch((error) => ({ index, error }));
+  });
+
+  const results = await Promise.all(commitPromises);
+  const errors = results.filter((r): r is Required<CommitResult> => r.error !== undefined);
+
+  if (errors.length > 0) {
+    const messages = errors
+      .map(({ index, error }) =>
+        `batch ${index + 1}: ${error instanceof Error ? error.message : String(error)}`
+      )
+      .join("; ");
+    throw new Error(`Failed to save transactions: ${messages}`);
   }
 }
 
