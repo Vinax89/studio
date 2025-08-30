@@ -1,64 +1,74 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   type AuthError,
-} from "firebase/auth"
-import { initFirebase } from "@/lib/firebase"
-import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
+} from "firebase/auth";
+import { getAuth } from "@/lib/firebase";
+import {
+  authErrorMessages,
+  DEFAULT_AUTH_ERROR_MESSAGE,
+} from "@/lib/auth-errors";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { NurseFinAILogo } from "@/components/icons"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
-import { logger } from "@/lib/logger"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NurseFinAILogo } from "@/components/icons";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoginView, setIsLoginView] = useState(true) // toggles between login and registration modes
-  const [isLoading, setIsLoading] = useState(false) // disables form while authenticating
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoginView, setIsLoginView] = useState(true); // toggles between login and registration modes
+  const [isLoading, setIsLoading] = useState(false); // disables form while authenticating
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    const { auth } = initFirebase()
+    e.preventDefault();
+    setIsLoading(true);
+    const auth = getAuth();
 
     try {
       if (isLoginView) {
         // Existing user attempting to sign in
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
         // New user creating an account
-        await createUserWithEmailAndPassword(auth, email, password)
+        await createUserWithEmailAndPassword(auth, email, password);
       }
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
-      const authError = error as AuthError
-      const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
+      const authError = error as AuthError;
+      const errorMessage =
+        authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE;
       // If we don't have a user-friendly message for this error, log it for debugging
       // while showing a generic message to the user to avoid exposing raw error codes.
       if (!authErrorMessages[authError.code]) {
-        logger.error(authError.code, authError.message)
+        logger.error(authError.code, authError.message);
       }
       toast({
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
         description: errorMessage,
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -81,8 +91,8 @@ export default function LoginPage() {
               </CardTitle>
               <CardDescription>
                 {isLoginView
-                    ? "Sign in to access your financial dashboard."
-                    : "Your personal finance companion for a successful nursing career."}
+                  ? "Sign in to access your financial dashboard."
+                  : "Your personal finance companion for a successful nursing career."}
               </CardDescription>
             </motion.div>
           </AnimatePresence>
@@ -118,22 +128,32 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    {isLoading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Please wait...
-                        </>
-                    ) : isLoginView ? (
-                        "Sign In"
-                    ) : (
-                        "Sign Up"
-                    )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait...
+                    </>
+                  ) : isLoginView ? (
+                    "Sign In"
+                  ) : (
+                    "Sign Up"
+                  )}
                 </Button>
               </form>
               <div className="mt-6 text-center text-sm">
-                {isLoginView ? "Don't have an account?" : "Already have an account?"}{" "}
-                <button onClick={() => setIsLoginView(!isLoginView)} className="underline font-semibold text-primary">
+                {isLoginView
+                  ? "Don't have an account?"
+                  : "Already have an account?"}{" "}
+                <button
+                  onClick={() => setIsLoginView(!isLoginView)}
+                  className="underline font-semibold text-primary"
+                >
                   {isLoginView ? "Sign up" : "Sign in"}
                 </button>
               </div>
@@ -142,5 +162,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
