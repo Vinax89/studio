@@ -1,7 +1,23 @@
+export class PayloadTooLargeError extends Error {
+  status = 413
+  constructor(message = "Payload too large") {
+    super(message)
+    this.name = "PayloadTooLargeError"
+  }
+}
+
+/**
+ * Reads the request body up to a specified limit.
+ *
+ * If the incoming payload exceeds the limit, the request stream is cancelled,
+ * any remaining data is drained, and the function rejects with a
+ * {@link PayloadTooLargeError}. Callers can catch this error and return a 413
+ * response immediately.
+ */
 export async function readBodyWithLimit(req: Request, limit: number) {
   const contentLength = req.headers.get("content-length")
   if (contentLength && Number(contentLength) > limit) {
-    return null
+    throw new PayloadTooLargeError()
   }
 
   const reader = req.body?.getReader()
@@ -18,7 +34,15 @@ export async function readBodyWithLimit(req: Request, limit: number) {
     if (read.value) {
       total += read.value.length
       if (total > limit) {
-        return null
+        await reader.cancel()
+        try {
+          while (!(await reader.read()).done) {
+            // drain remaining data
+          }
+        } catch {
+          // ignore errors during draining
+        }
+        throw new PayloadTooLargeError()
       }
       result += decoder.decode(read.value, { stream: true })
     }
