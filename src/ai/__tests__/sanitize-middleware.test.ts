@@ -24,5 +24,16 @@ describe('sanitizeMiddleware', () => {
     expect(stringified).not.toContain('555-123-4567')
     expect(stringified).not.toContain('9876543210')
   })
+
+  it('strips HTML tags and script injections', () => {
+    const input = {
+      text: '<div>Hello<script>alert(1)</script><img src="x" onerror="alert(2)" /></div>',
+    }
+
+    const result = sanitizeMiddleware(input)
+
+    expect(result.text).toBe('Hello')
+    expect(result.text).not.toMatch(/[<>]/)
+  })
 })
 
