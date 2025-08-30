@@ -1,4 +1,4 @@
-import { getAuth } from "firebase/auth";
+import { getAuth } from "@/lib/firebase";
 import { logger } from "./logger";
 
 // Placeholder housekeeping service that cleans up outdated data.
