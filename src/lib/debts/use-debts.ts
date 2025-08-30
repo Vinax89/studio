@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { onSnapshot, setDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import type { Debt } from "../types";
-import { debtsCollection, debtDoc } from ".";
+import { getDebtsCollection, getDebtDoc } from ".";
 import { logger } from "../logger";
 
 // Hook to subscribe to debts collection and expose helpers for CRUD operations.
@@ -11,7 +11,7 @@ export function useDebts() {
 
   useEffect(() => {
     const unsub = onSnapshot(
-      debtsCollection,
+      getDebtsCollection(),
       snap => {
         const items = snap.docs.map(d => d.data());
         setDebts(items);
@@ -69,17 +69,17 @@ export function useDebts() {
 }
 
 export async function addOrUpdateDebt(next: Debt) {
-  await setDoc(debtDoc(next.id), next);
+  await setDoc(getDebtDoc(next.id), next);
 }
 
 export async function deleteDebt(id: string) {
-  await deleteDoc(debtDoc(id));
+  await deleteDoc(getDebtDoc(id));
 }
 
 export async function markPaid(dateISO: string, id: string) {
-  await updateDoc(debtDoc(id), { paidDates: arrayUnion(dateISO) });
+  await updateDoc(getDebtDoc(id), { paidDates: arrayUnion(dateISO) });
 }
 
 export async function unmarkPaid(dateISO: string, id: string) {
-  await updateDoc(debtDoc(id), { paidDates: arrayRemove(dateISO) });
+  await updateDoc(getDebtDoc(id), { paidDates: arrayRemove(dateISO) });
 }
