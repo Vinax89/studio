@@ -28,7 +28,10 @@ const BaseTransactionRow = z.object({
   ),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
-  isRecurring: z.union([z.boolean(), z.string()]).optional(),
+  // Accepts boolean or string values "true"/"false" only
+  isRecurring: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .optional(),
 });
 
 export type TransactionRowType = z.infer<typeof BaseTransactionRow>;
@@ -97,14 +100,14 @@ export function validateTransactions(
     }
     const data = parsed.data;
     const amountString = data.amount.trim();
-    const parsedAmount = parseFloat(amountString);
-    if (isNaN(parsedAmount)) {
+    if (!/^[+-]?\d+(\.\d+)?$/.test(amountString)) {
       throw new Error(
-        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`
+        `Invalid amount in row ${index + 1}: "${data.amount}" is not a valid number`
       );
     }
+    const parsedAmount = Number(amountString);
 
-    return {
+    const tx: Transaction = {
       id: crypto.randomUUID(),
       date: data.date,
       description: data.description,
@@ -113,11 +116,16 @@ export function validateTransactions(
       category: data.category,
       // Default to USD until currency is provided in import sources
       currency: "USD",
-      isRecurring:
-        typeof data.isRecurring === "boolean"
-          ? data.isRecurring
-          : data.isRecurring === "true",
     };
+
+    if (data.isRecurring !== undefined) {
+      tx.isRecurring =
+        typeof data.isRecurring === "string"
+          ? data.isRecurring === "true"
+          : data.isRecurring;
+    }
+
+    return tx;
   });
 }
 
@@ -159,8 +167,16 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  * @remarks Generates UUIDs during validation and writes data to Firestore.
  */
 async function fetchCategories(): Promise<string[]> {
-  const snapshot = await getDocs(collection(db, "categories"));
-  return snapshot.docs.map((doc) => doc.id);
+  try {
+    const snapshot = await getDocs(collection(db, "categories"));
+    return snapshot.docs.map((doc) => doc.id);
+  } catch (err) {
+    throw new Error(
+      `Failed to fetch categories: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 }
 
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {

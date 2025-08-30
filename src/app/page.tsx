@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label"
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { logger } from "@/lib/logger"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -48,7 +49,7 @@ export default function LoginPage() {
       // If we don't have a user-friendly message for this error, log it for debugging
       // while showing a generic message to the user to avoid exposing raw error codes.
       if (!authErrorMessages[authError.code]) {
-        console.error(authError.code, authError.message)
+        logger.error(authError.code, authError.message)
       }
       toast({
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",

@@ -1,5 +1,6 @@
 import { addCategory, getCategories, removeCategory, clearCategories } from "@/lib/categoryService";
 import { setDoc, deleteDoc } from "firebase/firestore";
+import { logger } from "@/lib/logger";
 
 jest.mock("@/lib/firebase", () => ({
   db: {},
@@ -33,16 +34,22 @@ describe("categoryService", () => {
   });
 
   it("rejects categories with illegal Firestore characters", () => {
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
     addCategory("Food/Drink");
     expect(getCategories()).toEqual([]);
     expect(setDoc).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith("Invalid category name");
+    errorSpy.mockRestore();
   });
 
   it("ignores removal of invalid category names", () => {
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
     addCategory("Groceries");
     removeCategory("Bad[Cat]");
     expect(getCategories()).toEqual(["Groceries"]);
     expect(deleteDoc).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith("Invalid category name");
+    errorSpy.mockRestore();
   });
 
   it("does not write to Firestore when category already exists", () => {

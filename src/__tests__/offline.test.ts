@@ -37,6 +37,7 @@ import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
 import React from "react"
+import { logger } from "../lib/logger"
 
 const globalAny = globalThis as {
   indexedDB?: unknown
@@ -82,6 +83,21 @@ describe("offline fallbacks", () => {
     await clearQueuedTransactions()
     const result = await queueTransaction({ id: 1 }, -1)
     expect(result.ok).toBe(false)
+    expect(result.error.message).toBe(
+      "maxQueueSize must be a non-negative integer",
+    )
+    const queued = await getQueuedTransactions()
+    expect(queued.ok).toBe(true)
+    expect(queued.value).toEqual([])
+  })
+
+  it("rejects non-integer maxQueueSize", async () => {
+    await clearQueuedTransactions()
+    const result = await queueTransaction({ id: 1 }, 1.5)
+    expect(result.ok).toBe(false)
+    expect(result.error.message).toBe(
+      "maxQueueSize must be a non-negative integer",
+    )
     const queued = await getQueuedTransactions()
     expect(queued.ok).toBe(true)
     expect(queued.value).toEqual([])
@@ -94,6 +110,8 @@ describe("ServiceWorker", () => {
     const getQueuedSpy = jest
       .spyOn(offline, "getQueuedTransactions")
       .mockResolvedValueOnce({ ok: false, error: new Error("failed") })
+
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 
     const fetchMock = jest.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch
@@ -109,5 +127,6 @@ describe("ServiceWorker", () => {
 
     jest.useRealTimers()
     delete globalAny.fetch
+    errorSpy.mockRestore()
   })
 })
