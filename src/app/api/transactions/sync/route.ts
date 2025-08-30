@@ -7,10 +7,11 @@ import { logger } from "@/lib/logger"
 
 /**
  * Generic transaction syncing endpoint.
- * Unlike `/api/bank/import`, this expects transactions that have already
- * been fetched from any source. The current implementation only validates
- * and reports how many transactions were received without persisting them.
- * TODO: Implement database persistence for received transactions.
+ * Unlike `/api/bank/import`, this expects transactions that have already been
+ * fetched from any source. Validated transactions are persisted via
+ * `saveTransactions`. The request body is limited to 1MB. Invalid JSON or
+ * payloads return a 400 response, oversized payloads a 413, and persistence
+ * errors are logged and forwarded to the client.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
