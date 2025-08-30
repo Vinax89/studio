@@ -6,7 +6,7 @@ jest.mock("@/lib/transactions", () => {
   const actual = jest.requireActual("@/lib/transactions")
   return {
     ...actual,
-    saveTransactions: jest.fn().mockResolvedValue(undefined),
+    saveTransactions: jest.fn().mockResolvedValue(1),
   }
 })
 
