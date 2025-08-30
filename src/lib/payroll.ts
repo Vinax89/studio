@@ -32,7 +32,7 @@ export interface PayPeriodSummary {
  */
 export const getPayPeriodStart = (
   date: Date,
-  anchor: Date = new Date(Date.UTC(2024, 0, 7)),
+  anchor: Date = new Date(Date.UTC(2024, 0, 7))
 ): Date => {
   const d = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
