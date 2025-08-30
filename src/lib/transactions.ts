@@ -2,15 +2,16 @@ import { z } from "zod";
 import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
+import { currencyCodeSchema } from "./currency";
 
 initFirebase();
 
 export const TransactionPayloadSchema = z.object({
   id: z.string(),
-  date: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   description: z.string(),
   amount: z.number(),
-  currency: z.string(),
+  currency: currencyCodeSchema,
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
   isRecurring: z.boolean().optional(),
