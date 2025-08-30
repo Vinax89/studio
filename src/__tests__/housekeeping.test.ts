@@ -199,6 +199,17 @@ describe('housekeeping services', () => {
     expect(store.transactions_archive.has('t1')).toBe(true);
   });
 
+  test('archiveOldTransactions accepts valid date input', async () => {
+    await expect(archiveOldTransactions('2021-01-01')).resolves.toBeUndefined();
+  });
+
+  test('archiveOldTransactions throws on invalid date input', async () => {
+    await expect(archiveOldTransactions('not-a-date')).rejects.toThrow(
+      'Invalid cutoff date'
+    );
+    expect(firestore.getDocs).not.toHaveBeenCalled();
+  });
+
   test('cleanupDebts removes settled debts', async () => {
     store.debts.set('d1', {
       id: 'd1',

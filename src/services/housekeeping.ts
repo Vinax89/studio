@@ -21,7 +21,11 @@ import { logger } from "../lib/logger";
  * and removes them from the main transactions collection.
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const cutoff = new Date(cutoffDate).toISOString();
+  const timestamp = Date.parse(cutoffDate);
+  if (Number.isNaN(timestamp)) {
+    throw new Error("Invalid cutoff date");
+  }
+  const cutoff = new Date(timestamp).toISOString();
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
