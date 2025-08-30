@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return request.auth != null && request.auth.uid == userId; }
+
+    // owner-only collections add:
+    match /{colName}/{docId} where colName in ['summaries','goal_contributions'] {
+      allow read, write: if isOwner(resource.data.user_id);
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+    }
+  }
+}
