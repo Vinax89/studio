@@ -37,4 +37,25 @@ describe("validateTransactions", () => {
     const rows = [{ ...baseRow, amount: "10.00" }];
     expect(() => validateTransactions(rows, ["Misc"])).not.toThrow();
   });
+
+  it("accepts boolean isRecurring", () => {
+    const rows = [{ ...baseRow, amount: "10.00", isRecurring: true }];
+    const [tx] = validateTransactions(rows, ["Misc"]);
+    expect(tx.isRecurring).toBe(true);
+  });
+
+  it("parses isRecurring string values", () => {
+    const rows = [
+      { ...baseRow, amount: "10.00", isRecurring: "true" },
+      { ...baseRow, amount: "10.00", isRecurring: "false" },
+    ];
+    const [first, second] = validateTransactions(rows, ["Misc"]);
+    expect(first.isRecurring).toBe(true);
+    expect(second.isRecurring).toBe(false);
+  });
+
+  it("throws for invalid isRecurring string", () => {
+    const rows = [{ ...baseRow, amount: "10.00", isRecurring: "yes" }];
+    expect(() => validateTransactions(rows, ["Misc"])).toThrow(/Invalid row 1/);
+  });
 });
