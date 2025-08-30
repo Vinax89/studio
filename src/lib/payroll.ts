@@ -61,10 +61,10 @@ export const getPayPeriodStart = (
 // already the start of a pay period, that date is considered the pay day.
 export const getNextPayDay = (date: Date = new Date()): Date => {
   const payDayStart = getPayPeriodStart(date);
-  const startOfDay = new Date(date);
-  startOfDay.setUTCHours(0, 0, 0, 0);
+  const payDayEnd = new Date(payDayStart);
+  payDayEnd.setUTCDate(payDayEnd.getUTCDate() + 1);
 
-  if (payDayStart < startOfDay) {
+  if (date >= payDayEnd) {
     const next = new Date(payDayStart);
     next.setUTCDate(payDayStart.getUTCDate() + 14);
     return next;

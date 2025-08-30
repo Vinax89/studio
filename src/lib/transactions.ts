@@ -31,14 +31,10 @@ const BaseTransactionRow = z.object({
 export type TransactionRowType = z.infer<typeof BaseTransactionRow>;
 
 function createTransactionRowSchema(validCategories: string[]) {
-  const normalized = validCategories.map((c) => c.trim().toLowerCase());
   return BaseTransactionRow.extend({
-    category: z
-      .string()
-      .transform((cat) => cat.trim())
-      .refine((cat) => normalized.includes(cat.toLowerCase()), {
-        message: "Unknown category",
-      }),
+    category: z.string().refine((cat) => validCategories.includes(cat), {
+      message: "Unknown category",
+    }),
   });
 }
 

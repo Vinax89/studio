@@ -1,7 +1,24 @@
+import type { ZodType } from 'zod';
+
+interface FlowConfig<I, O> {
+  name: string;
+  inputSchema: ZodType<I>;
+  outputSchema: ZodType<O>;
+}
+
+type FlowHandler<I, O> = (input: I) => Promise<O>;
+
 function setupNoOutputMocks() {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
-  const defineFlowMock = jest.fn((_config: any, handler: any) => handler);
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  const definePromptMock = jest
+    .fn()
+    .mockReturnValue(async () => ({ output: undefined }));
+  const defineFlowMock = jest.fn(
+    <I, O>(_config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => handler
+  );
+  jest.doMock('@/ai/genkit', () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
+  return { definePromptMock, defineFlowMock };
 }
 
 describe('calculateCashflowFlow', () => {

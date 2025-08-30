@@ -24,10 +24,12 @@ describe("ServiceWorker aborts in-flight sync", () => {
 
   it("aborts fetch on unmount", async () => {
     let signal: AbortSignal | undefined
-    ;(fetch as jest.Mock).mockImplementation((_url, options: any) => {
-      signal = options.signal
-      return new Promise(() => {})
-    })
+    ;(fetch as jest.Mock).mockImplementation(
+      (_url: string, options: { signal: AbortSignal }) => {
+        signal = options.signal
+        return new Promise(() => {})
+      }
+    )
 
     Object.defineProperty(navigator, "onLine", {
       value: true,
@@ -49,10 +51,12 @@ describe("ServiceWorker aborts in-flight sync", () => {
 
   it("aborts previous fetch when new sync starts", async () => {
     const signals: AbortSignal[] = []
-    ;(fetch as jest.Mock).mockImplementation((_url, options: any) => {
-      signals.push(options.signal)
-      return new Promise(() => {})
-    })
+    ;(fetch as jest.Mock).mockImplementation(
+      (_url: string, options: { signal: AbortSignal }) => {
+        signals.push(options.signal)
+        return new Promise(() => {})
+      }
+    )
 
     Object.defineProperty(navigator, "onLine", {
       value: true,

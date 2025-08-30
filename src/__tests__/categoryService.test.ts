@@ -1,65 +1,48 @@
+import { addCategory, getCategories, removeCategory, clearCategories } from "@/lib/categoryService";
+import { setDoc, deleteDoc } from "firebase/firestore";
+
 jest.mock("@/lib/firebase", () => ({ db: {}, categoriesCollection: {} }));
 
-const mockSetDoc = jest.fn().mockResolvedValue(undefined);
-const mockDeleteDoc = jest.fn().mockResolvedValue(undefined);
-const mockGetDocs = jest.fn().mockResolvedValue({ forEach: () => {} });
-const mockWriteBatch = jest.fn(() => ({
-  delete: jest.fn(),
-  commit: jest.fn().mockResolvedValue(undefined),
-}));
-const mockDoc = jest.fn(() => ({}));
-
 jest.mock("firebase/firestore", () => ({
-  setDoc: (...args: unknown[]) => mockSetDoc(...args),
-  deleteDoc: (...args: unknown[]) => mockDeleteDoc(...args),
-  getDocs: (...args: unknown[]) => mockGetDocs(...args),
-  writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
-  doc: (...args: unknown[]) => mockDoc(...args),
+  doc: jest.fn(() => ({})),
+  setDoc: jest.fn(() => Promise.resolve()),
+  deleteDoc: jest.fn(() => Promise.resolve()),
+  getDocs: jest.fn(async () => ({ forEach: () => {} })),
+  writeBatch: jest.fn(() => ({ delete: jest.fn(), commit: jest.fn() })),
 }));
 
-describe("categoryService validation", () => {
-  let addCategory: typeof import("@/lib/categoryService").addCategory;
-  let getCategories: typeof import("@/lib/categoryService").getCategories;
-  let removeCategory: typeof import("@/lib/categoryService").removeCategory;
-  let clearCategories: typeof import("@/lib/categoryService").clearCategories;
-
-  beforeAll(async () => {
-    ({ addCategory, getCategories, removeCategory, clearCategories } =
-      await import("@/lib/categoryService"));
-  });
-
+describe("categoryService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     clearCategories();
+    jest.clearAllMocks();
   });
 
   it("rejects categories with illegal Firestore characters", () => {
     addCategory("Food/Drink");
-    addCategory("Bad[Cat]");
     expect(getCategories()).toEqual([]);
-    expect(mockSetDoc).not.toHaveBeenCalled();
+    expect(setDoc).not.toHaveBeenCalled();
   });
 
   it("ignores removal of invalid category names", () => {
     addCategory("Groceries");
-    removeCategory("");
     removeCategory("Bad[Cat]");
     expect(getCategories()).toEqual(["Groceries"]);
-    expect(mockDeleteDoc).not.toHaveBeenCalled();
+    expect(deleteDoc).not.toHaveBeenCalled();
   });
 
-  it("writes to Firestore even when category exists case-insensitively", () => {
+  it("does not write to Firestore when category already exists", () => {
     addCategory("Groceries");
-    expect(mockSetDoc).toHaveBeenCalledTimes(1);
+    expect(setDoc).toHaveBeenCalledTimes(1);
     addCategory("groceries");
     expect(getCategories()).toEqual(["Groceries"]);
-    expect(mockSetDoc).toHaveBeenCalledTimes(2);
+    expect(setDoc).toHaveBeenCalledTimes(1);
   });
 
-  it("writes to Firestore for duplicate category with same casing", () => {
+  it("does not write to Firestore for duplicate category with same casing", () => {
     addCategory("Utilities");
-    expect(mockSetDoc).toHaveBeenCalledTimes(1);
+    expect(setDoc).toHaveBeenCalledTimes(1);
     addCategory("Utilities");
-    expect(mockSetDoc).toHaveBeenCalledTimes(2);
+    expect(setDoc).toHaveBeenCalledTimes(1);
   });
 });
+

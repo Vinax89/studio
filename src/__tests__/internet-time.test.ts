@@ -8,7 +8,7 @@ describe("internet time", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     __resetInternetTimeOffset();
-    (global as any).fetch = jest.fn();
+    (globalThis as { fetch: jest.Mock }).fetch = jest.fn();
     delete process.env.DEFAULT_TZ;
   });
 
@@ -76,7 +76,7 @@ describe("internet time", () => {
         new Promise((_resolve, reject) => {
           opts.signal.addEventListener("abort", () => {
             const err = new Error("aborted");
-            (err as any).name = "AbortError";
+            (err as Error).name = "AbortError";
             reject(err);
           });
         })
