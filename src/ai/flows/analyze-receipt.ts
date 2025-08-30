@@ -9,8 +9,8 @@
  * - AnalyzeReceiptOutput - The return type for the analyzeReceipt function.
  */
 
-import {ai} from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
+import {definePromptFlow} from './utils';
 import {z} from 'genkit';
 
 export const AnalyzeReceiptInputSchema = z.object({
@@ -30,30 +30,14 @@ const AnalyzeReceiptOutputSchema = z.object({
 });
 export type AnalyzeReceiptOutput = z.infer<typeof AnalyzeReceiptOutputSchema>;
 
-export async function analyzeReceipt(input: AnalyzeReceiptInput): Promise<AnalyzeReceiptOutput> {
-  return analyzeReceiptFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'analyzeReceiptPrompt',
-  input: {schema: AnalyzeReceiptInputSchema},
-  output: {schema: AnalyzeReceiptOutputSchema},
+export const analyzeReceipt = definePromptFlow<
+  AnalyzeReceiptInput,
+  AnalyzeReceiptOutput
+>({
+  name: 'analyzeReceipt',
+  inputSchema: AnalyzeReceiptInputSchema,
+  outputSchema: AnalyzeReceiptOutputSchema,
   prompt: `You are an expert receipt scanner. Analyze the provided receipt image and extract the vendor name (for the description), the total amount, and suggest a relevant category for a nursing professional (e.g., Food, Uniforms, Supplies, Transport, Certifications, Other). The transaction type is always 'Expense'.
 
 Receipt Image: {{media url=receiptImage}}`,
 });
-
-const analyzeReceiptFlow = ai.defineFlow(
-  {
-    name: 'analyzeReceiptFlow',
-    inputSchema: AnalyzeReceiptInputSchema,
-    outputSchema: AnalyzeReceiptOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from analyzeReceiptPrompt');
-    }
-    return output;
-  }
-);

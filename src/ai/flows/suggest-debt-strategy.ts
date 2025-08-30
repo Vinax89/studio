@@ -9,9 +9,9 @@
  * - SuggestDebtStrategyOutput - The return type for the suggestDebtStrategy function.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { RecurrenceValues } from '@/lib/types';
+import {definePromptFlow} from './utils';
 
 const DebtSchema = z.object({
     id: z.string(),
@@ -40,14 +40,13 @@ const SuggestDebtStrategyOutputSchema = z.object({
 });
 export type SuggestDebtStrategyOutput = z.infer<typeof SuggestDebtStrategyOutputSchema>;
 
-export async function suggestDebtStrategy(input: SuggestDebtStrategyInput): Promise<SuggestDebtStrategyOutput> {
-  return suggestDebtStrategyFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'suggestDebtStrategyPrompt',
-  input: {schema: SuggestDebtStrategyInputSchema},
-  output: {schema: SuggestDebtStrategyOutputSchema},
+export const suggestDebtStrategy = definePromptFlow<
+  SuggestDebtStrategyInput,
+  SuggestDebtStrategyOutput
+>({
+  name: 'suggestDebtStrategy',
+  inputSchema: SuggestDebtStrategyInputSchema,
+  outputSchema: SuggestDebtStrategyOutputSchema,
   prompt: `You are an expert financial advisor specializing in debt management for healthcare professionals like nurses. Analyze the following list of debts and recommend the best payoff strategy.
 
 Your primary goal is to help the user save the most money on interest, so you should lean towards the 'avalanche' method (highest interest rate first) unless there is a very small debt that could be paid off quickly for a psychological win (the 'snowball' method).
@@ -63,18 +62,3 @@ Based on this, please provide:
 3.  **payoffOrder**: A list of the debts in the order they should be prioritized.
 4.  **summary**: A brief, encouraging summary of the plan to motivate the user.`,
 });
-
-const suggestDebtStrategyFlow = ai.defineFlow(
-  {
-    name: 'suggestDebtStrategyFlow',
-    inputSchema: SuggestDebtStrategyInputSchema,
-    outputSchema: SuggestDebtStrategyOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from suggestDebtStrategyFlow');
-    }
-    return output;
-  }
-);
