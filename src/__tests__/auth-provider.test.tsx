@@ -17,8 +17,19 @@ jest.mock('@/lib/firebase', () => ({
     currentUser: null,
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
+  initFirebase: jest.fn(),
 }));
-import { auth as authStub } from '@/lib/firebase';
+import { auth as authStub, initFirebase } from '@/lib/firebase';
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test';
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test';
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test';
+  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
+  process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
+  initFirebase();
+});
 
 type User = { uid: string } | null;
 let mockUser: User = null;

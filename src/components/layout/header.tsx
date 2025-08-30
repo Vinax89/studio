@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { auth } from "@/lib/firebase"
+import { auth, initFirebase } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import {
   CircleUser,
@@ -28,6 +28,8 @@ import {
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/ThemeToggle"
+
+initFirebase()
 
 export default function AppHeader() {
   const router = useRouter()

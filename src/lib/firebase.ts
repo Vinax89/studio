@@ -27,16 +27,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_FIREBASE_APP_ID: nonPlaceholder,
 });
 
-const env = envSchema.parse(process.env);
-
-const firebaseConfig: FirebaseOptions = {
-  apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+let app: ReturnType<typeof initializeApp>;
+let auth: ReturnType<typeof getAuth>;
+let db: ReturnType<typeof getFirestore>;
+let categoriesCollection: ReturnType<typeof collection>;
 
 // A function to check if all required environment variables are present.
 // This provides a clearer error message than the generic Firebase error.
@@ -58,16 +52,26 @@ function validateFirebaseConfig(config: FirebaseOptions): void {
   }
 }
 
-// Validate the config before initializing
-validateFirebaseConfig(firebaseConfig);
-
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Firestore collection reference for categories
-const categoriesCollection = collection(db, "categories");
+export function initFirebase() {
+  if (app) {
+    return { app, auth, db, categoriesCollection };
+  }
+  const env = envSchema.parse(process.env);
+  const firebaseConfig: FirebaseOptions = {
+    apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  };
+  validateFirebaseConfig(firebaseConfig);
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+  categoriesCollection = collection(db, "categories");
+  return { app, auth, db, categoriesCollection };
+}
 
 export { app, auth, db, categoriesCollection };
 

@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
-import { auth } from "@/lib/firebase"
+import { auth, initFirebase } from "@/lib/firebase"
 import { toast } from "@/hooks/use-toast"
 import { logger } from "@/lib/logger"
+
+initFirebase()
 
 export function ServiceWorker() {
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)

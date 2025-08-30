@@ -8,9 +8,11 @@ import {
   startTransition,
 } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, initFirebase } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { z } from "zod";
+
+initFirebase();
 
 interface AuthContextType {
   user: User | null;

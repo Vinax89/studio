@@ -11,10 +11,12 @@ import {
   writeBatch,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, initFirebase } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
 import { getCurrentTime } from "../lib/internet-time";
 import { logger } from "../lib/logger";
+
+initFirebase();
 
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
