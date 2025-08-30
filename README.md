@@ -95,3 +95,11 @@ costs for housing, groceries, utilities, transportation, healthcare, and
 miscellaneous categories. Use `calculateCostOfLiving` to scale values by
 household composition. Run `node scripts/update-cost-of-living.ts` each year to
 fetch new figures.
+
+## Transaction sync API
+
+Use the `/api/transactions/sync` endpoint to persist transactions that have
+already been retrieved from an external source. The endpoint validates the
+payload and writes accepted records to Firestore, responding with a count of
+transactions saved. See [docs/transactions-sync.md](docs/transactions-sync.md)
+for details on the request format.
