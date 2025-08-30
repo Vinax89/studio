@@ -21,7 +21,7 @@ const BaseTransactionRow = z.object({
   description: z.string(),
   amount: z.preprocess(
     (val) => (typeof val === "number" || typeof val === "string" ? String(val) : val),
-    z.string()
+    z.string(),
   ),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
@@ -55,7 +55,7 @@ function createTransactionRowSchema(validCategories: string[]) {
  */
 export function chunkTransactions<T>(
   transactions: T[],
-  chunkSize = 500
+  chunkSize = 500,
 ): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < transactions.length; i += chunkSize) {
@@ -85,7 +85,7 @@ export function chunkTransactions<T>(
  */
 export function validateTransactions(
   rows: TransactionRowType[],
-  validCategories: string[]
+  validCategories: string[],
 ): Transaction[] {
   const schema = createTransactionRowSchema(validCategories);
   return rows.map((row, index) => {
@@ -98,7 +98,7 @@ export function validateTransactions(
     const parsedAmount = parseFloat(amountString);
     if (isNaN(parsedAmount)) {
       throw new Error(
-        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`
+        `Invalid amount in row ${index + 1}: "${data.amount}" cannot be parsed as a number`,
       );
     }
 
@@ -141,7 +141,7 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
       throw new Error(
         `Failed to save transactions batch: ${
           err instanceof Error ? err.message : String(err)
-        }`
+        }`,
       );
     }
   }
@@ -170,7 +170,7 @@ export async function importTransactions(rows: TransactionRowType[]): Promise<vo
     throw new Error(
       `Failed to import transactions: ${
         err instanceof Error ? err.message : String(err)
-      }`
+      }`,
     );
   }
 }
@@ -186,4 +186,3 @@ export const transactionPersistence: TransactionPersistence = {
   saveTransactions,
   importTransactions,
 };
-
