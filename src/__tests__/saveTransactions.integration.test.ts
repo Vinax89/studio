@@ -5,7 +5,7 @@ jest.mock("../lib/firebase", () => ({ db: {} }));
 
 const store = new Map<string, Transaction>();
 
-function mockCollection(_db: unknown, name: string) {
+function mockCollection(_: unknown, name: string) {
   return { name } as const;
 }
 
@@ -13,7 +13,7 @@ function mockDoc(col: { name: string }, id: string) {
   return { col: col.name, id };
 }
 
-function mockWriteBatch(_db: unknown) {
+function mockWriteBatch() {
   const ops: { ref: { id: string }; data: Transaction }[] = [];
   return {
     set(ref: { id: string }, data: Transaction) {

@@ -11,15 +11,16 @@ export async function readBodyWithLimit(req: Request, limit: number) {
   const decoder = new TextDecoder()
   let total = 0
   let result = ""
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    if (value) {
-      total += value.length
+  let done = false
+  while (!done) {
+    const chunk = await reader.read()
+    done = chunk.done ?? false
+    if (!done && chunk.value) {
+      total += chunk.value.length
       if (total > limit) {
         return null
       }
-      result += decoder.decode(value, { stream: true })
+      result += decoder.decode(chunk.value, { stream: true })
     }
   }
   result += decoder.decode()

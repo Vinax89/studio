@@ -25,6 +25,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const q = lastDoc
       ? query(
@@ -66,6 +67,7 @@ export async function cleanupDebts(): Promise<void> {
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const q = lastDoc
       ? query(
@@ -145,6 +147,7 @@ export async function backupData(
     const items: T[] = [];
     let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const q = lastDoc
         ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))

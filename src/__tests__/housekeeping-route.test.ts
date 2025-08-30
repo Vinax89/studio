@@ -18,8 +18,9 @@ jest.mock("@/lib/firebase", () => ({ db: {} }));
 jest.mock("firebase/firestore", () => {
   const store: { lastRun?: number } = {};
   return {
-    doc: (_db: any, _col: string, _id: string) => ({}),
-    runTransaction: jest.fn(async (_db: any, updateFn: any) => {
+    doc: () => ({}),
+    runTransaction: jest.fn(async (_: any, updateFn: any) => {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         let write: any;
         const lastBefore = store.lastRun;
