@@ -100,10 +100,10 @@ export function addCategory(category: string): string[] {
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
+    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+      console.error,
+    );
   }
-  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error,
-  );
   save(categories);
   return categories;
 }
