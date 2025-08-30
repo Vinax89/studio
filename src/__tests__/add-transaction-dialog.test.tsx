@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+import React, { ReactNode, InputHTMLAttributes } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
@@ -11,24 +11,33 @@ jest.mock('@/hooks/use-toast', () => ({
 }));
 jest.mock('lucide-react', () => ({ PlusCircle: () => null }));
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children }: any) => <div>{children}</div>,
-  DialogTrigger: ({ children }: any) => <div>{children}</div>,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
+  Dialog: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogDescription: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogFooter: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 jest.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectValue: ({ children }: any) => <div>{children}</div>,
+  Select: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children, ...props }: { children: ReactNode } & Record<string, unknown>) => (
+    <div {...props}>{children}</div>
+  ),
+  SelectTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectValue: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 jest.mock('@/components/ui/switch', () => ({
-  Switch: ({ onCheckedChange, ...props }: any) => (
-    <input type="checkbox" onChange={onCheckedChange} {...props} />
+  Switch: (
+    { onCheckedChange, ...props }: { onCheckedChange: (checked: boolean) => void } &
+      InputHTMLAttributes<HTMLInputElement>
+  ) => (
+    <input
+      type="checkbox"
+      onChange={(e) => onCheckedChange(e.target.checked)}
+      {...props}
+    />
   ),
 }));
 

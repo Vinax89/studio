@@ -39,11 +39,11 @@ import * as offline from "../lib/offline"
 import React from "react"
 
 beforeAll(() => {
-  ;(global as any).indexedDB = {}
+  (globalThis as unknown as { indexedDB: unknown }).indexedDB = {}
 })
 
 afterAll(() => {
-  delete (global as any).indexedDB
+  delete (globalThis as { indexedDB?: unknown }).indexedDB
 })
 
 describe("offline fallbacks", () => {
@@ -78,8 +78,8 @@ describe("ServiceWorker", () => {
       .spyOn(offline, "getQueuedTransactions")
       .mockResolvedValueOnce(null)
 
-    const fetchMock = jest.fn()
-    ;(global as any).fetch = fetchMock
+    const fetchMock = jest.fn();
+    (globalThis as unknown as { fetch: jest.Mock }).fetch = fetchMock
 
     render(React.createElement(ServiceWorker))
 
@@ -91,6 +91,6 @@ describe("ServiceWorker", () => {
     expect(fetchMock).not.toHaveBeenCalled()
 
     jest.useRealTimers()
-    delete (global as any).fetch
+    delete (globalThis as { fetch?: unknown }).fetch
   })
 })

@@ -18,32 +18,45 @@ jest.mock("@/lib/firebase", () => ({ db: {} }));
 jest.mock("firebase/firestore", () => {
   const store: { lastRun?: number } = {};
   return {
-    doc: (_db: any, _col: string, _id: string) => ({}),
-    runTransaction: jest.fn(async (_db: any, updateFn: any) => {
-      while (true) {
-        let write: any;
-        const lastBefore = store.lastRun;
-        const tx = {
-          get: async () => ({
-            exists: () => store.lastRun !== undefined,
-            data: () => ({ lastRun: store.lastRun }),
-          }),
-          set: (_ref: any, data: any) => {
-            write = data;
-          },
-        };
-        const result = await updateFn(tx);
-        if (write && lastBefore !== store.lastRun) {
-          // retry due to concurrent modification
-          continue;
+    doc: () => ({}),
+    runTransaction: jest.fn(
+      async (
+        _db: unknown,
+        updateFn: (
+          tx: {
+            get: () => Promise<{
+              exists: () => boolean;
+              data: () => { lastRun: number | undefined };
+            }>;
+            set: (_ref: unknown, data: { lastRun: number }) => void;
+          }
+        ) => Promise<unknown>
+      ) => {
+        for (;;) {
+          let write: { lastRun: number } | undefined;
+          const lastBefore = store.lastRun;
+          const tx = {
+            get: async () => ({
+              exists: () => store.lastRun !== undefined,
+              data: () => ({ lastRun: store.lastRun }),
+            }),
+            set: (_ref: unknown, data: { lastRun: number }) => {
+              write = data;
+            },
+          };
+          const result = await updateFn(tx);
+          if (write && lastBefore !== store.lastRun) {
+            // retry due to concurrent modification
+            continue;
+          }
+          if (write) {
+            store.lastRun = write.lastRun;
+          }
+          return result;
         }
-        if (write) {
-          store.lastRun = write.lastRun;
-        }
-        return result;
       }
-    }),
-    setDoc: jest.fn(async (_ref: any, data: any) => {
+    ),
+    setDoc: jest.fn(async (_ref: unknown, data: { lastRun: number }) => {
       store.lastRun = data.lastRun;
     }),
     __store: store,
