@@ -73,5 +73,8 @@ export function initFirebase() {
   return { app, auth, db, categoriesCollection };
 }
 
+// Initialize Firebase at module load to avoid repeated calls across components.
+initFirebase();
+
 export { app, auth, db, categoriesCollection };
 

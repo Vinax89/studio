@@ -5,9 +5,8 @@ import type { Goal } from "@/lib/types";
 import { GoalCard } from "@/components/goals/goal-card";
 import { AddGoalDialog } from "@/components/goals/add-goal-dialog";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { db, initFirebase } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 
-initFirebase();
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);

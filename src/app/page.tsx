@@ -8,9 +8,8 @@ import {
   createUserWithEmailAndPassword,
   type AuthError,
 } from "firebase/auth"
-import { auth, initFirebase } from "@/lib/firebase"
+import { auth } from "@/lib/firebase"
 
-initFirebase()
 import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
 
 import { Button } from "@/components/ui/button"
