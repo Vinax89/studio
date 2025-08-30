@@ -32,6 +32,7 @@ export function useDebts() {
     } catch (err) {
       logger.error("Error adding/updating debt", err);
       setError(err as Error);
+      throw err;
     }
   };
 
@@ -42,6 +43,7 @@ export function useDebts() {
     } catch (err) {
       logger.error("Error deleting debt", err);
       setError(err as Error);
+      throw err;
     }
   };
 
@@ -52,6 +54,7 @@ export function useDebts() {
     } catch (err) {
       logger.error("Error marking debt paid", err);
       setError(err as Error);
+      throw err;
     }
   };
 
@@ -62,6 +65,7 @@ export function useDebts() {
     } catch (err) {
       logger.error("Error unmarking debt paid", err);
       setError(err as Error);
+      throw err;
     }
   };
 
