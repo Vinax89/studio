@@ -1,4 +1,4 @@
-import { getAllowedOrigins } from '@/lib/allowed-origins';
+import { getAllowedOrigins, isAllowedOrigin } from '@/lib/allowed-origins';
 
 describe('getAllowedOrigins', () => {
   it('parses strings and regex and ignores malformed entries', () => {
@@ -14,3 +14,17 @@ describe('getAllowedOrigins', () => {
     expect(origins[1]).toBeInstanceOf(RegExp);
   });
 });
+
+describe('isAllowedOrigin', () => {
+  it('allows exact string matches', () => {
+    const origins = getAllowedOrigins('https://example.com')
+    expect(isAllowedOrigin('https://example.com', origins)).toBe(true)
+    expect(isAllowedOrigin('https://evil.com', origins)).toBe(false)
+  })
+
+  it('matches regex patterns', () => {
+    const origins = getAllowedOrigins(String.raw`/^https:\/\/.*\.example\.com$/`)
+    expect(isAllowedOrigin('https://foo.example.com', origins)).toBe(true)
+    expect(isAllowedOrigin('https://bar.test.com', origins)).toBe(false)
+  })
+})

@@ -29,3 +29,14 @@ export function getAllowedOrigins(env: string | undefined = process.env.ALLOWED_
 }
 
 export const allowedOrigins: AllowedOrigin[] = getAllowedOrigins();
+
+export function isAllowedOrigin(
+  origin: string | null,
+  origins: AllowedOrigin[] = allowedOrigins,
+): boolean {
+  if (origins.length === 0) return true
+  if (!origin) return false
+  return origins.some((item) =>
+    typeof item === "string" ? item === origin : item.test(origin),
+  )
+}
