@@ -14,7 +14,7 @@ export interface CostOfLivingDataset {
 }
 
 export const costOfLiving2024: CostOfLivingDataset = {
-  baseYear: 2025,
+  baseYear: 2024,
   source: 'BEA Regional Price Parities 2024',
   regions: {
     California: {
