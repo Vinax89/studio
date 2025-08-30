@@ -13,6 +13,8 @@ jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }));
 
+jest.mock('lucide-react', () => new Proxy({}, { get: () => () => null }));
+
 jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: null,
@@ -30,6 +32,17 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
   initFirebase();
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockReturnValue({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }),
+  });
 });
 
 type User = { uid: string } | null;
