@@ -59,8 +59,8 @@ export function chunkTransactions<T>(
   transactions: T[],
   chunkSize = 500
 ): T[][] {
-  if (chunkSize <= 0) {
-    throw new Error("chunkSize must be greater than 0");
+  if (chunkSize <= 0 || !Number.isInteger(chunkSize)) {
+    throw new Error("chunkSize must be a positive integer");
   }
   const chunks: T[][] = [];
   for (let i = 0; i < transactions.length; i += chunkSize) {
