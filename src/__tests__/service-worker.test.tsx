@@ -24,7 +24,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
 
   it("aborts fetch on unmount", async () => {
     let signal: AbortSignal | undefined
-    ;(fetch as jest.Mock).mockImplementation((_url, options: any) => {
+    ;(fetch as jest.Mock).mockImplementation((_url, options: RequestInit) => {
       signal = options.signal
       return new Promise(() => {})
     })
@@ -49,7 +49,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
 
   it("aborts previous fetch when new sync starts", async () => {
     const signals: AbortSignal[] = []
-    ;(fetch as jest.Mock).mockImplementation((_url, options: any) => {
+    ;(fetch as jest.Mock).mockImplementation((_url, options: RequestInit) => {
       signals.push(options.signal)
       return new Promise(() => {})
     })
