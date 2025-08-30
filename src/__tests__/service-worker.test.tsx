@@ -121,7 +121,7 @@ describe("Service worker registration", () => {
       type: "module",
     })
 
-    delete (navigator as any).serviceWorker
+    delete (navigator as unknown as { serviceWorker?: unknown }).serviceWorker
     Object.defineProperty(navigator, "onLine", {
       value: true,
       configurable: true,
