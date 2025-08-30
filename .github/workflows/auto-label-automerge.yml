@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
 
+permissions:
+  pull-requests: write
+
 jobs:
   auto-label-automerge:
     runs-on: ubuntu-latest
