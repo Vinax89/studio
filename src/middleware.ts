@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const cspNonce = crypto.randomUUID()
+  const cspNonce = btoa(
+    String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))
+  )
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', cspNonce)
