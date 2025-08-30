@@ -2,7 +2,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../components/auth/auth-provider';
+import { useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
@@ -12,6 +12,8 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
   usePathname: () => mockPathname,
 }));
+
+jest.mock('lucide-react', () => ({ X: () => null }));
 
 jest.mock('@/lib/firebase', () => ({
   auth: {
@@ -30,6 +32,17 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
   initFirebase();
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(() => ({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
 });
 
 type User = { uid: string } | null;

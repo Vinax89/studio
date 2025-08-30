@@ -9,10 +9,9 @@ jest.mock('lucide-react', () => ({
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: any;
 
 function mockUseEmbla() {
-  emblaApi = {
+  const api = {
     on: onMock,
     off: offMock,
     canScrollPrev: jest.fn().mockReturnValue(false),
@@ -20,7 +19,7 @@ function mockUseEmbla() {
     scrollPrev: jest.fn(),
     scrollNext: jest.fn(),
   };
-  return [jest.fn(), emblaApi];
+  return [jest.fn(), api] as const;
 }
 
 jest.mock('embla-carousel-react', () => ({
