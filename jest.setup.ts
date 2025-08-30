@@ -2,6 +2,8 @@ import '@testing-library/jest-dom'
 import { jest } from '@jest/globals'
 import { TextEncoder, TextDecoder } from 'node:util'
 
+jest.mock('lucide-react', () => ({ __esModule: true, default: {} }))
+
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
 
