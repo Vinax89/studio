@@ -1,8 +1,9 @@
-import { getFxRate, convertCurrency } from '@/lib/currency';
+import { getFxRate, convertCurrency, clearFxRateCache } from '@/lib/currency';
 
 describe('currency code validation', () => {
   afterEach(() => {
     jest.resetAllMocks();
+    clearFxRateCache();
   });
 
   it('getFxRate returns rate for valid codes', async () => {
@@ -39,6 +40,22 @@ describe('currency code validation', () => {
     const converted = await convertCurrency(10, 'usd', 'eur');
 
     expect(converted).toBe(5);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('getFxRate uses cached value when available', async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ rates: { EUR: 0.9 } }),
+    });
+    (globalThis as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
+
+    const first = await getFxRate('usd', 'eur');
+    const second = await getFxRate('usd', 'eur');
+
+    expect(first).toBe(0.9);
+    expect(second).toBe(0.9);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('convertCurrency returns original amount for invalid codes', async () => {
