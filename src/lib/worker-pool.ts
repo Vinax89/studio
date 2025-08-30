@@ -34,9 +34,10 @@ export class WorkerPool<T = unknown, R = unknown> {
   private spawn() {
     const worker = new Worker(this.file)
     worker.once("exit", code => {
-      this.workers.splice(this.workers.indexOf(worker), 1)
-      const idleIndex = this.idle.indexOf(worker)
-      if (idleIndex !== -1) this.idle.splice(idleIndex, 1)
+      const idx = this.workers.indexOf(worker)
+      if (idx >= 0) this.workers.splice(idx, 1)
+      const idleIdx = this.idle.indexOf(worker)
+      if (idleIdx >= 0) this.idle.splice(idleIdx, 1)
 
       const task = this.tasks.get(worker)
       this.tasks.delete(worker)

@@ -60,6 +60,34 @@ describe("WorkerPool", () => {
     await pool.destroy()
   })
 
+  it("ignores exit for a worker missing from the pool", async () => {
+    const pool = new WorkerPool<number, number>("fake", 2)
+
+    const state = pool as unknown as {
+      workers: Array<EventEmitter>
+      idle: Array<EventEmitter>
+      destroyed: boolean
+    }
+
+    const [orphan, remaining] = state.workers
+
+    // Simulate the worker already being removed
+    state.workers.shift()
+    state.idle.shift()
+
+    // Prevent spawn on exit
+    state.destroyed = true
+
+    orphan.emit("exit", 0)
+
+    expect(state.workers).toHaveLength(1)
+    expect(state.workers[0]).toBe(remaining)
+    expect(state.idle).toHaveLength(1)
+    expect(state.idle[0]).toBe(remaining)
+
+    await pool.destroy()
+  })
+
   it("does not accumulate exit listeners", async () => {
     const pool = new WorkerPool<number, number>("fake", 1)
 
