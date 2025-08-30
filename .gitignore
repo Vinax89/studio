@@ -6,6 +6,8 @@ out/
 
 # Deps
 node_modules/
+yarn.lock
+pnpm-lock.yaml
 
 # Env & local
 .env
