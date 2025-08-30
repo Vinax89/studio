@@ -35,7 +35,7 @@ export default function DebtCalendar({ onChange, startOn = 0 }: DebtCalendarProp
   const { debts, addOrUpdateDebt, deleteDebt, markPaid, unmarkPaid } = useDebts();
   useEffect(() => { onChange?.(debts); }, [debts, onChange]);
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [activeDebt, setActiveDebt] = useState<Debt | null>(null);

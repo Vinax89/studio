@@ -11,7 +11,7 @@ export async function readBodyWithLimit(req: Request, limit: number) {
   const decoder = new TextDecoder()
   let total = 0
   let result = ""
-  while (true) {
+  for (;;) {
     const { done, value } = await reader.read()
     if (done) break
     if (value) {
