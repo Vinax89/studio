@@ -5,10 +5,13 @@
   "private": true,
   "scripts": {
     "preinstall": "node scripts/ensure-npm.js",
+    "predev": "node scripts/copy-sw-deps.js",
     "dev": "next dev -p ${PORT:-9000}",
+    "prebuild": "node scripts/copy-sw-deps.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "pretest": "node scripts/copy-sw-deps.js",
     "test": "jest",
     "pree2e": "node scripts/check-playwright-deps.js",
     "e2e": "npx playwright test",
@@ -84,6 +87,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "fake-indexeddb": "^6.2.2"
   }
 }
