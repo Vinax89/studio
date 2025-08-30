@@ -1,7 +1,3 @@
-// Utility functions for managing transaction categories stored in Firestore
-// with a local cache for offline support. Categories are compared in a
-// case-insensitive manner while preserving their original casing for display.
-
 import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore"
 import { db, categoriesCollection } from "./firebase"
 
@@ -94,10 +90,10 @@ export function addCategory(category: string): string[] {
   const exists = categories.some((c) => normalize(c) === key)
   if (!exists) {
     categories.push(trimmed)
-    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-      console.error,
-    )
   }
+  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+    console.error,
+  )
   save(categories)
   return categories
 }
@@ -132,4 +128,3 @@ export function clearCategories() {
     }
   })()
 }
-

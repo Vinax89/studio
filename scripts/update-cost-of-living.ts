@@ -25,7 +25,7 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run')
   const rows = await fetchRpp(year, apiKey)
   const regions = rows.reduce((acc, row) => {
-    const index = Number(row.DataValue.replace(/,/g, '')) / 100
+    const index = Number(row.DataValue.replace(/,/g, '')) / 100 // convert index to multiplier
     acc[row.GeoName] = {
       housing: index * 20000,
       groceries: index * 5000,
@@ -59,4 +59,3 @@ main().catch((err) => {
   console.error(err)
   process.exit(1)
 })
-

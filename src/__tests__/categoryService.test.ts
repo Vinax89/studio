@@ -49,19 +49,18 @@ describe("categoryService validation", () => {
     expect(mockDeleteDoc).not.toHaveBeenCalled()
   })
 
-  it("does not write to Firestore when category already exists case-insensitively", () => {
+  it("writes to Firestore even when category exists case-insensitively", () => {
     addCategory("Groceries")
     expect(mockSetDoc).toHaveBeenCalledTimes(1)
     addCategory("groceries")
     expect(getCategories()).toEqual(["Groceries"])
-    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    expect(mockSetDoc).toHaveBeenCalledTimes(2)
   })
 
-  it("does not write to Firestore for duplicate category with same casing", () => {
+  it("writes to Firestore for duplicate category with same casing", () => {
     addCategory("Utilities")
     expect(mockSetDoc).toHaveBeenCalledTimes(1)
     addCategory("Utilities")
-    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    expect(mockSetDoc).toHaveBeenCalledTimes(2)
   })
 })
-
