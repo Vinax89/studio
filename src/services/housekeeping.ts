@@ -106,6 +106,13 @@ export async function cleanupDebts(): Promise<void> {
   }
 }
 
+/**
+ * Retries the provided async operation using exponential backoff.
+ *
+ * Starts with `delayMs` and doubles the delay with each attempt while adding
+ * optional `jitter`. The effective delay is capped by `maxDelayMs` and a hard
+ * ceiling of 30 seconds to prevent unreasonably long waits.
+ */
 export async function runWithRetry<T>(
   op: () => Promise<T>,
   retries = 1,
@@ -114,6 +121,7 @@ export async function runWithRetry<T>(
   jitter = 0,
   isRetryable: (err: unknown) => boolean = () => true
 ): Promise<T> {
+  const MAX_CAP_MS = 30_000;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await op();
@@ -126,7 +134,8 @@ export async function runWithRetry<T>(
       const baseDelay = delayMs * 2 ** attempt;
       const delay = Math.min(
         baseDelay + Math.random() * jitter,
-        maxDelayMs
+        maxDelayMs,
+        MAX_CAP_MS
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }

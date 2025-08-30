@@ -453,6 +453,35 @@ describe('runWithRetry', () => {
     jest.useRealTimers();
   });
 
+  test('caps delay at 30 seconds', async () => {
+    jest.useFakeTimers();
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+
+    const op = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fail1'))
+      .mockRejectedValueOnce(new Error('fail2'))
+      .mockResolvedValue('ok');
+
+    const promise = runWithRetry(op, 2, 20000);
+
+    await Promise.resolve();
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 20000);
+
+    await jest.advanceTimersByTimeAsync(20000);
+    await Promise.resolve();
+
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 30000);
+
+    await jest.advanceTimersByTimeAsync(30000);
+    await expect(promise).resolves.toBe('ok');
+
+    setTimeoutSpy.mockRestore();
+    loggerSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
   test('throws immediately for non-retryable errors', async () => {
     jest.useFakeTimers();
     const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
