@@ -94,3 +94,37 @@ describe('suggestDebtStrategy validation', () => {
     ).rejects.toThrow();
   });
 });
+
+describe('analyzeSpendingHabits validation', () => {
+  it('rejects invalid financial document format', async () => {
+    jest.resetModules();
+    setupSuccessMocks({
+      spendingAnalysis: '',
+      savingsOpportunities: '',
+      recommendations: '',
+    });
+    const { analyzeSpendingHabits } = await import('@/ai/flows/analyze-spending-habits');
+    await expect(
+      analyzeSpendingHabits({
+        financialDocuments: ['invalid-data'],
+        userDescription: '',
+        goals: [],
+      })
+    ).rejects.toThrow();
+  });
+});
+
+describe('spendingForecast validation', () => {
+  it('rejects invalid transaction data', async () => {
+    jest.resetModules();
+    setupSuccessMocks({ forecast: [], analysis: '' });
+    const { predictSpending } = await import('@/ai/flows/spendingForecast');
+    await expect(
+      predictSpending({
+        transactions: [
+          { date: 'not-a-date', amount: -10, category: 'food' },
+        ],
+      })
+    ).rejects.toThrow();
+  });
+});
