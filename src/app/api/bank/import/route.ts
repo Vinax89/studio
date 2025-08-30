@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema } from "@/lib/transactions"
-import { readBodyWithLimit } from "@/lib/http"
+import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -24,9 +24,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 401 })
   }
 
-  const text = await readBodyWithLimit(req, MAX_BODY_SIZE)
-  if (text === null) {
-    return NextResponse.json({ error: "Payload too large" }, { status: 413 })
+  let text: string
+  try {
+    text = await readBodyWithLimit(req, MAX_BODY_SIZE)
+  } catch (err) {
+    if (err instanceof PayloadTooLargeError) {
+      return NextResponse.json({ error: err.message }, { status: err.status })
+    }
+    throw err
   }
 
   let json: unknown
