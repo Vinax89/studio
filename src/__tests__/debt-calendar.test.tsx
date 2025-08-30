@@ -1,11 +1,5 @@
 
 /** @jest-environment jsdom */
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { webcrypto } from 'crypto';
-import DebtCalendar from '../components/debts/DebtCalendar';
-import { mockDebts } from '@/lib/data';
-import { ClientProviders } from '@/components/layout/client-providers';
 
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({
@@ -13,12 +7,15 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { webcrypto } from 'crypto';
+import DebtCalendar from '../components/debts/DebtCalendar';
+import { mockDebts } from '@/lib/data';
+import { ClientProviders } from '@/components/layout/client-providers';
+
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('lucide-react', () => ({ X: () => null }));
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => '/',
-}));
 jest.mock('@/components/service-worker', () => ({
   ServiceWorker: () => null,
 }));
