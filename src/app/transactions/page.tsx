@@ -1,164 +1,80 @@
-
-"use client";
-
-import {
-  useState,
-  useMemo,
-  useTransition,
-  useDeferredValue,
-  useRef,
-  useCallback,
-} from "react";
-import { useRouter } from "next/navigation";
-import { mockTransactions } from "@/lib/data";
-import type { Transaction } from "@/lib/types";
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
-import { TransactionsTable } from "@/components/transactions/transactions-table";
-import { Button } from "@/components/ui/button";
-import { TransactionsFilter } from "@/components/transactions/transactions-filter";
-import { parseCsv, downloadCsv } from "@/lib/csv";
-import { validateTransactions, TransactionRowType } from "@/lib/transactions";
-import { addCategory, getCategories } from "@/lib/categoryService";
-import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '@/lib/firebaseClient';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import TransactionsList from '@/components/TransactionsList';
+import { apiSyncItemNow } from '@/lib/functionsClient';
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
-  const router = useRouter();
-  const [isTransitionPending, startTransition] = useTransition();
+  const [uid, setUid] = useState<string | null>(null);
+  const [items, setItems] = useState<{ id: string; status: string }[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [okMsg, setOkMsg] = useState<string | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const deferredSearchTerm = useDeferredValue(searchTerm);
-  const isPending = isTransitionPending || deferredSearchTerm !== searchTerm;
-  const [filterType, setFilterType] = useState("all");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => onAuthStateChanged(auth, (u) => setUid(u?.uid ?? null)), []);
 
-  const categories = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const cat of getCategories()) {
-      const key = cat.toLowerCase();
-      if (!map.has(key)) map.set(key, cat);
-    }
-    for (const t of transactions) {
-      const key = t.category.toLowerCase();
-      if (!map.has(key)) map.set(key, t.category);
-    }
-    return ["all", ...Array.from(map.values())];
-  }, [transactions]);
-
-  const addTransaction = useCallback(
-    (transaction: Omit<Transaction, "id" | "date">) => {
-      setTransactions((prev) => [
-        {
-          ...transaction,
-          id: crypto.randomUUID(),
-          date: new Date().toISOString().split("T")[0],
-        },
-        ...prev,
-      ]);
-      addCategory(transaction.category);
-    },
-    [] 
-  );
-
-  const handleUploadClick = () => fileInputRef.current?.click();
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const rows = await parseCsv<TransactionRowType>(file);
-      const parsed = validateTransactions(rows, getCategories());
-      parsed.forEach((t) => addCategory(t.category));
-      setTransactions((prev) => [...parsed, ...prev]);
-    } catch (err) {
-      logger.error("Failed to import transactions", err);
-    } finally {
-      e.target.value = "";
-    }
-  };
-
-  const handleDownload = () => {
-    downloadCsv(
-      transactions.map(({ id: _id, ...rest }) => {
-        void _id;
-        return rest;
-      }),
-      "transactions.csv"
-    );
-  };
-
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((transaction) => {
-      const matchesSearch = transaction.description
-        .toLowerCase()
-        .includes(deferredSearchTerm.toLowerCase());
-      const matchesType =
-        filterType === "all" || transaction.type === filterType;
-      const matchesCategory =
-        filterCategory === "all" ||
-        transaction.category.toLowerCase() === filterCategory.toLowerCase();
-      return matchesSearch && matchesType && matchesCategory;
+  useEffect(() => {
+    if (!uid) return;
+    const q = query(collection(db, 'institutions'), where('user_id', '==', uid));
+    const unsub = onSnapshot(q, (snap) => {
+      const next: { id: string; status: string }[] = [];
+      snap.forEach((d) => {
+        const v = d.data() as { status?: string };
+        next.push({ id: d.id, status: v.status || 'unknown' });
+      });
+      setItems(next);
+      if (next.length && !selected) setSelected(next[0].id);
     });
-  }, [transactions, deferredSearchTerm, filterType, filterCategory]);
+    return () => unsub();
+  }, [uid, selected]);
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      startTransition(() => setSearchTerm(value));
-    },
-    [startTransition, setSearchTerm]
-  );
+  async function handleSync() {
+    if (!selected) return;
+    setSyncing(true);
+    setError(null);
+    setOkMsg(null);
+    try {
+      await apiSyncItemNow(selected);
+      setOkMsg('Sync queued / completed. Refresh in a moment.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Sync failed');
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  if (!uid) return <div className="p-6"><p className="text-sm opacity-70">Please sign in.</p></div>;
 
   return (
-    <div className="space-y-6">
-       <div className="flex items-center justify-between gap-4">
+    <div className="p-6 space-y-6">
+      <div className="flex items-end gap-3">
         <div>
-            <h1 className="text-3xl font-bold font-headline tracking-tight">Transactions</h1>
-            <p className="text-muted-foreground">Track and manage your income and expenses.</p>
+          <label className="block text-sm font-medium">Linked institutions</label>
+          <select
+            value={selected ?? ''}
+            onChange={(e) => setSelected(e.target.value)}
+            className="mt-1 border rounded-lg p-2 min-w-[260px]"
+          >
+            {items.map((it) => (
+              <option key={it.id} value={it.id}>{it.id} ({it.status})</option>
+            ))}
+          </select>
         </div>
-         <div className="flex gap-2 items-center flex-wrap">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button variant="outline" onClick={handleUploadClick}>
-                <Upload className="mr-2 h-4 w-4" />
-                Import
-            </Button>
-            <Button variant="outline" onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-            </Button>
-             <Button variant="outline" onClick={() => router.push('/transactions/scan')}>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan Receipt
-            </Button>
-            <AddTransactionDialog onSave={addTransaction} />
-        </div>
+        <button
+          onClick={handleSync}
+          disabled={!selected || syncing}
+          className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
+        >
+          {syncing ? 'Syncing…' : 'Manual Sync'}
+        </button>
+        {okMsg && <p className="text-sm text-green-700">{okMsg}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
 
-      <TransactionsFilter
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
-        filterType={filterType}
-        onTypeChange={setFilterType}
-        filterCategory={filterCategory}
-        onCategoryChange={setFilterCategory}
-        categories={categories}
-      />
-
-      {isPending && (
-        <p className="flex items-center text-sm text-muted-foreground">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Filtering…
-        </p>
-      )}
-
-      <TransactionsTable transactions={filteredTransactions} />
+      <TransactionsList max={200} />
     </div>
   );
 }

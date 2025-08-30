@@ -1,0 +1,9 @@
+{
+  "name": "@nursefinai/domain",
+  "version": "0.0.0",
+  "main": "src/zod.ts",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}

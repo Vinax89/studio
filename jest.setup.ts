@@ -22,6 +22,18 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+// Polyfill matchMedia for libraries like next-themes in tests
+if (typeof window !== 'undefined' && !('matchMedia' in window)) {
+  (window as any).matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'
