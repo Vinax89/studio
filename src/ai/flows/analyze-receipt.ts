@@ -13,10 +13,21 @@ import {ai} from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
 
+const MAX_IMAGE_SIZE_BYTES = 1024 * 1024; // 1MB
+
 export const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
     .string()
     .regex(DATA_URI_REGEX)
+    .refine(dataUri => {
+      const base64Data = dataUri.split(',')[1];
+      try {
+        const buffer = Buffer.from(base64Data, 'base64');
+        return buffer.byteLength <= MAX_IMAGE_SIZE_BYTES;
+      } catch {
+        return false;
+      }
+    }, {message: 'Receipt image exceeds maximum size of 1MB'})
     .describe(
       "An image of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
