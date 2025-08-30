@@ -1,5 +1,5 @@
 'use client';
-import { auth, FUNCTIONS_ORIGIN } from '@/app/src/lib/firebaseClient';
+import { auth, FUNCTIONS_ORIGIN } from '@/lib/firebaseClient';
 
 async function idToken(): Promise<string> { const u = auth.currentUser; if (!u) throw new Error('Not authenticated'); return u.getIdToken(true); }
 
