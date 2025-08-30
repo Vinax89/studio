@@ -1,6 +1,6 @@
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { db } from "./firebase"
-import { logger } from "./logger"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
+import { logger } from "./logger";
 
 /**
  * Persist a (description, category) feedback pair. This is used when a user
@@ -8,19 +8,19 @@ import { logger } from "./logger"
  */
 export async function recordCategoryFeedback(
   description: string,
-  category: string,
+  category: string
 ): Promise<boolean> {
-  const colRef = collection(db, "categoryFeedback")
+  const colRef = collection(db, "categoryFeedback");
   try {
     await addDoc(colRef, {
       description,
       category,
       createdAt: serverTimestamp(),
-    })
-    return true
+    });
+    return true;
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    logger.error(`Failed to record category feedback: ${message}`)
-    return false
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error(`Failed to record category feedback: ${message}`);
+    return false;
   }
 }

@@ -2,6 +2,8 @@ This is a NextJS starter in Firebase Studio.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
+- `npm run dev` – start the development server.
+- On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
