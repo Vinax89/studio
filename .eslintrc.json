@@ -2,5 +2,13 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"]
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }
