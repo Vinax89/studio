@@ -3,6 +3,8 @@ import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema } from "@/lib/transactions"
 import { readBodyWithLimit } from "@/lib/http"
+import { db } from "@/lib/firebase"
+import { collection, doc, setDoc } from "firebase/firestore"
 
 /**
  * Generic transaction syncing endpoint.
@@ -48,8 +50,31 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    // TODO: Persist transactions to the database.
-    return NextResponse.json({ received: transactions.length })
+    const colRef = collection(db, "transactions")
+    const results = await Promise.allSettled(
+      transactions.map((tx) => setDoc(doc(colRef, tx.id), tx).then(() => tx.id)),
+    )
+
+    const saved: string[] = []
+    const errors: { id: string; error: string }[] = []
+
+    results.forEach((res, idx) => {
+      const id = transactions[idx].id
+      if (res.status === "fulfilled") {
+        saved.push(res.value)
+      } else {
+        errors.push({
+          id,
+          error: res.reason instanceof Error ? res.reason.message : String(res.reason),
+        })
+      }
+    })
+
+    if (errors.length > 0) {
+      return NextResponse.json({ saved, errors }, { status: 207 })
+    }
+
+    return NextResponse.json({ saved })
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
