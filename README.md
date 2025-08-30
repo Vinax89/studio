@@ -1,4 +1,5 @@
 This is a NextJS starter in Firebase Studio.
+This project uses npm as the canonical package manager. Use npm for all dependency management tasks.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
