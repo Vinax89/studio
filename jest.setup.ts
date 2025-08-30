@@ -4,6 +4,32 @@ import { TextEncoder, TextDecoder } from 'node:util'
 
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
+}
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+  }),
+  usePathname: () => '/',
+}))
+
 
 // Provide a minimal fetch polyfill for tests that expect it
 ;(global as any).fetch = jest.fn(() =>
