@@ -29,7 +29,7 @@ Values outside these patterns are ignored to prevent unsafe CSS injection.
 
 ## Housekeeping service
 
-The housekeeping service removes outdated files from Cloud Storage to manage costs and data retention.
+The housekeeping service scans a Cloud Storage bucket for files older than `RETENTION_DAYS`, deletes them, and removes matching metadata from Firestore to manage costs and data retention.
 
 ### Running locally
 1. Install dependencies with `npm install`.
@@ -51,6 +51,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 |----------|-------------|
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
+| `HOUSEKEEPING_BUCKET` | Cloud Storage bucket that the housekeeping job scans for expired files. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
