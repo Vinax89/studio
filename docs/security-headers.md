@@ -4,7 +4,7 @@ This project defines security headers in `next.config.ts` for all routes. Any ad
 
 ## Required Headers
 
-- **Content-Security-Policy**: `default-src 'self'; script-src 'self' 'nonce-<nonce>'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`
+- **Content-Security-Policy**: `default-src 'self'; script-src 'self' 'nonce-<nonce>'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: wss:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`
 - **X-Frame-Options**: `DENY`
 - **X-Content-Type-Options**: `nosniff`
 - **Referrer-Policy**: `strict-origin-when-cross-origin`

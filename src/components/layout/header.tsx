@@ -28,6 +28,7 @@ import {
 import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { logger } from "@/lib/logger"
 
 initFirebase()
 
@@ -44,7 +45,7 @@ export default function AppHeader() {
         description: "You have been successfully logged out.",
       })
     } catch (error) {
-      console.error("Logout failed:", error)
+      logger.error("Logout failed:", error)
        toast({
         title: "Logout Failed",
         description: "Could not log you out. Please try again.",

@@ -39,10 +39,10 @@ export async function queueTransaction(
   tx: unknown,
   maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
 ): Promise<Result<void, Error>> {
-  if (maxQueueSize < 0) {
+  if (!Number.isInteger(maxQueueSize) || maxQueueSize < 0) {
     return {
       ok: false,
-      error: new Error("maxQueueSize must be non-negative"),
+      error: new Error("maxQueueSize must be a non-negative integer"),
     }
   }
   try {

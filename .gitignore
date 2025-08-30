@@ -8,7 +8,6 @@ out/
 node_modules/
 yarn.lock
 pnpm-lock.yaml
-
 # Generated service worker
 public/sw.js
 
