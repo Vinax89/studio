@@ -5,6 +5,10 @@ import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
 
+if (!process.env.CRON_SECRET) {
+  throw new Error("CRON_SECRET environment variable is not set");
+}
+
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
 initFirebase();
