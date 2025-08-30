@@ -49,8 +49,12 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 
 | Variable | Description |
 |----------|-------------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Public-facing Firebase API key for the client SDK. |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase Auth domain for authentication flows. |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Cloud Messaging sender ID for push notifications. |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase application ID for the web client. |
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
