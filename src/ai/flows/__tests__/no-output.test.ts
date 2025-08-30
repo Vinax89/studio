@@ -1,9 +1,24 @@
+import type { ZodType } from 'zod';
+
+interface FlowConfig<I, O> {
+  name: string;
+  inputSchema: ZodType<I>;
+  outputSchema: ZodType<O>;
+}
+
+type FlowHandler<I, O> = (input: I) => Promise<O>;
+
 function setupNoOutputMocks() {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
+  const definePromptMock = jest
+    .fn()
+    .mockReturnValue(async () => ({ output: undefined }));
   const defineFlowMock = jest.fn(
-    (_config: unknown, handler: unknown) => handler as unknown
+    <I, O>(_config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => handler
   );
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  jest.doMock('@/ai/genkit', () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
+  return { definePromptMock, defineFlowMock };
 }
 
 describe('calculateCashflowFlow', () => {
@@ -25,8 +40,12 @@ describe('suggestDebtStrategyFlow', () => {
   it('throws an error when prompt returns no output', async () => {
     jest.resetModules();
     setupNoOutputMocks();
-    const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
-    await expect(suggestDebtStrategy({ debts: [] })).rejects.toThrow(/No output returned/);
+    const { suggestDebtStrategy } = await import(
+      '@/ai/flows/suggest-debt-strategy'
+    );
+    await expect(
+      suggestDebtStrategy({ debts: [] })
+    ).rejects.toThrow(/No output returned/);
   });
 });
 
