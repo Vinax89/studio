@@ -159,8 +159,16 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  * @remarks Generates UUIDs during validation and writes data to Firestore.
  */
 async function fetchCategories(): Promise<string[]> {
-  const snapshot = await getDocs(collection(db, "categories"));
-  return snapshot.docs.map((doc) => doc.id);
+  try {
+    const snapshot = await getDocs(collection(db, "categories"));
+    return snapshot.docs.map((doc) => doc.id);
+  } catch (err) {
+    throw new Error(
+      `Failed to fetch categories: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 }
 
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
