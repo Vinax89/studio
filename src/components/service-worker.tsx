@@ -86,12 +86,29 @@ export function ServiceWorker() {
       }
     }
 
-    const handleOnline = () => {
+    const handleOnline = async () => {
       abortController.current?.abort()
       if (debounceId.current) clearTimeout(debounceId.current)
       if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
       retryCount.current = 0
       notified.current = false
+
+      if ("serviceWorker" in navigator) {
+        try {
+          // Wait for service worker readiness but don't block forever
+          await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Service worker ready timeout")), 5000),
+            ),
+          ])
+        } catch {
+          logger.warn(
+            "Timed out waiting for service worker to be ready; continuing with sync",
+          )
+        }
+      }
+
       debounceId.current = setTimeout(syncQueued, 1000)
     }
 
