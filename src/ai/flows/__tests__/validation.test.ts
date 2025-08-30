@@ -1,3 +1,5 @@
+import { calculateCostOfLiving } from '@/ai/flows/cost-of-living';
+
 interface Schema<T = unknown> {
   parse: (value: unknown) => T;
 }
@@ -100,14 +102,12 @@ describe('suggestDebtStrategy validation', () => {
 
 describe('calculateCostOfLiving validation', () => {
   it('rejects non-positive adult count', () => {
-    const { calculateCostOfLiving } = require('@/ai/flows/cost-of-living');
     expect(() =>
       calculateCostOfLiving({ region: 'California', adults: 0, children: 0 })
     ).toThrow();
   });
 
   it('rejects unknown region', () => {
-    const { calculateCostOfLiving } = require('@/ai/flows/cost-of-living');
     expect(() =>
       calculateCostOfLiving({ region: 'Atlantis', adults: 1, children: 0 } as any)
     ).toThrow('Unknown region');
