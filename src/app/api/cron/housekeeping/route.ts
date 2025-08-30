@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { runHousekeeping } from "@/lib/housekeeping";
-import { db, initFirebase } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
 import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
 
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
-initFirebase();
+const db = getDb();
 const STATE_DOC = doc(db, "cron", "housekeeping");
 
 // Exposed for tests to reset the persisted rate limiter

@@ -3,7 +3,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
-import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
 const pushMock = jest.fn();
@@ -13,14 +12,17 @@ jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }));
 
-jest.mock('@/lib/firebase', () => ({
-  auth: {
+jest.mock('@/lib/firebase', () => {
+  const auth = {
     currentUser: null,
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
-  },
-  initFirebase: jest.fn(),
-}));
-import { auth as authStub, initFirebase } from '@/lib/firebase';
+  };
+  return {
+    getAuthInstance: jest.fn(() => auth),
+  };
+});
+import { getAuthInstance } from '@/lib/firebase';
+const authStub = getAuthInstance();
 
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
@@ -29,7 +31,6 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
-  initFirebase();
 });
 
 type User = { uid: string } | null;
@@ -57,6 +58,7 @@ function DisplayUser() {
 jest.mock('@/components/service-worker', () => ({
   ServiceWorker: () => null,
 }));
+jest.mock('@/components/ui/toaster', () => ({ Toaster: () => null }));
 
 
 beforeEach(() => {
@@ -72,9 +74,9 @@ test('redirects to dashboard when authenticated on "/" and updates context', asy
   mockUser = { uid: 'abc' };
 
   render(
-    <ClientProviders>
+    <AuthProvider>
       <DisplayUser />
-    </ClientProviders>
+    </AuthProvider>
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/dashboard'));
@@ -86,9 +88,9 @@ test('redirects to "/" when unauthenticated on protected route', async () => {
   mockUser = null;
 
   render(
-    <ClientProviders>
+    <AuthProvider>
       <DisplayUser />
-    </ClientProviders>
+    </AuthProvider>
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/'));
@@ -100,9 +102,9 @@ test('handles missing persisted user', () => {
   localStorage.removeItem(key);
   const renderComponent = () =>
     render(
-      <ClientProviders>
+      <AuthProvider>
         <DisplayUser />
-      </ClientProviders>
+      </AuthProvider>
     );
   expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();
@@ -113,9 +115,9 @@ test('handles corrupted persisted user', () => {
   localStorage.setItem(key, '{bad json');
   const renderComponent = () =>
     render(
-      <ClientProviders>
+      <AuthProvider>
         <DisplayUser />
-      </ClientProviders>
+      </AuthProvider>
     );
   expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();
