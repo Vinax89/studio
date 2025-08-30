@@ -64,6 +64,8 @@ class NaiveBayesClassifier {
 }
 
 let classifier: NaiveBayesClassifier | null = null;
+let unsubscribe: (() => void) | null = null;
+let intervalId: NodeJS.Timeout | null = null;
 
 async function fetchPairs(): Promise<FeedbackPair[]> {
   const snap = await getDocs(collection(db, "categoryFeedback"));
@@ -81,13 +83,21 @@ export function classifyCategory(description: string): string | null {
   return classifier.predict(description);
 }
 
-// Initial training
-trainCategoryModel();
-// Retrain when new feedback is added
-onSnapshot(collection(db, "categoryFeedback"), () => {
-  trainCategoryModel();
-});
-// Periodic retraining as a safety net (every hour)
-setInterval(() => {
-  trainCategoryModel();
-}, 60 * 60 * 1000);
+export async function initCategoryModel(): Promise<void> {
+  await trainCategoryModel();
+  unsubscribe = onSnapshot(collection(db, "categoryFeedback"), () => {
+    trainCategoryModel();
+  });
+  intervalId = setInterval(() => {
+    trainCategoryModel();
+  }, 60 * 60 * 1000);
+}
+
+export function teardownCategoryModel(): void {
+  unsubscribe?.();
+  unsubscribe = null;
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+}
