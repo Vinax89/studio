@@ -25,7 +25,7 @@ const baseTx = {
 
 describe("/api/transactions/sync persistence", () => {
   beforeEach(() => {
-    ;(saveTransactions as jest.Mock).mockClear()
+    (saveTransactions as jest.Mock).mockClear()
   })
 
   it("saves transactions via saveTransactions", async () => {
@@ -45,7 +45,7 @@ describe("/api/transactions/sync persistence", () => {
   })
 
   it("propagates persistence errors", async () => {
-    ;(saveTransactions as jest.Mock).mockRejectedValueOnce(
+    (saveTransactions as jest.Mock).mockRejectedValueOnce(
       Object.assign(new Error("db failed"), { status: 503 }),
     )
 
