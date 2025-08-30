@@ -2,7 +2,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../components/auth/auth-provider';
+import { useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
@@ -56,6 +56,10 @@ function DisplayUser() {
 // Mock the ServiceWorker component as it's not relevant to this test
 jest.mock('@/components/service-worker', () => ({
   ServiceWorker: () => null,
+}));
+
+jest.mock('lucide-react', () => ({
+  X: () => null,
 }));
 
 
