@@ -13,6 +13,7 @@ type Tx = {
   amount: number;
   currency: string;
   isRecurring: boolean;
+  userId: string;
 };
 
 function makeTransactions(count: number): Tx[] {
@@ -25,6 +26,7 @@ function makeTransactions(count: number): Tx[] {
     amount: 100,
     currency: 'USD',
     isRecurring: false,
+    userId: 'u1',
   }));
 }
 

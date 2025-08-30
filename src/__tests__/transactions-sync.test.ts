@@ -41,7 +41,9 @@ describe("/api/transactions/sync persistence", () => {
     expect(res.status).toBe(200)
     expect(data).toEqual({ received: 1 })
     expect(saveTransactions).toHaveBeenCalledTimes(1)
-    expect(saveTransactions).toHaveBeenCalledWith([baseTx])
+    expect(saveTransactions).toHaveBeenCalledWith([
+      { ...baseTx, userId: "test-user" },
+    ])
   })
 
   it("propagates persistence errors", async () => {

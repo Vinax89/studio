@@ -24,6 +24,7 @@ import { logger } from "@/lib/logger";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const userId = "demo-user";
   const router = useRouter();
   const [isTransitionPending, startTransition] = useTransition();
 
@@ -54,12 +55,13 @@ export default function TransactionsPage() {
           ...transaction,
           id: crypto.randomUUID(),
           date: new Date().toISOString().split("T")[0],
+          userId,
         },
         ...prev,
       ]);
       addCategory(transaction.category);
     },
-    [] 
+    [userId]
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();
@@ -69,7 +71,7 @@ export default function TransactionsPage() {
     if (!file) return;
     try {
       const rows = await parseCsv<TransactionRowType>(file);
-      const parsed = validateTransactions(rows, getCategories());
+      const parsed = validateTransactions(rows, getCategories(), userId);
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {
@@ -137,7 +139,7 @@ export default function TransactionsPage() {
                 <ScanLine className="mr-2 h-4 w-4" />
                 Scan Receipt
             </Button>
-            <AddTransactionDialog onSave={addTransaction} />
+            <AddTransactionDialog onSave={addTransaction} userId={userId} />
         </div>
       </div>
 

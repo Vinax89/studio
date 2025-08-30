@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
+import type { Transaction } from "@/lib/types"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 import { logger } from "@/lib/logger"
 
@@ -19,8 +20,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  let decoded
   try {
-    await verifyFirebaseToken(req)
+    decoded = await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
     return NextResponse.json({ error: message }, { status: 401 })
@@ -52,10 +54,14 @@ export async function POST(req: Request) {
   }
 
   const { transactions } = parsed.data
+  const txWithUser: Transaction[] = transactions.map((tx) => ({
+    ...tx,
+    userId: decoded.uid,
+  }))
 
   try {
-    await saveTransactions(transactions)
-    return NextResponse.json({ received: transactions.length })
+    await saveTransactions(txWithUser)
+    return NextResponse.json({ received: txWithUser.length })
   } catch (err) {
     logger.error("Failed to persist transactions", err)
     const message =

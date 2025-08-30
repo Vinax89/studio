@@ -29,9 +29,10 @@ import { logger } from "@/lib/logger"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
+  userId?: string;
 }
 
-export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
+export function AddTransactionDialog({ onSave, userId = "demo-user" }: AddTransactionDialogProps) {
     const [open, setOpen] = useState(false)
     const [description, setDescription] = useState("")
     const [amount, setAmount] = useState("")
@@ -91,7 +92,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             currency,
             type,
             category,
-            isRecurring
+            isRecurring,
+            userId,
         })
         if(suggestedCategory && category !== suggestedCategory){
             try {

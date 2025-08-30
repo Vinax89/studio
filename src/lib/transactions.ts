@@ -82,6 +82,7 @@ export function chunkTransactions<T>(
  * set to the default of `"USD"` until import sources supply currency data.
  *
  * @param rows - Array of transaction-like objects to validate and normalize.
+ * @param userId - Authenticated user identifier applied to each transaction.
  * @returns Array of validated transactions ready for persistence.
  * @throws {Error} If any row fails validation or if an amount cannot be
  *   parsed into a number.
@@ -90,7 +91,8 @@ export function chunkTransactions<T>(
  */
 export function validateTransactions(
   rows: TransactionRowType[],
-  validCategories: string[]
+  validCategories: string[],
+  userId: string
 ): Transaction[] {
   const schema = createTransactionRowSchema(validCategories);
   return rows.map((row, index) => {
@@ -109,6 +111,7 @@ export function validateTransactions(
 
     const tx: Transaction = {
       id: crypto.randomUUID(),
+      userId,
       date: data.date,
       description: data.description,
       amount: parsedAmount,
@@ -132,7 +135,7 @@ export function validateTransactions(
 /**
  * Persist a collection of transactions to Firestore using a batch write.
  *
- * @param transactions - Validated transaction objects to be written.
+ * @param transactions - Validated transaction objects to be written. Each must include a `userId`.
  * @throws {Error} If the Firestore batch commit fails.
  * @remarks Writes to Firestore and performs network I/O.
  */
@@ -142,6 +145,9 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
+      if (!tx.userId) {
+        throw new Error("Transaction missing userId");
+      }
       batch.set(doc(colRef, tx.id), tx);
     });
 
@@ -179,9 +185,12 @@ async function fetchCategories(): Promise<string[]> {
   }
 }
 
-export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
+export async function importTransactions(
+  rows: TransactionRowType[],
+  userId: string
+): Promise<void> {
   const categories = await fetchCategories();
-  const transactions = validateTransactions(rows, categories);
+  const transactions = validateTransactions(rows, categories, userId);
   try {
     await saveTransactions(transactions);
   } catch (err) {

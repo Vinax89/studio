@@ -28,6 +28,7 @@ jest.mock("firebase/firestore", () => ({
 const transactions = [
   {
     id: "1",
+    userId: "u1",
     date: "2024-01-01",
     description: "Test1",
     amount: 100,
@@ -38,6 +39,7 @@ const transactions = [
   },
   {
     id: "2",
+    userId: "u1",
     date: "2024-01-02",
     description: "Test2",
     amount: 200,
@@ -66,6 +68,7 @@ describe("saveTransactions", () => {
   it("splits transactions into multiple batches when over 500", async () => {
     const manyTransactions = Array.from({ length: 501 }, (_, i) => ({
       id: String(i),
+      userId: "u1",
       date: "2024-01-01",
       description: `Test${i}`,
       amount: i,
