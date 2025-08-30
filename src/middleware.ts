@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { allowedOrigins } from '@/lib/allowed-origins';
 
 export function middleware(request: NextRequest) {
   const cspNonce = Buffer.from(crypto.randomUUID()).toString('base64');
@@ -33,8 +34,14 @@ export function middleware(request: NextRequest) {
     'max-age=63072000; includeSubDomains; preload'
   );
 
-  if (process.env.NODE_ENV === 'development') {
-    response.headers.set('Access-Control-Allow-Origin', '*');
+  const origin = request.headers.get('origin');
+  if (
+    origin &&
+    allowedOrigins.some((allowed) =>
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+    )
+  ) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
   }
 
   return response;
