@@ -32,11 +32,14 @@ describe("categoryService", () => {
     jest.clearAllMocks();
   });
 
-  it("rejects categories with illegal Firestore characters", () => {
-    addCategory("Food/Drink");
-    expect(getCategories()).toEqual([]);
-    expect(setDoc).not.toHaveBeenCalled();
-  });
+  it.each(["/", "*", "[", "]"])(
+    "rejects categories containing %s",
+    (ch) => {
+      addCategory(`Bad${ch}Cat`);
+      expect(getCategories()).toEqual([]);
+      expect(setDoc).not.toHaveBeenCalled();
+    }
+  );
 
   it("ignores removal of invalid category names", () => {
     addCategory("Groceries");
