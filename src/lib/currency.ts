@@ -20,15 +20,24 @@ export async function getFxRate(from: string, to: string): Promise<number> {
   if (fromCode === toCode) return 1;
 
   const cacheKey = `${fromCode}-${toCode}`;
+  const inverseKey = `${toCode}-${fromCode}`;
   const now = Date.now();
   const cache = fxRateCache.get(cacheKey);
   if (cache && now - cache.ts < FX_RATE_TTL_MS) {
     return cache.rate;
   }
+  const inverseCache = fxRateCache.get(inverseKey);
+  if (inverseCache && now - inverseCache.ts < FX_RATE_TTL_MS) {
+    return 1 / inverseCache.rate;
+  }
 
   const inFlight = fxRateRequests.get(cacheKey);
   if (inFlight) {
     return inFlight;
+  }
+  const inverseInFlight = fxRateRequests.get(inverseKey);
+  if (inverseInFlight) {
+    return inverseInFlight.then((rate) => 1 / rate);
   }
 
   const controller = new AbortController();
@@ -62,13 +71,17 @@ export async function getFxRate(from: string, to: string): Promise<number> {
     if (typeof rate !== 'number') {
       throw new Error('Invalid FX rate data');
     }
-    fxRateCache.set(cacheKey, { rate, ts: Date.now() });
+    const ts = Date.now();
+    fxRateCache.set(cacheKey, { rate, ts });
+    fxRateCache.set(inverseKey, { rate: 1 / rate, ts });
     return rate;
   })().finally(() => {
     fxRateRequests.delete(cacheKey);
+    fxRateRequests.delete(inverseKey);
   });
 
   fxRateRequests.set(cacheKey, promise);
+  fxRateRequests.set(inverseKey, promise.then((rate) => 1 / rate));
   return promise;
 }
 
