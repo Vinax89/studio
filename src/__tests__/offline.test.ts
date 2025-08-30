@@ -53,35 +53,38 @@ afterAll(() => {
 
 describe("offline fallbacks", () => {
   it("queues and retrieves transactions", async () => {
-    expect(await queueTransaction({ id: 1 })).toBe(true)
-    expect(await queueTransaction({ id: 2 })).toBe(true)
+    expect((await queueTransaction({ id: 1 })).ok).toBe(true)
+    expect((await queueTransaction({ id: 2 })).ok).toBe(true)
 
     const queued = await getQueuedTransactions<{ id: number }>()
-    expect(queued).toEqual([{ id: 1 }, { id: 2 }])
+    expect(queued.ok).toBe(true)
+    expect(queued.value).toEqual([{ id: 1 }, { id: 2 }])
 
-    expect(await clearQueuedTransactions()).toBe(true)
+    expect((await clearQueuedTransactions()).ok).toBe(true)
     const empty = await getQueuedTransactions()
-    expect(empty).toEqual([])
+    expect(empty.ok).toBe(true)
+    expect(empty.value).toEqual([])
   })
 
   it("prunes oldest transactions beyond queue size", async () => {
     for (let i = 1; i <= 5; i++) {
-      await queueTransaction({ id: i }, 3)
+      expect((await queueTransaction({ id: i }, 3)).ok).toBe(true)
     }
 
     const queued = await getQueuedTransactions<{ id: number }>()
-    expect(queued).toEqual([{ id: 3 }, { id: 4 }, { id: 5 }])
+    expect(queued.ok).toBe(true)
+    expect(queued.value).toEqual([{ id: 3 }, { id: 4 }, { id: 5 }])
 
     await clearQueuedTransactions()
   })
 })
 
 describe("ServiceWorker", () => {
-  it("handles null queued transactions gracefully", async () => {
+  it("handles queued transaction retrieval errors gracefully", async () => {
     jest.useFakeTimers()
     const getQueuedSpy = jest
       .spyOn(offline, "getQueuedTransactions")
-      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ ok: false, error: new Error("failed") })
 
     const fetchMock = jest.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch

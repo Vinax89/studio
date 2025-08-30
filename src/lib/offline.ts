@@ -6,9 +6,12 @@ const DEFAULT_MAX_QUEUE_SIZE = 100
 
 let dbPromise: ReturnType<typeof openDB> | null = null
 
+export type Result<T, E extends Error = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E }
+
 export async function getDb() {
   if (typeof indexedDB === "undefined") {
-    console.error("IndexedDB is not supported in this environment")
     return null
   }
 
@@ -26,19 +29,21 @@ export async function getDb() {
  * Enqueue a transaction in IndexedDB for offline processing.
  * The transaction is stored in the `transactions` object store and the
  * queue is capped at `maxQueueSize`, removing the oldest entries when the
- * limit is exceeded. Errors are logged to the console.
+ * limit is exceeded.
  *
  * @param tx Data to queue for later processing.
  * @param maxQueueSize Maximum number of transactions retained in storage.
- * @returns `true` if the transaction was queued successfully, otherwise `false`.
+ * @returns A {@link Result} indicating success or failure.
  */
 export async function queueTransaction(
   tx: unknown,
   maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
-) {
+): Promise<Result<void, Error>> {
   try {
     const db = await getDb()
-    if (!db) return false
+    if (!db) {
+      return { ok: false, error: new Error("IndexedDB is not supported") }
+    }
     await db.add(STORE_NAME, tx)
 
     const total = await db.count(STORE_NAME)
@@ -52,46 +57,56 @@ export async function queueTransaction(
       }
       await txDelete.done
     }
-    return true
+    return { ok: true, value: undefined }
   } catch (error) {
-    console.error("queueTransaction error", error)
-    return false
+    return {
+      ok: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
 
 /**
  * Retrieve all transactions currently queued in IndexedDB.
  * The returned list reflects the transactions stored by {@link queueTransaction}.
- * Errors are logged to the console.
  *
- * @returns An array of queued transactions or `null` if retrieval fails.
+ * @returns A {@link Result} containing queued transactions or an error.
  */
-export async function getQueuedTransactions<T = unknown>() {
+export async function getQueuedTransactions<T = unknown>(): Promise<
+  Result<T[], Error>
+> {
   try {
     const db = await getDb()
-    if (!db) return null
-    return (await db.getAll(STORE_NAME)) as T[]
+    if (!db) {
+      return { ok: false, error: new Error("IndexedDB is not supported") }
+    }
+    return { ok: true, value: (await db.getAll(STORE_NAME)) as T[] }
   } catch (error) {
-    console.error("getQueuedTransactions error", error)
-    return null
+    return {
+      ok: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
 
 /**
  * Remove all queued transactions from IndexedDB storage.
  * This clears the offline queue used by {@link queueTransaction}.
- * Errors are logged to the console.
  *
- * @returns `true` if the queue was cleared successfully, otherwise `false`.
+ * @returns A {@link Result} indicating success or failure.
  */
-export async function clearQueuedTransactions() {
+export async function clearQueuedTransactions(): Promise<Result<void, Error>> {
   try {
     const db = await getDb()
-    if (!db) return false
+    if (!db) {
+      return { ok: false, error: new Error("IndexedDB is not supported") }
+    }
     await db.clear(STORE_NAME)
-    return true
+    return { ok: true, value: undefined }
   } catch (error) {
-    console.error("clearQueuedTransactions error", error)
-    return false
+    return {
+      ok: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
