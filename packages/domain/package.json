@@ -1,0 +1,9 @@
+{
+  "name": "@studio/domain",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/zod.ts",
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}

@@ -91,6 +91,12 @@ export default function AppHeader() {
               Debts
             </Link>
             <Link
+              href="/budgets"
+              className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              Budgets
+            </Link>
+            <Link
               href="/goals"
               className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             >
