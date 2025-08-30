@@ -99,17 +99,20 @@ describe('suggestDebtStrategy validation', () => {
 });
 
 describe('calculateCostOfLiving validation', () => {
-  it('rejects non-positive adult count', () => {
-    const { calculateCostOfLiving } = require('@/ai/flows/cost-of-living');
+  it('rejects non-positive adult count', async () => {
+    const { calculateCostOfLiving } = await import('@/ai/flows/cost-of-living');
     expect(() =>
       calculateCostOfLiving({ region: 'California', adults: 0, children: 0 })
     ).toThrow();
   });
 
-  it('rejects unknown region', () => {
-    const { calculateCostOfLiving } = require('@/ai/flows/cost-of-living');
-    expect(() =>
-      calculateCostOfLiving({ region: 'Atlantis', adults: 1, children: 0 } as any)
-    ).toThrow('Unknown region');
+  it('rejects unknown region', async () => {
+    const { calculateCostOfLiving } = await import('@/ai/flows/cost-of-living');
+    const invalidInput = {
+      region: 'Atlantis',
+      adults: 1,
+      children: 0,
+    } as unknown as Parameters<typeof calculateCostOfLiving>[0];
+    expect(() => calculateCostOfLiving(invalidInput)).toThrow('Unknown region');
   });
 });
