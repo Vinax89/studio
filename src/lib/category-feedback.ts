@@ -19,7 +19,8 @@ export async function recordCategoryFeedback(
     });
     return true;
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message =
+      err instanceof Error ? err.message : String(err);
     logger.error(`Failed to record category feedback: ${message}`);
     return false;
   }

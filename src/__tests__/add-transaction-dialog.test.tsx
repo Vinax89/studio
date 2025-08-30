@@ -11,25 +11,46 @@ jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastMock }),
 }));
 jest.mock('lucide-react', () => ({ PlusCircle: () => null }));
-jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children }: any) => <div>{children}</div>,
-  DialogTrigger: ({ children }: any) => <div>{children}</div>,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-}));
-jest.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectValue: ({ children }: any) => <div>{children}</div>,
-}));
+jest.mock('@/components/ui/dialog', () => {
+  const Mock = ({ children }: React.PropsWithChildren) => <div>{children}</div>;
+  return {
+    Dialog: Mock,
+    DialogTrigger: Mock,
+    DialogContent: Mock,
+    DialogDescription: Mock,
+    DialogFooter: Mock,
+    DialogHeader: Mock,
+    DialogTitle: Mock,
+  };
+});
+jest.mock('@/components/ui/select', () => {
+  const Mock = ({ children }: React.PropsWithChildren) => <div>{children}</div>;
+  return {
+    Select: Mock,
+    SelectContent: Mock,
+    SelectItem: ({
+      children,
+      ...props
+    }: React.PropsWithChildren<Record<string, unknown>>) => (
+      <div {...props}>{children}</div>
+    ),
+    SelectTrigger: Mock,
+    SelectValue: Mock,
+  };
+});
 jest.mock('@/components/ui/switch', () => ({
-  Switch: ({ onCheckedChange, ...props }: any) => (
-    <input type="checkbox" onChange={onCheckedChange} {...props} />
+  Switch: ({
+    onCheckedChange,
+    ...props
+  }: {
+    onCheckedChange: (checked: boolean) => void;
+    [key: string]: unknown;
+  }) => (
+    <input
+      type="checkbox"
+      onChange={(e) => onCheckedChange(e.target.checked)}
+      {...props}
+    />
   ),
 }));
 

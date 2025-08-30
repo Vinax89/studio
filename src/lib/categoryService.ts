@@ -16,7 +16,7 @@ const hasLocalStorage = () =>
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-const isValidKey = (key: string) => key.length > 0 && !(/[\/\*\[\]]/.test(key));
+const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key);
 
 function load(): string[] {
   if (hasLocalStorage()) {
@@ -94,10 +94,10 @@ export function addCategory(category: string): string[] {
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
+    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
+      console.error
+    );
   }
-  void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error
-  );
   save(categories);
   return categories;
 }

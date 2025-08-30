@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { Inter } from "next/font/google"
 import './globals.css'
+import "@/ai/init"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { ThemeProvider } from 'next-themes'
@@ -15,12 +16,13 @@ export const metadata: Metadata = {
   description: 'Financial management for nursing professionals.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const nonce = headers().get('x-nonce') || undefined
+  const nonceHeader = await headers();
+  const nonce = nonceHeader.get('x-nonce') || undefined
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -46,3 +48,4 @@ export default function RootLayout({
     </html>
   )
 }
+

@@ -1,7 +1,18 @@
-function setupSuccessMocks(output: any) {
+interface Schema<T = unknown> {
+  parse: (value: unknown) => T;
+}
+
+interface FlowConfig<I = unknown, O = unknown> {
+  inputSchema: Schema<I>;
+  outputSchema: Schema<O>;
+}
+
+type FlowHandler<I = unknown, O = unknown> = (input: I) => O | Promise<O>;
+
+function setupSuccessMocks<O>(output: O) {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
-  const defineFlowMock = jest.fn((config: any, handler: any) => {
-    return async (input: any) => {
+  const defineFlowMock = jest.fn(<I>(config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => {
+    return async (input: unknown): Promise<O> => {
       const parsedInput = config.inputSchema.parse(input);
       const result = await handler(parsedInput);
       return config.outputSchema.parse(result);

@@ -29,7 +29,7 @@ describe("WorkerPool", () => {
   it("continues processing after a worker crash", async () => {
     const pool = new WorkerPool<number | string, number>("fake", 1)
 
-    const fail = pool.run("crash" as any)
+    const fail = pool.run("crash")
     const success = pool.run(5)
 
     await expect(fail).rejects.toThrow("boom")
@@ -41,7 +41,7 @@ describe("WorkerPool", () => {
   it("does not reject when a worker exits normally", async () => {
     const pool = new WorkerPool<number | string, number>("fake", 1)
 
-    const promise = pool.run("exit" as any)
+    const promise = pool.run("exit")
     const timeout = new Promise(resolve => setTimeout(resolve, 10))
 
     await expect(Promise.race([promise, timeout])).resolves.toBeUndefined()
@@ -54,7 +54,11 @@ describe("WorkerPool", () => {
 
     for (let i = 0; i < 50; i++) {
       await pool.run(i)
-      const worker = (pool as any).workers[0]
+      const worker = (
+        pool as unknown as {
+          workers: Array<{ listenerCount: (event: string) => number }>
+        }
+      ).workers[0]
       expect(worker.listenerCount("exit")).toBe(1)
     }
 

@@ -6,6 +6,15 @@ interface RawRow {
   DataValue: string;
 }
 
+interface RegionCostBreakdown {
+  housing: number;
+  groceries: number;
+  utilities: number;
+  transportation: number;
+  healthcare: number;
+  miscellaneous: number;
+}
+
 async function fetchRpp(year: number, apiKey: string) {
   const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=STATE&Year=${year}&ResultFormat=JSON`;
   const res = await fetch(url);
@@ -35,23 +44,23 @@ async function main() {
       miscellaneous: index * 4000,
     };
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, RegionCostBreakdown>);
 
   const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: 'BEA Regional Price Parities',\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
   const dir = join(__dirname, '..', 'src', 'data');
   if (!existsSync(dir)) {
     if (dryRun) {
-      console.log(`Dry run - would create directory ${dir}`);
+      console.info(`Dry run - would create directory ${dir}`);
     } else {
       mkdirSync(dir, { recursive: true });
     }
   }
   const target = join(dir, `costOfLiving${year}.ts`);
   if (dryRun) {
-    console.log(`Dry run - would write to ${target}:\n${content}`);
+    console.info(`Dry run - would write to ${target}:\n${content}`);
   } else {
     writeFileSync(target, content);
-    console.log(`Updated dataset for ${year}`);
+    console.info(`Updated dataset for ${year}`);
   }
 }
 
@@ -59,3 +68,4 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+

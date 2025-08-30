@@ -3,7 +3,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
-import { auth as authStub } from '@/lib/firebase';
 
 let mockPathname = '/';
 const pushMock = jest.fn();
@@ -19,15 +18,21 @@ jest.mock('@/lib/firebase', () => ({
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
 }));
+import { auth as authStub } from '@/lib/firebase';
 
-let mockUser: any = null;
-const onAuthStateChanged = jest.fn((_auth: unknown, cb: (u: any) => void) => {
-  cb(mockUser);
-  return () => {};
-});
+type User = { uid: string } | null;
+let mockUser: User = null;
+const onAuthStateChanged = jest.fn(
+  (_auth: unknown, cb: (u: User) => void) => {
+    cb(mockUser);
+    return () => {};
+  }
+);
 
 jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: (...args: any[]) => (onAuthStateChanged as any)(...args),
+  onAuthStateChanged: (
+    ...args: Parameters<typeof onAuthStateChanged>
+  ) => onAuthStateChanged(...args),
 }));
 
 function DisplayUser() {
@@ -45,7 +50,7 @@ beforeEach(() => {
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {
   mockPathname = '/';
-  mockUser = { uid: 'abc' } as any;
+  mockUser = { uid: 'abc' };
 
   render(
     <AuthProvider>
@@ -96,3 +101,4 @@ test('handles corrupted persisted user', () => {
   expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();
 });
+
