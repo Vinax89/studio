@@ -164,6 +164,30 @@ async function fetchCategories(): Promise<string[]> {
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
   const categories = await fetchCategories();
   const transactions = validateTransactions(rows, categories);
+  // Write any new categories encountered during import.
+  const newCategories = Array.from(
+    new Set(
+      transactions
+        .map((tx) => tx.category)
+        .filter((cat) => !categories.includes(cat))
+    )
+  );
+  if (newCategories.length > 0) {
+    const catColRef = collection(db, "categories");
+    const batch = writeBatch(db);
+    newCategories.forEach((cat) => {
+      batch.set(doc(catColRef, cat), { name: cat });
+    });
+    try {
+      await batch.commit();
+    } catch (err) {
+      throw new Error(
+        `Failed to save categories batch: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    }
+  }
   try {
     await saveTransactions(transactions);
   } catch (err) {
