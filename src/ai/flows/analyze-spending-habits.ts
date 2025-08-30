@@ -11,9 +11,10 @@
  * - AnalyzeSpendingHabitsOutput - The return type for the analyzeSpendingHabits function.
  */
 
-import {ai} from '@/ai/genkit';
-import {DATA_URI_REGEX} from '@/lib/data-uri';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { redact } from '@/ai/redact';
+import { DATA_URI_REGEX } from '@/lib/data-uri';
+import { z } from 'genkit';
 
 const GoalSchema = z.object({
     id: z.string(),
@@ -90,10 +91,11 @@ const analyzeSpendingHabitsFlow = ai.defineFlow(
     outputSchema: AnalyzeSpendingHabitsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const cleanInput = redact(input);
+    const { output } = await prompt(cleanInput);
     if (!output) {
       throw new Error('No output returned from analyzeSpendingHabitsPrompt');
     }
-    return output;
+    return redact(output);
   }
 );
