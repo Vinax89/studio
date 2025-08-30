@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
+import { randomUUID } from "node:crypto";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
@@ -108,7 +109,7 @@ export function validateTransactions(
     const parsedAmount = Number(amountString);
 
     const tx: Transaction = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       date: data.date,
       description: data.description,
       amount: parsedAmount,
@@ -139,15 +140,17 @@ export function validateTransactions(
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
-  const commits = chunks.map((chunk) => {
+  const commitPromises: Promise<void>[] = [];
+
+  for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
-    return batch.commit();
-  });
+    commitPromises.push(batch.commit());
+  }
 
-  const results = await Promise.allSettled(commits);
+  const results = await Promise.allSettled(commitPromises);
   const errors: string[] = [];
   results.forEach((result, index) => {
     if (result.status === "rejected") {
