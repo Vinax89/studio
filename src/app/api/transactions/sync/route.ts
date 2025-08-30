@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     })
 
     if (errors.length > 0) {
-      return NextResponse.json({ saved, errors }, { status: 207 })
+      return NextResponse.json({ saved, errors }, { status: 500 })
     }
 
     return NextResponse.json({ saved })

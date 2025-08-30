@@ -71,7 +71,7 @@ describe("/api/transactions/sync persistence", () => {
     })
 
     const res = await POST(req)
-    expect(res.status).toBe(207)
+    expect(res.status).toBe(500)
     const data = await res.json()
     expect(mockSetDoc).toHaveBeenCalledTimes(transactions.length)
     expect(data.saved).toEqual(["1"])
