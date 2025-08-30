@@ -22,6 +22,20 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: () => ({
+      matches: false,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+}
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'

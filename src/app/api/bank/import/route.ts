@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { collection, getDocs } from "firebase/firestore"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
+import { getProviderMapper } from "@/lib/providers"
+import {
+  validateTransactions,
+  saveTransactions,
+  type TransactionRowType,
+} from "@/lib/transactions"
+import { logger } from "@/lib/logger"
+import { db, initFirebase } from "@/lib/firebase"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -11,7 +19,7 @@ import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
  */
 const bodySchema = z.object({
   provider: z.string(),
-  transactions: z.array(TransactionPayloadSchema),
+  transactions: z.array(z.unknown()),
 })
 
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
@@ -51,15 +59,42 @@ export async function POST(req: Request) {
 
   const { provider, transactions } = parsed.data
 
+  let rows: TransactionRowType[]
   try {
-    return NextResponse.json({
-      provider,
-      imported: transactions.length,
-    })
-  } catch {
+    const mapper = getProviderMapper(provider)
+    rows = mapper(transactions)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unsupported provider"
+    return NextResponse.json({ error: message }, { status: 400 })
+  }
+
+  initFirebase()
+  let categories: string[]
+  try {
+    const snapshot = await getDocs(collection(db, "categories"))
+    categories = snapshot.docs.map((doc) => doc.id)
+  } catch (err) {
+    logger.error("Failed to fetch categories", err)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     )
+  }
+
+  let validated
+  try {
+    validated = validateTransactions(rows, categories)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Invalid transactions"
+    return NextResponse.json({ error: message }, { status: 400 })
+  }
+
+  try {
+    await saveTransactions(validated)
+    return NextResponse.json({ provider, imported: validated.length })
+  } catch (err) {
+    logger.error("Failed to persist transactions", err)
+    const message = err instanceof Error ? err.message : "Internal server error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
