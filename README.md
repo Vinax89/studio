@@ -43,8 +43,17 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins. Wrap regex patterns with `/` delimiters. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
+
+Configure cross-origin access by providing one or more entries in `CORS_ALLOWED_ORIGINS`. For example:
+
+```
+CORS_ALLOWED_ORIGINS=/^https:\/\/.*-firebase-studio-.*\.cloudworkstations\.dev$/,http://localhost:6006
+```
+
+Entries enclosed in `/` are treated as regular expressions; others are matched exactly.
 
 ## Internet time helper
 

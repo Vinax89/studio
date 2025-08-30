@@ -15,3 +15,7 @@ This project defines security headers in `next.config.ts` for all routes. Any ad
 The Content-Security-Policy includes a nonce. When adding inline scripts, apply this nonce to the `<script>` tag's `nonce` attribute or replace the inline script with an external file. Middleware that generates HTML should propagate the same nonce in the response headers.
 
 Always verify headers locally when introducing new routes or middleware to ensure functionality remains intact.
+
+## CORS configuration
+
+Specify allowed origins for cross-origin requests in the `CORS_ALLOWED_ORIGINS` environment variable. Provide a comma-separated list of origins and wrap regular expressions with `/` delimiters.
