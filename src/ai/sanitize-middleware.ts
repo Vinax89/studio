@@ -8,7 +8,7 @@ function hashPlaceholder(value: string) {
   return `[hash:${crypto.createHash('sha256').update(value).digest('hex').slice(0, 8)}]`
 }
 
-function sanitizeValue(value: any): any {
+function sanitizeValue(value: unknown): unknown {
   if (typeof value === 'string') {
     if (emailRegex.test(value) || phoneRegex.test(value) || accountRegex.test(value)) {
       return hashPlaceholder(value)
@@ -16,12 +16,12 @@ function sanitizeValue(value: any): any {
     return value
   }
   if (Array.isArray(value)) {
-    return value.map((v) => sanitizeValue(v))
+    return value.map(v => sanitizeValue(v))
   }
   if (value && typeof value === 'object') {
-    const result: any = {}
-    for (const key of Object.keys(value)) {
-      result[key] = sanitizeValue((value as any)[key])
+    const result: Record<string, unknown> = {}
+    for (const key of Object.keys(value as Record<string, unknown>)) {
+      result[key] = sanitizeValue((value as Record<string, unknown>)[key])
     }
     return result
   }
@@ -29,7 +29,7 @@ function sanitizeValue(value: any): any {
 }
 
 export function sanitizeMiddleware<T>(input: T): T {
-  return sanitizeValue(input)
+  return sanitizeValue(input) as T
 }
 
 export default sanitizeMiddleware

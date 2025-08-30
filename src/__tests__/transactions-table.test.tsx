@@ -2,7 +2,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TransactionsTable } from '@/components/transactions/transactions-table';
-jest.mock('lucide-react', () => ({ Repeat: () => null }));
 
 type Tx = {
   id: string;

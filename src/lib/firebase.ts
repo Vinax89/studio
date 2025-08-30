@@ -18,15 +18,15 @@ const firebaseConfigSchema = z.object({
   NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
 });
 
-let app: ReturnType<typeof initializeApp>;
-let auth: ReturnType<typeof getAuth>;
-let db: ReturnType<typeof getFirestore>;
-let categoriesCollection: ReturnType<typeof collection>;
+let app: ReturnType<typeof initializeApp> | undefined;
+let auth: ReturnType<typeof getAuth> | undefined;
+let db: ReturnType<typeof getFirestore> | undefined;
+let categoriesCollection: ReturnType<typeof collection> | undefined;
 
 
 export function initFirebase() {
   if (app) {
-    return { app, auth, db, categoriesCollection };
+    return { app, auth, db: db!, categoriesCollection: categoriesCollection! };
   }
 
   const envParseResult = firebaseConfigSchema.safeParse(process.env);
@@ -53,4 +53,11 @@ export function initFirebase() {
   return { app, auth, db, categoriesCollection };
 }
 
-export { app, auth, db, categoriesCollection };
+export function getDb(): ReturnType<typeof getFirestore> {
+  if (!db) {
+    initFirebase();
+  }
+  return db!;
+}
+
+export { app, auth, db, categoriesCollection, getDb };
