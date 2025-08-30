@@ -7,7 +7,7 @@ import { logger } from "../logger";
 // Hook to subscribe to debts collection and expose helpers for CRUD operations.
 export function useDebts() {
   const [debts, setDebts] = useState<Debt[]>([]);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -15,17 +15,57 @@ export function useDebts() {
       snap => {
         const items = snap.docs.map(d => d.data());
         setDebts(items);
-        setError(false);
+        setError(null);
       },
       err => {
         logger.error("Error subscribing to debts", err);
-        setError(true);
+        setError(err);
       }
     );
     return () => unsub();
   }, []);
 
-  return { debts, error, addOrUpdateDebt, deleteDebt, markPaid, unmarkPaid };
+  const addOrUpdateDebtFn = async (next: Debt) => {
+    try {
+      await addOrUpdateDebt(next);
+      setError(null);
+    } catch (err) {
+      logger.error("Error adding/updating debt", err);
+      setError(err as Error);
+    }
+  };
+
+  const deleteDebtFn = async (id: string) => {
+    try {
+      await deleteDebt(id);
+      setError(null);
+    } catch (err) {
+      logger.error("Error deleting debt", err);
+      setError(err as Error);
+    }
+  };
+
+  const markPaidFn = async (dateISO: string, id: string) => {
+    try {
+      await markPaid(dateISO, id);
+      setError(null);
+    } catch (err) {
+      logger.error("Error marking debt paid", err);
+      setError(err as Error);
+    }
+  };
+
+  const unmarkPaidFn = async (dateISO: string, id: string) => {
+    try {
+      await unmarkPaid(dateISO, id);
+      setError(null);
+    } catch (err) {
+      logger.error("Error unmarking debt paid", err);
+      setError(err as Error);
+    }
+  };
+
+  return { debts, error, addOrUpdateDebt: addOrUpdateDebtFn, deleteDebt: deleteDebtFn, markPaid: markPaidFn, unmarkPaid: unmarkPaidFn };
 }
 
 export async function addOrUpdateDebt(next: Debt) {

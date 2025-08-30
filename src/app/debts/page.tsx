@@ -12,6 +12,7 @@ import { suggestDebtStrategy, type SuggestDebtStrategyOutput } from "@/ai/flows"
 import { useToast } from "@/hooks/use-toast";
 import type { Debt } from "@/lib/types";
 import { deleteDebt } from "@/lib/debts/use-debts";
+import { logger } from "@/lib/logger";
 
 export default function DebtsPage() {
   const [debts, setDebts] = useState<Debt[]>([]);
@@ -36,7 +37,7 @@ export default function DebtsPage() {
       setStrategy(result);
 
     } catch (error) {
-      console.error("Error suggesting debt strategy:", error);
+      logger.error("Error suggesting debt strategy:", error);
       toast({
         title: "Strategy Failed",
         description: "There was an error generating your debt strategy. Please try again.",
