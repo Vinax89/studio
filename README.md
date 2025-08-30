@@ -6,6 +6,7 @@ To get started, take a look at src/app/page.tsx.
 - On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
+- Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
 ## Color input
