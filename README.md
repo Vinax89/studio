@@ -2,6 +2,8 @@ This is a NextJS starter in Firebase Studio.
 This project uses npm as the canonical package manager. Use npm for all dependency management tasks.
 To get started, take a look at src/app/page.tsx.
 
+Requires Node.js 20. Use a Node.js version greater than or equal to 20 but less than 21.
+
 ## Development
 - `npm run dev` – start the development server.
 - On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
