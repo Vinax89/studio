@@ -2,8 +2,12 @@ import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
 
 jest.mock("../lib/offline", () => ({
-  getQueuedTransactions: jest.fn().mockResolvedValue([{ id: 1 }]),
-  clearQueuedTransactions: jest.fn().mockResolvedValue(undefined),
+  getQueuedTransactions: jest
+    .fn()
+    .mockResolvedValue({ ok: true, value: [{ id: 1 }] }),
+  clearQueuedTransactions: jest
+    .fn()
+    .mockResolvedValue({ ok: true, value: undefined }),
 }))
 
 jest.mock("../lib/firebase", () => ({

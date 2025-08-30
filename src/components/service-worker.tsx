@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
 import { auth } from "@/lib/firebase"
 import { toast } from "@/hooks/use-toast"
+import { logger } from "@/lib/logger"
 
 export function ServiceWorker() {
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -14,11 +15,12 @@ export function ServiceWorker() {
 
   useEffect(() => {
     const syncQueued = async () => {
-      const queued = await getQueuedTransactions()
-      if (queued === null) {
-        console.error("Failed to retrieve queued transactions")
+      const queuedResult = await getQueuedTransactions()
+      if (!queuedResult.ok) {
+        logger.error("Failed to retrieve queued transactions", queuedResult.error)
         return
       }
+      const queued = queuedResult.value
       if (!queued.length) return
 
       abortController.current?.abort()
@@ -35,7 +37,7 @@ export function ServiceWorker() {
         const user = auth.currentUser
         const token = user ? await user.getIdToken() : null
         if (!token) {
-          console.error("Cannot sync queued transactions without auth")
+          logger.error("Cannot sync queued transactions without auth")
           return
         }
 
@@ -53,7 +55,10 @@ export function ServiceWorker() {
           throw new Error(await response.text())
         }
 
-        await clearQueuedTransactions()
+        const clearResult = await clearQueuedTransactions()
+        if (!clearResult.ok) {
+          logger.error("Failed to clear queued transactions", clearResult.error)
+        }
         retryCount.current = 0
         notified.current = false
       } catch (error) {
@@ -71,7 +76,7 @@ export function ServiceWorker() {
           notified.current = true
         }
 
-        console.error("Failed to sync queued transactions", error)
+        logger.error("Failed to sync queued transactions", error)
         if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
         retryTimeoutId.current = setTimeout(syncQueued, delay)
       } finally {
@@ -93,7 +98,7 @@ export function ServiceWorker() {
         try {
           await navigator.serviceWorker.register("/sw.js")
         } catch (error) {
-          console.error(error)
+          logger.error("Service worker registration failed", error)
         }
       }
 
