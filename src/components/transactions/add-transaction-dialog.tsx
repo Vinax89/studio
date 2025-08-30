@@ -26,6 +26,7 @@ import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
 import { logger } from "@/lib/logger"
+import { suggestCategoryAction } from "@/app/actions"
 
 interface AddTransactionDialogProps {
   onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
@@ -56,12 +57,11 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         let active = true
         const fetchSuggestion = async () => {
             try {
-                const { suggestCategory } = await import("@/ai/flows/suggest-category")
-                const res = await suggestCategory({ description })
+                const category = await suggestCategoryAction(description)
                 if (active) {
-                    setSuggestedCategory(res.category)
+                    setSuggestedCategory(category)
                     if (!userModifiedCategory.current) {
-                        setCategory(res.category)
+                        setCategory(category)
                     }
                 }
             } catch (error) {
