@@ -14,6 +14,39 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock UI components to avoid Radix and other dependencies
+jest.mock('lucide-react', () => ({ X: () => null }));
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => '/',
+}));
+jest.mock('@/components/service-worker', () => ({
+  ServiceWorker: () => null,
+}));
+
+let snapshotCallback: ((snapshot: { docs: Array<{ data: () => unknown }> }) => void) | null = null;
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  collection: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
+  doc: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
+  onSnapshot: (_: unknown, cb: (snapshot: { docs: Array<{ data: () => unknown }> }) => void) => {
+    snapshotCallback = cb;
+    cb({ docs: mockDebts.map(debt => ({ data: () => debt })) });
+    return () => {};
+  },
+  setDoc: jest.fn((_: unknown, debt: any) => {
+    const index = mockDebts.findIndex(d => d.id === debt.id);
+    if (index === -1) {
+      mockDebts.push(debt);
+    } else {
+      mockDebts[index] = debt;
+    }
+    snapshotCallback?.({ docs: mockDebts.map(d => ({ data: () => d })) });
+  }),
+  deleteDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  arrayUnion: jest.fn(),
+  arrayRemove: jest.fn(),
+}));
 jest.mock('../components/ui/button', () => ({
   Button: (props: React.ComponentProps<'button'>) => <button {...props} />,
 }));
@@ -39,25 +72,6 @@ describe('DebtCalendar', () => {
     if (!global.crypto) {
       global.crypto = webcrypto as Crypto;
     }
-    // Mock Firestore
-    jest.mock('firebase/firestore', () => ({
-      getFirestore: jest.fn(),
-      collection: jest.fn(),
-      doc: jest.fn(),
-      onSnapshot: (collectionRef: unknown, callback: (snapshot: { docs: Array<{data: () => unknown}> }) => void) => {
-        callback({
-          docs: mockDebts.map(debt => ({
-            data: () => debt
-          }))
-        });
-        return () => {}; // Unsubscribe function
-      },
-      setDoc: jest.fn(),
-      deleteDoc: jest.fn(),
-      updateDoc: jest.fn(),
-      arrayUnion: jest.fn(),
-      arrayRemove: jest.fn()
-    }));
   });
 
   beforeEach(() => {
