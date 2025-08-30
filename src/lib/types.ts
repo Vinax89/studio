@@ -1,7 +1,9 @@
 
+import { Timestamp } from "firebase/firestore";
+
 export type Transaction = {
   id: string;
-  date: string;
+  date: Timestamp;
   description: string;
   amount: number;
   currency: string; // ISO currency code

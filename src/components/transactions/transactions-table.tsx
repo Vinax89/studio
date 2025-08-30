@@ -104,7 +104,9 @@ export const TransactionsTable = memo(function TransactionsTable({
     () =>
       transactions.map((transaction) => ({
         ...transaction,
-        formattedDate: new Date(transaction.date).toLocaleDateString(),
+        formattedDate: transaction.date
+          .toDate()
+          .toLocaleDateString(),
         formattedAmount: `${
           transaction.type === "Income" ? "+" : "-"
         }${formatCurrency(transaction.amount, transaction.currency)}`,

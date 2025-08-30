@@ -33,6 +33,19 @@ jest.mock('firebase/firestore', () => {
     type: string;
     [key: string]: unknown;
   }
+  class MockTimestamp {
+    constructor(public seconds: number, public nanoseconds: number) {}
+    static fromDate(date: Date) {
+      const ms = date.getTime();
+      return new MockTimestamp(Math.floor(ms / 1000), (ms % 1000) * 1e6);
+    }
+    toDate() {
+      return new Date(this.seconds * 1000 + this.nanoseconds / 1e6);
+    }
+    toMillis() {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+  }
   const where = (field: string, op: string, value: unknown): QueryConstraint => ({
     type: 'where',
     field,
@@ -59,15 +72,24 @@ jest.mock('firebase/firestore', () => {
       }));
 
       const constraints = q.constraints || [];
+      const toMillis = (v: unknown) =>
+        v instanceof MockTimestamp
+          ? v.toMillis()
+          : v instanceof Date
+          ? v.getTime()
+          : (v as number);
       for (const c of constraints) {
         if (c.type === 'where') {
           docs = docs.filter((d) => {
-            const val = (d.data() as Record<string, unknown>)[c.field as string];
+            const val = toMillis(
+              (d.data() as Record<string, unknown>)[c.field as string],
+            );
+            const cmp = toMillis(c.value);
             switch (c.op) {
               case '<':
-                return (val as number) < (c.value as number);
+                return val < cmp;
               case '<=':
-                return (val as number) <= (c.value as number);
+                return val <= cmp;
               default:
                 return true;
             }
@@ -78,21 +100,27 @@ jest.mock('firebase/firestore', () => {
       const order = constraints.find((c) => c.type === 'orderBy');
       if (order) {
         docs.sort((a, b) => {
-          const av = (a.data() as Record<string, unknown>)[order.field as string];
-          const bv = (b.data() as Record<string, unknown>)[order.field as string];
-          if ((av as number) > (bv as number)) return 1;
-          if ((av as number) < (bv as number)) return -1;
+          const av = toMillis(
+            (a.data() as Record<string, unknown>)[order.field as string],
+          );
+          const bv = toMillis(
+            (b.data() as Record<string, unknown>)[order.field as string],
+          );
+          if (av > bv) return 1;
+          if (av < bv) return -1;
           return 0;
         });
       }
 
       const start = constraints.find((c) => c.type === 'startAfter');
       if (start && order) {
-        const startVal = (start.doc.data() as Record<string, unknown>)[
-          order.field as string
-        ];
+        const startVal = toMillis(
+          (start.doc.data() as Record<string, unknown>)[order.field as string],
+        );
         docs = docs.filter(
-          (d) => (d.data() as Record<string, unknown>)[order.field as string] > startVal
+          (d) =>
+            toMillis((d.data() as Record<string, unknown>)[order.field as string]) >
+            startVal,
         );
       }
 
@@ -154,6 +182,7 @@ jest.mock('firebase/firestore', () => {
     limit,
     startAfter,
     writeBatch,
+    Timestamp: MockTimestamp,
     __dataStore: dataStore,
   };
 });
@@ -165,7 +194,12 @@ import {
   runWithRetry,
 } from '../services/housekeeping';
 import * as firestore from 'firebase/firestore';
-const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
+const { Timestamp } = firestore as unknown as {
+  Timestamp: { fromDate(date: Date): unknown };
+};
+const store = (firestore as unknown as {
+  __dataStore: typeof dataStore;
+}).__dataStore;
 
 beforeEach(() => {
   for (const col of Object.values(store)) {
@@ -178,7 +212,7 @@ describe('housekeeping services', () => {
   test('archiveOldTransactions moves old records', async () => {
     store.transactions.set('t1', {
       id: 't1',
-      date: '2020-01-01',
+      date: Timestamp.fromDate(new Date('2020-01-01')),
       description: 'old',
       amount: 1,
       type: 'Income',
@@ -186,14 +220,14 @@ describe('housekeeping services', () => {
     });
     store.transactions.set('t2', {
       id: 't2',
-      date: '2024-01-01',
+      date: Timestamp.fromDate(new Date('2024-01-01')),
       description: 'new',
       amount: 2,
       type: 'Expense',
       category: 'Food',
     });
 
-    await archiveOldTransactions('2021-01-01');
+    await archiveOldTransactions(new Date('2021-01-01'));
 
     expect(store.transactions.has('t1')).toBe(false);
     expect(store.transactions.has('t2')).toBe(true);
@@ -201,13 +235,15 @@ describe('housekeeping services', () => {
   });
 
   test('archiveOldTransactions accepts valid date input', async () => {
-    await expect(archiveOldTransactions('2021-01-01')).resolves.toBeUndefined();
+    await expect(
+      archiveOldTransactions(new Date('2021-01-01')),
+    ).resolves.toBeUndefined();
   });
 
   test('archiveOldTransactions throws on invalid date input', async () => {
-    await expect(archiveOldTransactions('not-a-date')).rejects.toThrow(
-      'Invalid cutoff date'
-    );
+    await expect(
+      archiveOldTransactions(new Date('not-a-date')),
+    ).rejects.toThrow('Invalid cutoff date');
     expect(firestore.getDocs).not.toHaveBeenCalled();
   });
 
@@ -244,7 +280,7 @@ describe('housekeeping services', () => {
   test('backupData stores snapshot', async () => {
     store.transactions.set('t1', {
       id: 't1',
-      date: '2024-01-01',
+      date: Timestamp.fromDate(new Date('2024-01-01')),
       description: 'test',
       amount: 1,
       type: 'Income',
@@ -280,7 +316,7 @@ describe('housekeeping services', () => {
 
   test('archiveOldTransactions handles large datasets efficiently', async () => {
     for (let i = 0; i < 250; i++) {
-      const date = new Date(2020, 0, i + 1).toISOString().slice(0, 10);
+      const date = Timestamp.fromDate(new Date(2020, 0, i + 1));
       store.transactions.set(`o${i}`, {
         id: `o${i}`,
         date,
@@ -293,7 +329,7 @@ describe('housekeeping services', () => {
     for (let i = 0; i < 50; i++) {
       store.transactions.set(`n${i}`, {
         id: `n${i}`,
-        date: '2024-01-01',
+        date: Timestamp.fromDate(new Date('2024-01-01')),
         description: 'new',
         amount: i,
         type: 'Expense',
@@ -301,7 +337,7 @@ describe('housekeeping services', () => {
       });
     }
 
-    await archiveOldTransactions('2021-01-01');
+    await archiveOldTransactions(new Date('2021-01-01'));
 
     expect(store.transactions.size).toBe(50);
     expect(store.transactions_archive.size).toBe(250);

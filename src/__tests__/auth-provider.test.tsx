@@ -4,6 +4,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
+jest.mock('lucide-react', () => ({ X: () => null }));
 
 let mockPathname = '/';
 const pushMock = jest.fn();

@@ -2,6 +2,7 @@ import { saveTransactions } from "../lib/transactions";
 
 jest.mock("../lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
 import { initFirebase } from "../lib/firebase";
+import { Timestamp } from "firebase/firestore";
 
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test";
@@ -23,12 +24,25 @@ jest.mock("firebase/firestore", () => ({
   writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
   doc: (...args: unknown[]) => mockDoc(...args),
   collection: (...args: unknown[]) => mockCollection(...args),
+  Timestamp: class {
+    constructor(public seconds: number, public nanoseconds: number) {}
+    static fromDate(date: Date) {
+      const ms = date.getTime();
+      return new this(Math.floor(ms / 1000), (ms % 1000) * 1e6);
+    }
+    toDate() {
+      return new Date(this.seconds * 1000 + this.nanoseconds / 1e6);
+    }
+    toMillis() {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+  },
 }));
 
 const transactions = [
   {
     id: "1",
-    date: "2024-01-01",
+    date: Timestamp.fromDate(new Date("2024-01-01")),
     description: "Test1",
     amount: 100,
     type: "Income" as const,
@@ -38,7 +52,7 @@ const transactions = [
   },
   {
     id: "2",
-    date: "2024-01-02",
+    date: Timestamp.fromDate(new Date("2024-01-02")),
     description: "Test2",
     amount: 200,
     type: "Expense" as const,
@@ -66,7 +80,7 @@ describe("saveTransactions", () => {
   it("splits transactions into multiple batches when over 500", async () => {
     const manyTransactions = Array.from({ length: 501 }, (_, i) => ({
       id: String(i),
-      date: "2024-01-01",
+      date: Timestamp.fromDate(new Date("2024-01-01")),
       description: `Test${i}`,
       amount: i,
       type: "Income" as const,

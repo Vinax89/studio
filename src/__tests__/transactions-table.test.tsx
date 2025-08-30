@@ -2,11 +2,12 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TransactionsTable } from '@/components/transactions/transactions-table';
+import { Timestamp } from 'firebase/firestore';
 jest.mock('lucide-react', () => ({ Repeat: () => null }));
 
 type Tx = {
   id: string;
-  date: string;
+  date: Timestamp;
   description: string;
   category: string;
   type: 'Income' | 'Expense';
@@ -18,7 +19,7 @@ type Tx = {
 function makeTransactions(count: number): Tx[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `tx-${i}`,
-    date: '2024-01-01',
+    date: Timestamp.fromDate(new Date('2024-01-01')),
     description: `Transaction ${i + 1}`,
     category: 'Misc',
     type: 'Income',

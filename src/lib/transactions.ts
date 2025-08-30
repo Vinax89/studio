@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  writeBatch,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
@@ -109,7 +115,7 @@ export function validateTransactions(
 
     const tx: Transaction = {
       id: crypto.randomUUID(),
-      date: data.date,
+      date: Timestamp.fromDate(new Date(data.date)),
       description: data.description,
       amount: parsedAmount,
       type: data.type,
