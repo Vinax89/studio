@@ -6,13 +6,16 @@ process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
 
 import { logger } from "../lib/logger";
-const dataStore: Record<string, Map<string, unknown>> = {
-  transactions: new Map(),
-  transactions_archive: new Map(),
-  debts: new Map(),
-  goals: new Map(),
-  backups: new Map(),
-};
+
+interface DataStore {
+  transactions: Map<string, Record<string, unknown>>;
+  transactions_archive: Map<string, Record<string, unknown>>;
+  debts: Map<string, Record<string, unknown>>;
+  goals: Map<string, Record<string, unknown>>;
+  backups: Map<string, Record<string, unknown>>;
+}
+
+type CollectionName = keyof DataStore;
 
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(() => ({})),
@@ -29,6 +32,14 @@ jest.mock('../lib/internet-time', () => ({
 }));
 
 jest.mock('firebase/firestore', () => {
+  const dataStore: DataStore = {
+    transactions: new Map(),
+    transactions_archive: new Map(),
+    debts: new Map(),
+    goals: new Map(),
+    backups: new Map(),
+  };
+
   interface QueryConstraint {
     type: string;
     [key: string]: unknown;
@@ -46,12 +57,12 @@ jest.mock('firebase/firestore', () => {
     doc,
   });
   const query = (
-    colRef: { name: keyof typeof dataStore },
+    colRef: { name: CollectionName },
     ...constraints: QueryConstraint[]
   ) => ({ ...colRef, constraints });
 
   const getDocs = jest.fn(
-    async (q: { name: keyof typeof dataStore; constraints?: QueryConstraint[] }) => {
+    async (q: { name: CollectionName; constraints?: QueryConstraint[] }) => {
       const colName = q.name;
       let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
         id,
@@ -108,14 +119,14 @@ jest.mock('firebase/firestore', () => {
   const writeBatch = jest.fn(() => {
     const ops: Array<{
       type: 'set' | 'delete';
-      docRef: { name: keyof typeof dataStore; id: string };
+      docRef: { name: CollectionName; id: string };
       data?: Record<string, unknown>;
     }> = [];
     const batch = {
-      set: (docRef: { name: keyof typeof dataStore; id: string }, data: Record<string, unknown>) => {
+      set: (docRef: { name: CollectionName; id: string }, data: Record<string, unknown>) => {
         ops.push({ type: 'set', docRef, data });
       },
-      delete: (docRef: { name: keyof typeof dataStore; id: string }) => {
+      delete: (docRef: { name: CollectionName; id: string }) => {
         ops.push({ type: 'delete', docRef });
       },
       commit: jest.fn(async () => {
@@ -133,7 +144,7 @@ jest.mock('firebase/firestore', () => {
   });
 
   const addDoc = jest.fn(
-    async (colRef: { name: keyof typeof dataStore }, data: Record<string, unknown>) => {
+    async (colRef: { name: CollectionName }, data: Record<string, unknown>) => {
       const id = Math.random().toString(36).slice(2);
       dataStore[colRef.name].set(id, data);
       return { id };
@@ -143,9 +154,9 @@ jest.mock('firebase/firestore', () => {
   return {
     getFirestore: jest.fn(() => ({})),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    collection: (_db: unknown, name: keyof typeof dataStore) => ({ name }),
+    collection: (_db: unknown, name: CollectionName) => ({ name }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    doc: (_db: unknown, name: keyof typeof dataStore, id: string) => ({ name, id }),
+    doc: (_db: unknown, name: CollectionName, id: string) => ({ name, id }),
     getDocs,
     addDoc,
     query,
@@ -154,9 +165,9 @@ jest.mock('firebase/firestore', () => {
     limit,
     startAfter,
     writeBatch,
-    __dataStore: dataStore,
-  };
-});
+      __dataStore: dataStore,
+    };
+  });
 
 import {
   archiveOldTransactions,
@@ -165,7 +176,7 @@ import {
   runWithRetry,
 } from '../services/housekeeping';
 import * as firestore from 'firebase/firestore';
-const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
+const store = (firestore as unknown as { __dataStore: DataStore }).__dataStore;
 
 beforeEach(() => {
   for (const col of Object.values(store)) {
