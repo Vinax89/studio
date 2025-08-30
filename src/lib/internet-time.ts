@@ -17,13 +17,13 @@ export async function fetchInternetTime(tz: string): Promise<Date> {
     res = await fetch(`https://worldtimeapi.org/api/timezone/${tz}`, {
       signal: controller.signal,
     });
-  } catch (err: any) {
-    clearTimeout(timeout);
-    if (err?.name === "AbortError") {
-      throw new Error(`Request to worldtimeapi.org timed out`);
+  } catch (err: unknown) {
+      clearTimeout(timeout);
+      if ((err as { name?: string })?.name === "AbortError") {
+        throw new Error(`Request to worldtimeapi.org timed out`);
+      }
+      throw err;
     }
-    throw err;
-  }
   clearTimeout(timeout);
   if (!res.ok) {
     let body: string;

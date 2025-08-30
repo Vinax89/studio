@@ -119,9 +119,9 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Transaction</DialogTitle>
-          <DialogDescription>
-            Enter the details of your transaction below. Click save when you're done.
-          </DialogDescription>
+            <DialogDescription>
+              Enter the details of your transaction below. Click save when you&apos;re done.
+            </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

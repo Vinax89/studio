@@ -16,7 +16,9 @@ const hasLocalStorage = () =>
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key);
+  const INVALID_CHARS = ["/", "*", "[", "]"];
+  const isValidKey = (key: string) =>
+    key.length > 0 && !INVALID_CHARS.some((ch) => key.includes(ch));
 
 function load(): string[] {
   if (hasLocalStorage()) {

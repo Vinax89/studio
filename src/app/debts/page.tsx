@@ -107,7 +107,7 @@ export default function DebtsPage() {
                 ))}
             </div>
           ) : (
-             <p className="text-muted-foreground">You haven't added any debts yet. Add one in the calendar to get started.</p>
+               <p className="text-muted-foreground">You haven&apos;t added any debts yet. Add one in the calendar to get started.</p>
           )}
       </div>
     </div>

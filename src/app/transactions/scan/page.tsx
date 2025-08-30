@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Camera, Upload, Sparkles, Wand2 } from "lucide-react"
+import { Loader2, Camera, Sparkles, Wand2 } from "lucide-react"
 import Image from "next/image"
 
 export default function ScanReceiptPage() {

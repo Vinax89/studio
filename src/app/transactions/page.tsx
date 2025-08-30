@@ -80,7 +80,10 @@ export default function TransactionsPage() {
 
   const handleDownload = () => {
     downloadCsv(
-      transactions.map(({ id, ...rest }) => rest),
+        transactions.map(({ id: _id, ...rest }) => {
+          void _id;
+          return rest;
+        }),
       "transactions.csv"
     );
   };
