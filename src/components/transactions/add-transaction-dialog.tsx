@@ -77,7 +77,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         return () => { active = false }
     }, [description])
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const numericAmount = Number(amount)
 
         if (!description || !amount || !type || !category || !Number.isFinite(numericAmount)) {
@@ -94,7 +94,19 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             isRecurring
         })
         if(suggestedCategory && category !== suggestedCategory){
-            recordCategoryFeedback(description, category)
+            try {
+                const success = await recordCategoryFeedback(description, category)
+                if (!success) {
+                    throw new Error("Failed to record category feedback")
+                }
+            } catch (error) {
+                logger.error("Failed to record category feedback", error)
+                toast({
+                    title: "Failed to record category feedback",
+                    description: "Could not record category feedback.",
+                    variant: "destructive",
+                })
+            }
         }
         setOpen(false)
         // Reset form
