@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, labeled, unlabeled, ready_for_review]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   auto-label:
     runs-on: ubuntu-latest
