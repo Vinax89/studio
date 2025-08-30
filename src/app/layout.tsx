@@ -15,13 +15,12 @@ export const metadata: Metadata = {
   description: 'Financial management for nursing professionals.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const nonceHeader = await headers();
-  const nonce = nonceHeader.get('x-nonce') || undefined
+  const nonce = headers().get('x-nonce') || undefined;
 
   return (
     <html lang="en" suppressHydrationWarning>
