@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import type { Debt, Recurrence } from "@/lib/types";
+import React, { useEffect, useRef } from "react";
+import type { Debt } from "@/lib/types";
+import { useDebtForm, DebtFormValues } from "@/hooks/use-debt-form";
+import { Controller } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -17,16 +19,7 @@ interface FormProps {
 }
 
 export default function DebtForm({ dateISO, initial, onClose, onSave, onDelete, onMarkPaid, onUnmarkPaid }: FormProps) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [initialAmount, setInitialAmount] = useState<string>(initial ? String(initial.initialAmount) : "");
-  const [currentAmount, setCurrentAmount] = useState<string>(initial ? String(initial.currentAmount) : "");
-  const [interestRate, setInterestRate] = useState<string>(initial ? String(initial.interestRate) : "");
-  const [minimumPayment, setMinimumPayment] = useState<string>(initial ? String(initial.minimumPayment) : "");
-  const [dueDate, setDueDate] = useState<string>(initial?.dueDate ?? dateISO);
-  const [recurrence, setRecurrence] = useState<Recurrence>(initial?.recurrence ?? "none");
-  const [autopay, setAutopay] = useState<boolean>(initial?.autopay ?? false);
-  const [notes, setNotes] = useState<string>(initial?.notes ?? "");
-  const [color, setColor] = useState<string>(initial?.color ?? "#e5e7eb");
+  const { control, register, handleSubmit, formState: { errors } } = useDebtForm(initial, dateISO);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,30 +32,15 @@ export default function DebtForm({ dateISO, initial, onClose, onSave, onDelete, 
 
   const paidToday = initial?.paidDates?.includes(dateISO) ?? false;
 
-  function handleSave() {
-    const initAmt = Number.parseFloat(initialAmount);
-    const currAmt = Number.parseFloat(currentAmount);
-    const intRate = Number.parseFloat(interestRate);
-    const minPay = Number.parseFloat(minimumPayment);
-
-    if (!name.trim() || [initAmt, currAmt, intRate, minPay].some(isNaN) || minPay <= 0) {
-      return;
+  const handleSave = handleSubmit((values: DebtFormValues) => {
+    const payload: Omit<Debt, "id" | "paidDates"> = { ...values };
+    if (payload.notes) payload.notes = payload.notes.trim();
+    else delete (payload as any).notes;
+    if (payload.color === "" || payload.color === undefined) {
+      delete (payload as any).color;
     }
-
-    const payload: Omit<Debt, "id" | "paidDates"> = {
-      name: name.trim(),
-      initialAmount: initAmt,
-      currentAmount: currAmt,
-      interestRate: intRate,
-      minimumPayment: minPay,
-      dueDate,
-      recurrence,
-      autopay,
-      notes: notes.trim() || undefined,
-      color: color || undefined,
-    };
     onSave(payload);
-  }
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
@@ -73,27 +51,53 @@ export default function DebtForm({ dateISO, initial, onClose, onSave, onDelete, 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormLabel label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., X1 Card" /></FormLabel>
-          <FormLabel label="Interest Rate (%)"><Input value={interestRate} onChange={(e) => setInterestRate(e.target.value)} type="number" placeholder="5.5" /></FormLabel>
-          <FormLabel label="Initial Amount ($)"><Input value={initialAmount} onChange={(e) => setInitialAmount(e.target.value)} type="number" placeholder="5000" /></FormLabel>
-          <FormLabel label="Current Amount ($)"><Input value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} type="number" placeholder="3250" /></FormLabel>
-          <FormLabel label="Minimum Payment ($)"><Input value={minimumPayment} onChange={(e) => setMinimumPayment(e.target.value)} type="number" placeholder="150" /></FormLabel>
-          <FormLabel label="Anchor Due Date"><Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></FormLabel>
-          <FormLabel label="Recurrence">
-            <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="biweekly">Bi-weekly</SelectItem>
-                <SelectItem value="monthly">Monthly (same day)</SelectItem>
-              </SelectContent>
-            </Select>
+          <FormLabel label="Name" error={errors.name?.message}>
+            <Input {...register("name")} placeholder="e.g., X1 Card" />
           </FormLabel>
-          <FormLabel label="Chip Color (optional)"><Input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 p-1" /></FormLabel>
-          <FormLabel label="Autopay" full><Toggle checked={autopay} onChange={setAutopay} /></FormLabel>
-          <FormLabel label="Notes" full>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[80px]" placeholder="Internal notes…" />
+          <FormLabel label="Interest Rate (%)" error={errors.interestRate?.message}>
+            <Input type="number" {...register("interestRate", { valueAsNumber: true })} placeholder="5.5" />
+          </FormLabel>
+          <FormLabel label="Initial Amount ($)" error={errors.initialAmount?.message}>
+            <Input type="number" {...register("initialAmount", { valueAsNumber: true })} placeholder="5000" />
+          </FormLabel>
+          <FormLabel label="Current Amount ($)" error={errors.currentAmount?.message}>
+            <Input type="number" {...register("currentAmount", { valueAsNumber: true })} placeholder="3250" />
+          </FormLabel>
+          <FormLabel label="Minimum Payment ($)" error={errors.minimumPayment?.message}>
+            <Input type="number" {...register("minimumPayment", { valueAsNumber: true })} placeholder="150" />
+          </FormLabel>
+          <FormLabel label="Anchor Due Date" error={errors.dueDate?.message}>
+            <Input type="date" {...register("dueDate")} />
+          </FormLabel>
+          <FormLabel label="Recurrence" error={errors.recurrence?.message}>
+            <Controller
+              control={control}
+              name="recurrence"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly (same day)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </FormLabel>
+          <FormLabel label="Chip Color (optional)" error={errors.color?.message}>
+            <Input type="color" className="h-10 p-1" {...register("color")} />
+          </FormLabel>
+          <FormLabel label="Autopay" full>
+            <Controller
+              control={control}
+              name="autopay"
+              render={({ field }) => <Toggle checked={field.value} onChange={field.onChange} />}
+            />
+          </FormLabel>
+          <FormLabel label="Notes" full error={errors.notes?.message}>
+            <Textarea {...register("notes")} className="min-h-[80px]" placeholder="Internal notes…" />
           </FormLabel>
         </div>
 
@@ -122,11 +126,12 @@ export default function DebtForm({ dateISO, initial, onClose, onSave, onDelete, 
   );
 }
 
-function FormLabel({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
+function FormLabel({ label, children, full, error }: { label: string; children: React.ReactNode; full?: boolean; error?: string }) {
   return (
     <div className={(full ? "sm:col-span-2 " : "") + "flex flex-col gap-1.5"}>
       <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
       {children}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
