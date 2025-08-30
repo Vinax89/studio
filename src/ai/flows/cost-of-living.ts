@@ -1,4 +1,4 @@
-import { costOfLiving2024, Region, RegionCost } from '@/data/costOfLiving2024';
+import { costOfLiving2025, Region, RegionCost } from '@/data/costOfLiving2025';
 
 export interface CalculateCostOfLivingInput {
   region: Region;
@@ -24,7 +24,7 @@ export function calculateCostOfLiving({ region, adults, children }: CalculateCos
   if (adults <= 0 || children < 0) {
     throw new Error('Invalid household composition');
   }
-  const base = costOfLiving2024.regions[region];
+  const base = costOfLiving2025.regions[region];
   if (!base) {
     throw new Error(`Unknown region: ${region}`);
   }

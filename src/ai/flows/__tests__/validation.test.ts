@@ -1,4 +1,4 @@
-import type { Region } from '@/data/costOfLiving2024';
+import type { Region } from '@/data/costOfLiving2025';
 
 interface Schema<T = unknown> {
   parse: (value: unknown) => T;
@@ -104,7 +104,7 @@ describe('calculateCostOfLiving validation', () => {
   it('rejects non-positive adult count', async () => {
     const { calculateCostOfLiving } = await import('@/ai/flows/cost-of-living');
     expect(() =>
-      calculateCostOfLiving({ region: 'California', adults: 0, children: 0 })
+      calculateCostOfLiving({ region: 'New York-Newark-Jersey City, NY-NJ-PA', adults: 0, children: 0 })
     ).toThrow();
   });
 

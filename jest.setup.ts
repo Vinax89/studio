@@ -22,6 +22,18 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+// Provide a basic matchMedia mock for components using it
+if (typeof (global as any).window !== 'undefined' && !(global as any).window.matchMedia) {
+  ;(global as any).window.matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })
+}
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'
