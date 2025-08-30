@@ -39,7 +39,7 @@ describe("/api/transactions/sync persistence", () => {
     const data = await res.json()
 
     expect(res.status).toBe(200)
-    expect(data).toEqual({ received: 1 })
+    expect(data).toEqual({ persisted: 1 })
     expect(saveTransactions).toHaveBeenCalledTimes(1)
     expect(saveTransactions).toHaveBeenCalledWith([baseTx])
   })
