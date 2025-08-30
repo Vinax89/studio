@@ -2,6 +2,7 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import { useDebtOccurrences, DEFAULT_MAX_OCCURRENCES } from "../hooks/use-debt-occurrences";
 import { Debt } from "../lib/types";
+import { logger } from "../lib/logger";
 
 type HookReturn = ReturnType<typeof useDebtOccurrences>;
 
@@ -11,11 +12,12 @@ function renderUseDebtOccurrences(
   from: Date,
   to: Date,
   query = "",
-  maxOccurrences = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences = DEFAULT_MAX_OCCURRENCES,
+  opts?: { returnTruncated?: boolean }
 ): HookReturn {
   let result: HookReturn = { occurrences: [], grouped: new Map() } as HookReturn;
   function TestComponent() {
-    result = useDebtOccurrences(debts, from, to, query, maxOccurrences);
+    result = useDebtOccurrences(debts, from, to, query, maxOccurrences, opts);
     return null;
   }
   renderToString(React.createElement(TestComponent));
@@ -118,7 +120,7 @@ describe("useDebtOccurrences", () => {
       dueDate: "2024-01-01",
       recurrence: "weekly",
     };
-    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {});
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
@@ -132,6 +134,33 @@ describe("useDebtOccurrences", () => {
       "2024-01-15",
     ]);
     expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it("returns truncation flag when option enabled", () => {
+    const debt: Debt = {
+      ...baseDebt,
+      id: "w3",
+      name: "Weekly", // many occurrences
+      dueDate: "2024-01-01",
+      recurrence: "weekly",
+    };
+    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {});
+    const { occurrences, truncated } = renderUseDebtOccurrences(
+      [debt],
+      new Date("2024-01-01"),
+      new Date("2024-03-01"),
+      "",
+      3,
+      { returnTruncated: true }
+    ) as ReturnType<typeof useDebtOccurrences> & { truncated: boolean };
+    expect(occurrences.map((o) => o.date)).toEqual([
+      "2024-01-01",
+      "2024-01-08",
+      "2024-01-15",
+    ]);
+    expect(truncated).toBe(true);
+    expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
   });
 });
