@@ -42,19 +42,41 @@ function save(categories: string[]) {
   }
 }
 
-// Synchronize the local cache with Firestore in the background.
+// Track the last sync attempt so callers can await its completion.
+let pendingSync: Promise<void> | null = null;
+
+// Synchronize the local cache with Firestore.
 async function syncFromServer() {
-  try {
-    const snap = await getDocs(categoriesCollection);
-    const list: string[] = [];
-    snap.forEach((d) => {
-      const data = d.data() as { name?: string };
-      if (data.name) list.push(data.name);
-    });
-    save(list);
-  } catch (err) {
-    logger.error("Failed to sync categories", err);
+  const snap = await getDocs(categoriesCollection);
+  const list: string[] = [];
+  snap.forEach((d) => {
+    const data = d.data() as { name?: string };
+    if (data.name) list.push(data.name);
+  });
+  save(list);
+}
+
+/**
+ * Exposed sync function so callers can await completion and handle errors.
+ * Retries with exponential backoff when requested.
+ */
+export async function syncCategories(retries = 0): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await syncFromServer();
+      return;
+    } catch (err) {
+      if (attempt >= retries) throw err;
+      // exponential backoff: 500ms, 1s, 2s, ...
+      const delay = 500 * Math.pow(2, attempt);
+      await new Promise((res) => setTimeout(res, delay));
+    }
   }
+}
+
+/** Retrieve the promise for the most recent background sync. */
+export function waitForCategorySync(): Promise<void> | null {
+  return pendingSync;
 }
 
 /**
@@ -64,7 +86,10 @@ async function syncFromServer() {
  */
 export function getCategories(): string[] {
   if (typeof window !== "undefined") {
-    void syncFromServer();
+    pendingSync = syncCategories(3).catch((err) => {
+      logger.warn("Failed to sync categories", err);
+      throw err;
+    });
   }
   const categories = load();
   const map = new Map<string, string>();
