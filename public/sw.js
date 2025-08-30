@@ -1,10 +1,10 @@
-importScripts("/idb.min.js")
+import { openDB } from "idb"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
 const MAX_QUEUE_LENGTH = 100
 
-const dbPromise = idb.openDB(DB_NAME, 1, {
+const dbPromise = openDB(DB_NAME, 1, {
   upgrade(db) {
     db.createObjectStore(STORE_NAME, { autoIncrement: true })
   },
