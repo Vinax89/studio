@@ -4,15 +4,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "preinstall": "node scripts/ensure-npm.js",
     "dev": "next dev -p ${PORT:-9000}",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "pree2e": "node scripts/check-playwright-deps.js",
-    "e2e": "npx playwright test",
-    "prepare": "husky"
+    "e2e": "npx playwright test"
   },
   "dependencies": {
     "@genkit-ai/next": "^1.14.1",
