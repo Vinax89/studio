@@ -81,13 +81,27 @@ export function classifyCategory(description: string): string | null {
   return classifier.predict(description);
 }
 
-// Initial training
-trainCategoryModel();
-// Retrain when new feedback is added
-onSnapshot(collection(db, "categoryFeedback"), () => {
+let unsubscribe: (() => void) | null = null;
+let intervalId: NodeJS.Timeout | null = null;
+
+export function initCategoryModel(): void {
+  if (unsubscribe || intervalId) return;
   trainCategoryModel();
-});
-// Periodic retraining as a safety net (every hour)
-setInterval(() => {
-  trainCategoryModel();
-}, 60 * 60 * 1000);
+  unsubscribe = onSnapshot(collection(db, "categoryFeedback"), () => {
+    trainCategoryModel();
+  });
+  intervalId = setInterval(() => {
+    trainCategoryModel();
+  }, 60 * 60 * 1000);
+}
+
+export function teardownCategoryModel(): void {
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+  }
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+}
