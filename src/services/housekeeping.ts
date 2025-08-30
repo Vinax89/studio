@@ -10,6 +10,7 @@ import {
   startAfter,
   writeBatch,
   QueryDocumentSnapshot,
+  FieldPath,
 } from "firebase/firestore";
 import { db, initFirebase } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -148,7 +149,7 @@ export async function backupData(
   debts: Debt[];
   goals: Goal[];
 }> {
-  async function fetchAll<T>(colName: string, orderField: string): Promise<T[]> {
+  async function fetchAll<T>(colName: string): Promise<T[]> {
     const col = collection(db, colName);
     const pageSize = 100;
     const items: T[] = [];
@@ -157,8 +158,13 @@ export async function backupData(
 
     while (hasMore) {
       const q = lastDoc
-        ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
-        : query(col, orderBy(orderField), limit(pageSize));
+        ? query(
+            col,
+            orderBy(FieldPath.documentId()),
+            startAfter(lastDoc),
+            limit(pageSize)
+          )
+        : query(col, orderBy(FieldPath.documentId()), limit(pageSize));
 
       const snap = await getDocs(q);
       if (snap.empty) break;
@@ -174,9 +180,9 @@ export async function backupData(
   }
 
   const data = {
-    transactions: await fetchAll<Transaction>("transactions", "id"),
-    debts: await fetchAll<Debt>("debts", "id"),
-    goals: await fetchAll<Goal>("goals", "id"),
+    transactions: await fetchAll<Transaction>("transactions"),
+    debts: await fetchAll<Debt>("debts"),
+    goals: await fetchAll<Goal>("goals"),
   };
 
   await runWithRetry(

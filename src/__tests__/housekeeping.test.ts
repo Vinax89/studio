@@ -41,7 +41,7 @@ jest.mock('firebase/firestore', () => {
   });
   const orderBy = (field: string): QueryConstraint => ({ type: 'orderBy', field });
   const limit = (n: number): QueryConstraint => ({ type: 'limit', n });
-  const startAfter = (doc: { data: () => Record<string, unknown> }): QueryConstraint => ({
+  const startAfter = (doc: { id: string; data: () => Record<string, unknown> }): QueryConstraint => ({
     type: 'startAfter',
     doc,
   });
@@ -77,23 +77,31 @@ jest.mock('firebase/firestore', () => {
 
       const order = constraints.find((c) => c.type === 'orderBy');
       if (order) {
-        docs.sort((a, b) => {
-          const av = (a.data() as Record<string, unknown>)[order.field as string];
-          const bv = (b.data() as Record<string, unknown>)[order.field as string];
-          if ((av as number) > (bv as number)) return 1;
-          if ((av as number) < (bv as number)) return -1;
-          return 0;
-        });
+        if (order.field === 'id') {
+          docs.sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0));
+        } else {
+          docs.sort((a, b) => {
+            const av = (a.data() as Record<string, unknown>)[order.field as string];
+            const bv = (b.data() as Record<string, unknown>)[order.field as string];
+            if ((av as number) > (bv as number)) return 1;
+            if ((av as number) < (bv as number)) return -1;
+            return 0;
+          });
+        }
       }
 
       const start = constraints.find((c) => c.type === 'startAfter');
       if (start && order) {
-        const startVal = (start.doc.data() as Record<string, unknown>)[
-          order.field as string
-        ];
-        docs = docs.filter(
-          (d) => (d.data() as Record<string, unknown>)[order.field as string] > startVal
-        );
+        if (order.field === 'id') {
+          docs = docs.filter((d) => d.id > start.doc.id);
+        } else {
+          const startVal = (start.doc.data() as Record<string, unknown>)[
+            order.field as string
+          ];
+          docs = docs.filter(
+            (d) => (d.data() as Record<string, unknown>)[order.field as string] > startVal
+          );
+        }
       }
 
       const lim = constraints.find((c) => c.type === 'limit');
@@ -154,6 +162,7 @@ jest.mock('firebase/firestore', () => {
     limit,
     startAfter,
     writeBatch,
+    FieldPath: { documentId: () => 'id' },
     __dataStore: dataStore,
   };
 });
