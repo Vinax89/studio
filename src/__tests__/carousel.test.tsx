@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Carousel } from '@/components/ui/carousel';
+import type { UseEmblaCarouselType } from 'embla-carousel-react';
 
 jest.mock('lucide-react', () => ({
   ArrowLeft: () => null,
@@ -9,7 +10,7 @@ jest.mock('lucide-react', () => ({
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: any;
+let emblaApi: UseEmblaCarouselType[1];
 
 function mockUseEmbla() {
   emblaApi = {

@@ -21,7 +21,9 @@ describe('getAllowedOrigins', () => {
 });
 
 describe('cors middleware', () => {
-  const allowed = getAllowedOrigins('http://allowed.com,/^https:\/\/sub\\.example\\.com$/')
+  const allowed = getAllowedOrigins(
+    'http://allowed.com,' + String.raw`/^https://sub\.example\.com$/`,
+  )
 
   it('rejects disallowed origins', () => {
     const req = new Request('http://localhost', { headers: { Origin: 'http://evil.com' } })
