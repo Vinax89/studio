@@ -16,7 +16,7 @@ function createOversizedRequest() {
       this.push(null)
     },
   })
-  const req = new Request("http://localhost", {
+  const init: RequestInit & { duplex: "half" } = {
     method: "POST",
     headers: {
       Authorization: "Bearer test-token",
@@ -24,8 +24,9 @@ function createOversizedRequest() {
     },
     body: stream,
     // Node's Request type requires duplex when using a stream body
-    duplex: "half" as any,
-  })
+    duplex: "half",
+  }
+  const req = new Request("http://localhost", init)
   return { req, read: () => read }
 }
 
