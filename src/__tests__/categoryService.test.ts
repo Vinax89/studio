@@ -16,7 +16,6 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "test";
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "test";
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = "test";
-  initFirebase();
 });
 
 jest.mock("firebase/firestore", () => ({
@@ -29,6 +28,7 @@ jest.mock("firebase/firestore", () => ({
 
 describe("categoryService", () => {
   beforeEach(() => {
+    initFirebase();
     clearCategories();
     jest.clearAllMocks();
   });

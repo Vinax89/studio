@@ -6,8 +6,6 @@ import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore"
 import { db, categoriesCollection, initFirebase } from "./firebase";
 import { logger } from "./logger";
 
-initFirebase();
-
 const STORAGE_KEY = "categories";
 
 // In non-browser environments (e.g. during testing) `localStorage` is not
@@ -44,6 +42,7 @@ function save(categories: string[]) {
 
 // Synchronize the local cache with Firestore in the background.
 async function syncFromServer() {
+  initFirebase();
   try {
     const snap = await getDocs(categoriesCollection);
     const list: string[] = [];
@@ -63,6 +62,7 @@ async function syncFromServer() {
  * the casing that will be preserved for display.
  */
 export function getCategories(): string[] {
+  initFirebase();
   if (typeof window !== "undefined") {
     void syncFromServer();
   }
@@ -87,6 +87,7 @@ export function getCategories(): string[] {
  * the background and failures are logged but do not interrupt the result.
  */
 export function addCategory(category: string): string[] {
+  initFirebase();
   const categories = getCategories();
   const trimmed = category.trim();
   const key = normalize(trimmed);
@@ -110,6 +111,7 @@ export function addCategory(category: string): string[] {
  * writes are performed in the background.
  */
 export function removeCategory(category: string): string[] {
+  initFirebase();
   const key = normalize(category);
   if (!isValidKey(key)) {
     logger.error("Invalid category name");
@@ -125,6 +127,7 @@ export function removeCategory(category: string): string[] {
 
 /** Clear all categories locally and in Firestore. */
 export function clearCategories() {
+  initFirebase();
   save([]);
   void (async () => {
     try {
