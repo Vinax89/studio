@@ -6,6 +6,15 @@ interface RawRow {
   DataValue: string;
 }
 
+interface RegionCost {
+  housing: number;
+  groceries: number;
+  utilities: number;
+  transportation: number;
+  healthcare: number;
+  miscellaneous: number;
+}
+
 async function fetchRpp(year: number, apiKey: string) {
   const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=STATE&Year=${year}&ResultFormat=JSON`;
   const res = await fetch(url);
@@ -24,7 +33,7 @@ async function main() {
   }
   const dryRun = process.argv.includes('--dry-run');
   const rows = await fetchRpp(year, apiKey);
-  const regions = rows.reduce((acc, row) => {
+  const regions = rows.reduce<Record<string, RegionCost>>((acc, row) => {
     const index = Number(row.DataValue.replace(/,/g, '')) / 100; // convert index to multiplier
     acc[row.GeoName] = {
       housing: index * 20000,
@@ -35,7 +44,7 @@ async function main() {
       miscellaneous: index * 4000,
     };
     return acc;
-  }, {} as Record<string, any>);
+  }, {});
 
   const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: 'BEA Regional Price Parities',\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
   const dir = join(__dirname, '..', 'src', 'data');
