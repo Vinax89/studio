@@ -98,7 +98,7 @@ export function ServiceWorker() {
     const registerAndListen = async () => {
       if ("serviceWorker" in navigator) {
         try {
-          await navigator.serviceWorker.register("/sw.js")
+          await navigator.serviceWorker.register("/sw.js", { type: "module" })
         } catch (error) {
           logger.error("Service worker registration failed", error)
         }
