@@ -9,7 +9,7 @@ To get started, take a look at src/app/page.tsx.
 - `npm test` – run unit tests with Jest.
 - `npm run e2e` – run Playwright end-to-end tests. Run `npx playwright install-deps` first to install required system dependencies.
 - Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
-- `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
+- `node scripts/update-cost-of-living.ts [--year YYYY]` – refresh cost of living dataset from BEA.
 
 ## Package manager
 
@@ -93,5 +93,5 @@ Annual expense benchmarks are sourced from the **BEA Regional Price Parities**
 release. The data file `src/data/costOfLiving2024.ts` stores per-adult yearly
 costs for housing, groceries, utilities, transportation, healthcare, and
 miscellaneous categories. Use `calculateCostOfLiving` to scale values by
-household composition. Run `node scripts/update-cost-of-living.ts` each year to
-fetch new figures.
+household composition. Run `node scripts/update-cost-of-living.ts --year <YYYY>`
+each year to fetch new figures. The `--year` flag defaults to the current year.

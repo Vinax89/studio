@@ -26,12 +26,24 @@ async function fetchRpp(year: number, apiKey: string) {
 }
 
 async function main() {
-  const year = new Date().getFullYear();
+  const args = process.argv.slice(2);
+  const dryRun = args.includes('--dry-run');
+  let year = new Date().getFullYear();
+  const yearFlag = args.find((arg) => arg.startsWith('--year'));
+  if (yearFlag) {
+    const value = yearFlag.includes('=')
+      ? yearFlag.split('=')[1]
+      : args[args.indexOf(yearFlag) + 1];
+    const parsed = Number(value);
+    if (!value || Number.isNaN(parsed)) {
+      throw new Error('--year requires a valid number');
+    }
+    year = parsed;
+  }
   const apiKey = process.env.BEA_API_KEY;
   if (!apiKey) {
     throw new Error('BEA_API_KEY environment variable is required');
   }
-  const dryRun = process.argv.includes('--dry-run');
   const rows = await fetchRpp(year, apiKey);
   const regions = rows.reduce((acc, row) => {
     const index = Number(row.DataValue.replace(/,/g, '')) / 100; // convert index to multiplier
