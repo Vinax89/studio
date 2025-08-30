@@ -3,6 +3,9 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
+  "rules": {
+    "no-console": "warn"
+  },
   "overrides": [
     {
       "files": ["src/**/__tests__/**/*", "*.test.ts", "*.test.tsx"],
