@@ -10,6 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {redactInput} from '@/ai/redaction';
 import {z} from 'genkit';
 
 const CalculateCashflowInputSchema = z.object({
@@ -71,7 +72,8 @@ const calculateCashflowFlow = ai.defineFlow(
     outputSchema: CalculateCashflowOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const redacted = redactInput(input);
+    const {output} = await prompt(redacted);
     if (!output) {
       throw new Error('No output returned from calculateCashflowFlow');
     }
