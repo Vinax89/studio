@@ -101,9 +101,14 @@ export function ServiceWorker() {
           const existing = navigator.serviceWorker.getRegistration
             ? await navigator.serviceWorker.getRegistration()
             : undefined
-          if (!navigator.serviceWorker.controller && existing) {
-            // Service worker already registered, no need to register again
-          } else {
+
+          if (!navigator.serviceWorker.controller) {
+            if (existing) {
+              await existing.update()
+            } else {
+              await navigator.serviceWorker.register("/sw.js", { type: "module" })
+            }
+          } else if (!existing) {
             await navigator.serviceWorker.register("/sw.js", { type: "module" })
           }
         } catch (error) {

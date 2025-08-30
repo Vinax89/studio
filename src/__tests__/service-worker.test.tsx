@@ -129,9 +129,10 @@ describe("Service worker registration", () => {
     })
   })
 
-  it("does not register when existing registration without controller", async () => {
+  it("updates existing registration when controller is missing", async () => {
     const register = jest.fn().mockResolvedValue(undefined)
-    const getRegistration = jest.fn().mockResolvedValue({})
+    const update = jest.fn().mockResolvedValue(undefined)
+    const getRegistration = jest.fn().mockResolvedValue({ update })
     Object.defineProperty(navigator, "serviceWorker", {
       value: {
         register,
@@ -149,6 +150,7 @@ describe("Service worker registration", () => {
 
     await act(async () => {})
 
+    expect(update).toHaveBeenCalled()
     expect(register).not.toHaveBeenCalled()
 
     const nav = navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
