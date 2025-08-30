@@ -1,4 +1,3 @@
-// Environment variables are provided by Next.js (e.g., via .env.local) at build time.
 
 import {
   initializeApp,
@@ -25,25 +24,19 @@ let db: ReturnType<typeof getFirestore>;
 let categoriesCollection: ReturnType<typeof collection>;
 
 
-// A function to check if all required environment variables are present.
-// This provides a clearer error message than the generic Firebase error.
-function validateFirebaseConfig(config: FirebaseOptions): void {
-  if (
-    !config.apiKey ||
-    !config.authDomain ||
-    !config.projectId
-  ) {
-    throw new Error(
-      `Firebase configuration error: Missing or invalid value for apiKey, authDomain, or projectId. Please check your .env.local file.`
-    );
-  }
-}
-
 export function initFirebase() {
   if (app) {
     return { app, auth, db, categoriesCollection };
   }
-  const env = firebaseConfigSchema.parse(process.env);
+
+  const envParseResult = firebaseConfigSchema.safeParse(process.env);
+
+  if (!envParseResult.success) {
+    console.error("Firebase configuration error:", envParseResult.error.flatten().fieldErrors);
+    throw new Error("Invalid Firebase configuration. Please check your environment variables.");
+  }
+  const env = envParseResult.data;
+
   const firebaseConfig: FirebaseOptions = {
     apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -52,7 +45,7 @@ export function initFirebase() {
     messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
   };
-  validateFirebaseConfig(firebaseConfig);
+  
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
