@@ -53,4 +53,12 @@ export function initFirebase() {
   return { app, auth, db, categoriesCollection };
 }
 
+export function getDb() {
+  return initFirebase().db;
+}
+
+export function getCategoriesCollection() {
+  return initFirebase().categoriesCollection;
+}
+
 export { app, auth, db, categoriesCollection };

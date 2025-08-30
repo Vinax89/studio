@@ -3,10 +3,8 @@
 // case-insensitive manner while preserving their original casing for display.
 
 import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
-import { db, categoriesCollection, initFirebase } from "./firebase";
+import { getDb, getCategoriesCollection } from "./firebase";
 import { logger } from "./logger";
-
-initFirebase();
 
 const STORAGE_KEY = "categories";
 
@@ -45,7 +43,7 @@ function save(categories: string[]) {
 // Synchronize the local cache with Firestore in the background.
 async function syncFromServer() {
   try {
-    const snap = await getDocs(categoriesCollection);
+    const snap = await getDocs(getCategoriesCollection());
     const list: string[] = [];
     snap.forEach((d) => {
       const data = d.data() as { name?: string };
@@ -97,8 +95,8 @@ export function addCategory(category: string): string[] {
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
-    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch((err) =>
-      logger.error("Failed to save category", err)
+    void setDoc(doc(getCategoriesCollection(), key), { name: trimmed }).catch(
+      (err) => logger.error("Failed to save category", err)
     );
   }
   save(categories);
@@ -117,7 +115,7 @@ export function removeCategory(category: string): string[] {
   }
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
-  void deleteDoc(doc(categoriesCollection, key)).catch((err) =>
+  void deleteDoc(doc(getCategoriesCollection(), key)).catch((err) =>
     logger.error("Failed to delete category", err)
   );
   return categories;
@@ -128,8 +126,8 @@ export function clearCategories() {
   save([]);
   void (async () => {
     try {
-      const snap = await getDocs(categoriesCollection);
-      const batch = writeBatch(db);
+      const snap = await getDocs(getCategoriesCollection());
+      const batch = writeBatch(getDb());
       snap.forEach((d) => batch.delete(d.ref));
       await batch.commit();
     } catch (err) {
