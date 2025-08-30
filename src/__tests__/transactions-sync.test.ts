@@ -25,40 +25,59 @@ const baseTx = {
 
 describe("/api/transactions/sync persistence", () => {
   beforeEach(() => {
-    ;(saveTransactions as jest.Mock).mockClear()
+    (saveTransactions as jest.Mock).mockClear()
   })
 
-  it("saves transactions via saveTransactions", async () => {
+  it("saves transactions in batches via saveTransactions", async () => {
+    const transactions = Array.from({ length: 501 }, (_, i) => ({
+      ...baseTx,
+      id: String(i + 1),
+    }))
+
     const req = new Request("http://localhost", {
       method: "POST",
       headers: { Authorization: "Bearer test-token" },
-      body: JSON.stringify({ transactions: [baseTx] }),
+      body: JSON.stringify({ transactions }),
     })
 
     const res = await transactionsSync(req)
     const data = await res.json()
 
     expect(res.status).toBe(200)
-    expect(data).toEqual({ received: 1 })
-    expect(saveTransactions).toHaveBeenCalledTimes(1)
-    expect(saveTransactions).toHaveBeenCalledWith([baseTx])
+    expect(data).toEqual({ received: 501 })
+    expect(saveTransactions).toHaveBeenCalledTimes(2)
+    expect(saveTransactions).toHaveBeenNthCalledWith(
+      1,
+      transactions.slice(0, 500),
+    )
+    expect(saveTransactions).toHaveBeenNthCalledWith(
+      2,
+      transactions.slice(500),
+    )
   })
 
-  it("propagates persistence errors", async () => {
-    ;(saveTransactions as jest.Mock).mockRejectedValueOnce(
-      Object.assign(new Error("db failed"), { status: 503 }),
-    )
+  it("returns structured errors when a batch fails", async () => {
+    const transactions = Array.from({ length: 501 }, (_, i) => ({
+      ...baseTx,
+      id: String(i + 1),
+    }))
+
+    ;(saveTransactions as jest.Mock)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(
+        Object.assign(new Error("db failed"), { status: 503 }),
+      )
 
     const req = new Request("http://localhost", {
       method: "POST",
       headers: { Authorization: "Bearer test-token" },
-      body: JSON.stringify({ transactions: [baseTx] }),
+      body: JSON.stringify({ transactions }),
     })
 
     const res = await transactionsSync(req)
     const data = await res.json()
 
     expect(res.status).toBe(503)
-    expect(data).toEqual({ error: "db failed" })
+    expect(data).toEqual({ error: { message: "db failed", batch: 2 } })
   })
 })
