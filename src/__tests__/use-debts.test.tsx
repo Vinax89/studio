@@ -14,9 +14,11 @@ const onSnapshotMock = jest.fn();
 const deleteDocMock = jest.fn();
 
 jest.mock("firebase/firestore", () => ({
-  onSnapshot: (...args: any[]) => onSnapshotMock(...args),
+  onSnapshot: (...args: unknown[]) =>
+    onSnapshotMock(...(args as Parameters<typeof onSnapshotMock>)),
   setDoc: jest.fn(),
-  deleteDoc: (...args: any[]) => deleteDocMock(...args),
+  deleteDoc: (...args: unknown[]) =>
+    deleteDocMock(...(args as Parameters<typeof deleteDocMock>)),
   updateDoc: jest.fn(),
   arrayUnion: jest.fn(),
   arrayRemove: jest.fn(),

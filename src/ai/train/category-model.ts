@@ -89,6 +89,7 @@ export async function initCategoryModel(): Promise<void> {
   intervalId = setInterval(() => {
     trainCategoryModel();
   }, 60 * 60 * 1000);
+  intervalId.unref();
 }
 
 export function teardownCategoryModel(): void {
