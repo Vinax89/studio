@@ -28,7 +28,10 @@ const BaseTransactionRow = z.object({
   ),
   type: z.enum(["Income", "Expense"]),
   category: z.string(),
-  isRecurring: z.union([z.boolean(), z.string()]).optional(),
+  // Accepts boolean or string values "true"/"false" only
+  isRecurring: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .optional(),
 });
 
 export type TransactionRowType = z.infer<typeof BaseTransactionRow>;
@@ -114,9 +117,11 @@ export function validateTransactions(
       // Default to USD until currency is provided in import sources
       currency: "USD",
       isRecurring:
-        typeof data.isRecurring === "boolean"
-          ? data.isRecurring
-          : data.isRecurring === "true",
+        data.isRecurring === undefined
+          ? undefined
+          : typeof data.isRecurring === "string"
+            ? data.isRecurring === "true"
+            : data.isRecurring,
     };
   });
 }
