@@ -136,9 +136,13 @@ export function validateTransactions(
  * @throws {Error} If the Firestore batch commit fails.
  * @remarks Writes to Firestore and performs network I/O.
  */
-export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+export async function saveTransactions(
+  transactions: Transaction[],
+): Promise<number> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
+  let persisted = 0;
+
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
@@ -147,6 +151,7 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
 
     try {
       await batch.commit();
+      persisted += chunk.length;
     } catch (err) {
       throw new Error(
         `Failed to save transactions batch: ${
@@ -155,6 +160,8 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
       );
     }
   }
+
+  return persisted;
 }
 
 /**

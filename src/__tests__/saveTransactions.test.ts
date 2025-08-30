@@ -55,7 +55,8 @@ describe("saveTransactions", () => {
   });
 
   it("adds all transactions in a single batch and commits once when within limit", async () => {
-    await saveTransactions(transactions);
+    const count = await saveTransactions(transactions);
+    expect(count).toBe(transactions.length);
     expect(mockSet).toHaveBeenCalledTimes(transactions.length);
     expect(mockWriteBatch).toHaveBeenCalledTimes(1);
     expect(mockCommit).toHaveBeenCalledTimes(1);
@@ -75,7 +76,8 @@ describe("saveTransactions", () => {
       isRecurring: false,
     }));
 
-    await saveTransactions(manyTransactions);
+    const count = await saveTransactions(manyTransactions);
+    expect(count).toBe(manyTransactions.length);
     expect(mockSet).toHaveBeenCalledTimes(manyTransactions.length);
     // Should create and commit two batches for 501 items
     expect(mockWriteBatch).toHaveBeenCalledTimes(2);

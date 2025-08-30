@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
@@ -52,9 +52,10 @@ export async function POST(req: Request) {
   const { provider, transactions } = parsed.data
 
   try {
+    const imported = await saveTransactions(transactions)
     return NextResponse.json({
       provider,
-      imported: transactions.length,
+      imported,
     })
   } catch {
     return NextResponse.json(
