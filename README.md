@@ -75,6 +75,13 @@ memory for one hour to avoid unnecessary network requests. Use
 `convertCurrency(amount, from, to)` uses these rates to convert between
 currencies.
 
+## Transaction syncing API
+
+`POST /api/transactions/sync` accepts an array of transactions that have
+already been fetched from any provider. The endpoint verifies the Firebase
+token, validates each transaction, persists them via `saveTransactions`, and
+responds with the number of transactions received.
+
 ## Upgrading Next.js
 
 This project pins Next.js to a specific version. When upgrading, follow the steps in [docs/next-upgrade.md](docs/next-upgrade.md) to review releases, update the version, and verify the changes.
