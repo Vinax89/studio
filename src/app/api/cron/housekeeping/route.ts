@@ -5,7 +5,7 @@ import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
 
-const HEADER_NAME = "x-cron-secret";
+const HEADER_NAME = "X-CRON-SECRET";
 const WINDOW_MS = 60_000; // 1 minute
 initFirebase();
 const STATE_DOC = doc(db, "cron", "housekeeping");

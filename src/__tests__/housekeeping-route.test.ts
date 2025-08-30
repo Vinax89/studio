@@ -89,7 +89,7 @@ describe("/api/cron/housekeeping", () => {
     expect(res1.status).toBe(401);
 
     const req2 = new Request("http://localhost", {
-      headers: { "x-cron-secret": "wrong" },
+      headers: { "X-CRON-SECRET": "wrong" },
     });
     const res2 = await GET(req2);
     expect(res2.status).toBe(401);
@@ -98,7 +98,7 @@ describe("/api/cron/housekeeping", () => {
 
   it("runs housekeeping with valid secret and enforces rate limit", async () => {
     const req = new Request("http://localhost", {
-      headers: { "x-cron-secret": secret },
+      headers: { "X-CRON-SECRET": secret },
     });
     const res1 = await GET(req);
     expect(res1.status).toBe(200);
@@ -111,7 +111,7 @@ describe("/api/cron/housekeeping", () => {
 
   it("prevents concurrent invocations", async () => {
     const req = new Request("http://localhost", {
-      headers: { "x-cron-secret": secret },
+      headers: { "X-CRON-SECRET": secret },
     });
 
     const [res1, res2] = await Promise.all([GET(req), GET(req)]);
