@@ -8,9 +8,8 @@ import { logger } from "@/lib/logger"
 /**
  * Generic transaction syncing endpoint.
  * Unlike `/api/bank/import`, this expects transactions that have already
- * been fetched from any source. The current implementation only validates
- * and reports how many transactions were received without persisting them.
- * TODO: Implement database persistence for received transactions.
+ * been fetched from any source. The transactions are validated and
+ * persisted to the database, and the response includes how many were saved.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
@@ -55,7 +54,7 @@ export async function POST(req: Request) {
 
   try {
     await saveTransactions(transactions)
-    return NextResponse.json({ received: transactions.length })
+    return NextResponse.json({ persisted: transactions.length })
   } catch (err) {
     logger.error("Failed to persist transactions", err)
     const message =
