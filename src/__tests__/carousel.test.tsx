@@ -4,7 +4,15 @@ import { Carousel } from '@/components/ui/carousel';
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: any;
+type MockEmblaApi = {
+  on: jest.Mock;
+  off: jest.Mock;
+  canScrollPrev: jest.Mock;
+  canScrollNext: jest.Mock;
+  scrollPrev: jest.Mock;
+  scrollNext: jest.Mock;
+};
+let emblaApi: MockEmblaApi;
 
 function mockUseEmbla() {
   emblaApi = {
