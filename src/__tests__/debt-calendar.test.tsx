@@ -26,8 +26,8 @@ jest.mock('@/components/service-worker', () => ({
 let snapshotCallback: ((snapshot: { docs: Array<{ data: () => unknown }> }) => void) | null = null;
 jest.mock('firebase/firestore', () => ({
   getFirestore: jest.fn(),
-  collection: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
-  doc: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
+  collection: jest.fn(() => ({ withConverter: () => ({}) })),
+  doc: jest.fn(() => ({ withConverter: () => ({}) })),
   onSnapshot: (_: unknown, cb: (snapshot: { docs: Array<{ data: () => unknown }> }) => void) => {
     snapshotCallback = cb;
     cb({ docs: mockDebts.map(debt => ({ data: () => debt })) });
