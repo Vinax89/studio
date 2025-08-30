@@ -83,6 +83,21 @@ describe("offline fallbacks", () => {
     await clearQueuedTransactions()
     const result = await queueTransaction({ id: 1 }, -1)
     expect(result.ok).toBe(false)
+    expect(result.error.message).toBe(
+      "maxQueueSize must be a non-negative integer",
+    )
+    const queued = await getQueuedTransactions()
+    expect(queued.ok).toBe(true)
+    expect(queued.value).toEqual([])
+  })
+
+  it("rejects non-integer maxQueueSize", async () => {
+    await clearQueuedTransactions()
+    const result = await queueTransaction({ id: 1 }, 1.5)
+    expect(result.ok).toBe(false)
+    expect(result.error.message).toBe(
+      "maxQueueSize must be a non-negative integer",
+    )
     const queued = await getQueuedTransactions()
     expect(queued.ok).toBe(true)
     expect(queued.value).toEqual([])
