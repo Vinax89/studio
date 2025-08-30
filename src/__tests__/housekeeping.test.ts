@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test';
@@ -152,14 +154,13 @@ jest.mock('firebase/firestore', () => {
   };
 });
 
-import {
+const {
   archiveOldTransactions,
   cleanupDebts,
   backupData,
   runWithRetry,
-} from '../services/housekeeping';
-import * as firestoreRaw from 'firebase/firestore';
-const firestore = firestoreRaw as unknown as {
+} = require('../services/housekeeping');
+const firestore = require('firebase/firestore') as unknown as {
   __dataStore: typeof dataStore;
   writeBatch: jest.Mock;
   getDocs: jest.Mock;
