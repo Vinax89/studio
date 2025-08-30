@@ -40,7 +40,11 @@ export async function GET(req: Request) {
     await runHousekeeping();
     return NextResponse.json({ status: "ok" });
   } catch (err) {
-    logger.error("Housekeeping failed", err);
+    if (process.env.NODE_ENV === "production") {
+      console.error("Housekeeping failed", err);
+    } else {
+      logger.error("Housekeeping failed", err);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
