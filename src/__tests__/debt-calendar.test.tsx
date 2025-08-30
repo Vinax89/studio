@@ -5,8 +5,8 @@ import { render, screen } from '@testing-library/react';
 import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
 import { mockDebts } from '@/lib/data';
-import type { Debt } from '@/lib/types';
 import { ClientProviders } from '@/components/layout/client-providers';
+import type { Debt } from '@/lib/types';
 
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({
@@ -16,10 +16,6 @@ jest.mock('next/navigation', () => ({
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('lucide-react', () => ({ X: () => null }));
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => '/',
-}));
 jest.mock('@/components/service-worker', () => ({
   ServiceWorker: () => null,
 }));
@@ -78,8 +74,6 @@ describe('DebtCalendar', () => {
   beforeEach(() => {
     localStorage.clear();
   });
-
-
   test('renders calendar', () => {
     render(
       <ClientProviders>

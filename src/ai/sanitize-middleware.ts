@@ -29,7 +29,7 @@ function sanitizeValue<T>(value: T): T {
 }
 
 export function sanitizeMiddleware<T>(input: T): T {
-  return sanitizeValue(input)
+  return sanitizeValue(input) as T
 }
 
 export default sanitizeMiddleware
