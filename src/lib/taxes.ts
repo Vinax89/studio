@@ -54,14 +54,61 @@ const TAX_BRACKETS_2025: Record<FilingStatus, TaxBracket[]> = {
     { rate: 0.37, threshold: Infinity },
   ],
 };
+// Payroll tax constants
+export const SOCIAL_SECURITY_RATE = 0.062;
+export const MEDICARE_RATE = 0.0145;
+export const ADDITIONAL_MEDICARE_RATE = 0.009;
+export const SOCIAL_SECURITY_WAGE_BASE = 168_600;
+
+const ADDITIONAL_MEDICARE_THRESHOLDS: Record<FilingStatus, number> = {
+  single: 200_000,
+  married_jointly: 250_000,
+  married_separately: 125_000,
+  head_of_household: 200_000,
+};
+
+export interface PayrollTaxCalculation {
+  socialSecurity: number;
+  medicare: number;
+  additionalMedicare: number;
+  total: number;
+}
 
 export interface TaxCalculation {
-  tax: number;
+  incomeTax: number;
+  payrollTaxes: PayrollTaxCalculation;
   breakdown: string;
   taxableIncome: number;
 }
 
-export function calculateIncomeTax(
+export function calculateSocialSecurityTax(wages: number): number {
+  return Math.min(wages, SOCIAL_SECURITY_WAGE_BASE) * SOCIAL_SECURITY_RATE;
+}
+
+export function calculateMedicareTax(
+  wages: number,
+  filingStatus: FilingStatus,
+): { medicare: number; additionalMedicare: number } {
+  const medicare = wages * MEDICARE_RATE;
+  const threshold = ADDITIONAL_MEDICARE_THRESHOLDS[filingStatus];
+  const additionalMedicare = Math.max(0, wages - threshold) * ADDITIONAL_MEDICARE_RATE;
+  return { medicare, additionalMedicare };
+}
+
+export function calculatePayrollTaxes(
+  wages: number,
+  filingStatus: FilingStatus,
+): PayrollTaxCalculation {
+  const socialSecurity = calculateSocialSecurityTax(wages);
+  const { medicare, additionalMedicare } = calculateMedicareTax(
+    wages,
+    filingStatus,
+  );
+  const total = socialSecurity + medicare + additionalMedicare;
+  return { socialSecurity, medicare, additionalMedicare, total };
+}
+
+export function calculateTaxes(
   income: number,
   deductions: number,
   filingStatus: FilingStatus,
@@ -73,14 +120,14 @@ export function calculateIncomeTax(
   const brackets = TAX_BRACKETS_2025[filingStatus];
   let remaining = taxableIncome;
   let prevThreshold = 0;
-  let tax = 0;
+  let incomeTax = 0;
   const parts: string[] = [];
   for (const bracket of brackets) {
     if (remaining <= 0) break;
     const cap = bracket.threshold;
     const amountInBracket = Math.min(remaining, cap - prevThreshold);
     const taxForBracket = amountInBracket * bracket.rate;
-    tax += taxForBracket;
+    incomeTax += taxForBracket;
     if (amountInBracket > 0) {
       parts.push(
         `${(bracket.rate * 100).toFixed(0)}% on $${amountInBracket.toFixed(2)} = $${taxForBracket.toFixed(2)}`
@@ -96,5 +143,6 @@ export function calculateIncomeTax(
     ...parts,
   ].join('\n');
 
-  return { tax, breakdown, taxableIncome };
+  const payrollTaxes = calculatePayrollTaxes(income, filingStatus);
+  return { incomeTax, payrollTaxes, breakdown, taxableIncome };
 }
