@@ -134,4 +134,38 @@ describe("useDebtOccurrences", () => {
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });
+
+  it("filters grouped map by query without altering occurrences", () => {
+    const debts: Debt[] = [
+      {
+        ...baseDebt,
+        id: "r1",
+        name: "Rent",
+        notes: "Monthly payment",
+        dueDate: "2024-01-05",
+        recurrence: "none",
+      },
+      {
+        ...baseDebt,
+        id: "c1",
+        name: "Car Loan",
+        notes: "Auto",
+        dueDate: "2024-01-10",
+        recurrence: "none",
+      },
+    ];
+    const { occurrences, grouped } = renderUseDebtOccurrences(
+      debts,
+      new Date("2024-01-01"),
+      new Date("2024-01-31"),
+      "rent"
+    );
+    // All occurrences are returned
+    expect(occurrences.map((o) => o.date)).toEqual([
+      "2024-01-05",
+      "2024-01-10",
+    ]);
+    // Grouped map filtered by query (case-insensitive)
+    expect([...grouped.keys()]).toEqual(["2024-01-05"]);
+  });
 });

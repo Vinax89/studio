@@ -164,12 +164,11 @@ export function useDebtOccurrences(
 
   const filtered = useMemo(() => {
     if (!query) return grouped;
+    const q = query.toLowerCase();
     const map = new Map<string, Occurrence[]>();
     grouped.forEach((arr, date) => {
       const filteredArr = arr.filter((oc) =>
-        `${oc.debt.name} ${oc.debt.notes ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
+        `${oc.debt.name} ${oc.debt.notes ?? ""}`.toLowerCase().includes(q)
       );
       if (filteredArr.length) map.set(date, filteredArr);
     });
