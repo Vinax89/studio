@@ -53,6 +53,9 @@ export function chunkTransactions<T>(
   transactions: T[],
   chunkSize = 500
 ): T[][] {
+  if (chunkSize <= 0) {
+    throw new Error("chunkSize must be greater than 0");
+  }
   const chunks: T[][] = [];
   for (let i = 0; i < transactions.length; i += chunkSize) {
     chunks.push(transactions.slice(i, i + chunkSize));
