@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
@@ -53,12 +53,11 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    // TODO: Persist transactions to the database.
-    return NextResponse.json({ received: transactions.length })
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    )
+    await saveTransactions(transactions)
+    return NextResponse.json({ saved: transactions.length })
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to save transactions"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
