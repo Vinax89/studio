@@ -1,6 +1,7 @@
 import React from "react";
 import { render, act } from "@testing-library/react";
 import { useDebts } from "@/lib/debts/use-debts";
+import type { onSnapshot, deleteDoc } from "firebase/firestore";
 
 // Mock logger to silence output
 jest.mock("@/lib/logger", () => ({ logger: { error: jest.fn() } }));
@@ -14,9 +15,9 @@ const onSnapshotMock = jest.fn();
 const deleteDocMock = jest.fn();
 
 jest.mock("firebase/firestore", () => ({
-  onSnapshot: (...args: any[]) => onSnapshotMock(...args),
+  onSnapshot: (...args: Parameters<typeof onSnapshot>) => onSnapshotMock(...args),
   setDoc: jest.fn(),
-  deleteDoc: (...args: any[]) => deleteDocMock(...args),
+  deleteDoc: (...args: Parameters<typeof deleteDoc>) => deleteDocMock(...args),
   updateDoc: jest.fn(),
   arrayUnion: jest.fn(),
   arrayRemove: jest.fn(),
