@@ -82,21 +82,26 @@ export class WorkerPool<T = unknown, R = unknown> {
 
       this.tasks.set(worker, task)
 
+      const onMessage = (result: R) => {
+        task.resolve(result)
+        finalize()
+      }
+
+      const onError = (err: Error) => {
+        task.reject(err)
+        finalize()
+      }
+
       const finalize = () => {
+        worker.off("error", onError)
+        worker.off("message", onMessage)
         this.tasks.delete(worker)
         this.idle.push(worker)
         this.process()
       }
 
-      worker.once("message", (result: R) => {
-        task.resolve(result)
-        finalize()
-      })
-
-      worker.once("error", err => {
-        task.reject(err)
-        finalize()
-      })
+      worker.once("message", onMessage)
+      worker.once("error", onError)
 
       worker.postMessage(task.data)
     }
