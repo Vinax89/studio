@@ -7,10 +7,13 @@ import { logger } from "@/lib/logger"
 
 /**
  * Generic transaction syncing endpoint.
+ *
  * Unlike `/api/bank/import`, this expects transactions that have already
- * been fetched from any source. The current implementation only validates
- * and reports how many transactions were received without persisting them.
- * TODO: Implement database persistence for received transactions.
+ * been fetched from any source. Transactions are validated and persisted,
+ * and the response reports how many records were stored.
+ *
+ * Future enhancements could include deduplication and more detailed
+ * responses about newly created versus updated records.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
