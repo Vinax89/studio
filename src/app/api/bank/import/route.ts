@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
+import { logger } from "@/lib/logger"
 
 /**
  * Imports transactions from a banking provider (e.g., Plaid, Finicity).
@@ -52,14 +53,15 @@ export async function POST(req: Request) {
   const { provider, transactions } = parsed.data
 
   try {
-    return NextResponse.json({
-      provider,
-      imported: transactions.length,
-    })
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    )
+    await saveTransactions(transactions)
+    return NextResponse.json({ imported: transactions.length })
+  } catch (err) {
+    logger.error("Failed to persist transactions for provider", provider, err)
+    const message = err instanceof Error ? err.message : "Internal server error"
+    const status =
+      typeof err === "object" && err && "status" in err
+        ? (err as { status?: number }).status || 500
+        : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }
