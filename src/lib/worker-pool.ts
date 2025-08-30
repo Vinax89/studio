@@ -64,6 +64,10 @@ export class WorkerPool<T = unknown, R = unknown> {
    * emits an error or terminates with a non-zero exit code.
    */
   run(data: T): Promise<R> {
+    if (this.destroyed) {
+      return Promise.reject(new Error("Worker pool destroyed"))
+    }
+
     return new Promise((resolve, reject) => {
       this.queue.push({ data, resolve, reject })
       this.process()

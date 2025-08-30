@@ -103,4 +103,20 @@ describe("WorkerPool", () => {
 
     await destroyPromise
   })
+
+  it("rejects submissions after destruction", async () => {
+    const pool = new WorkerPool<number, number>("fake", 1)
+
+    await pool.destroy()
+
+    await expect(pool.run(1)).rejects.toThrow("Worker pool destroyed")
+  })
+
+  it("rejects submissions after destroy is called", async () => {
+    const pool = new WorkerPool<number, number>("fake", 1)
+
+    const destroyPromise = pool.destroy()
+    await expect(pool.run(1)).rejects.toThrow("Worker pool destroyed")
+    await destroyPromise
+  })
 })
