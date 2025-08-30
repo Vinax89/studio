@@ -9,7 +9,7 @@
  * - CalculateCashflowOutput - The return type for the calculateCashflow function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, redact} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const CalculateCashflowInputSchema = z.object({
@@ -71,7 +71,7 @@ const calculateCashflowFlow = ai.defineFlow(
     outputSchema: CalculateCashflowOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(redact(input));
     if (!output) {
       throw new Error('No output returned from calculateCashflowFlow');
     }

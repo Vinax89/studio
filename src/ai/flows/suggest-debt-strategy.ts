@@ -9,7 +9,7 @@
  * - SuggestDebtStrategyOutput - The return type for the suggestDebtStrategy function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, redact} from '@/ai/genkit';
 import {z} from 'genkit';
 import { RecurrenceValues } from '@/lib/types';
 
@@ -71,7 +71,7 @@ const suggestDebtStrategyFlow = ai.defineFlow(
     outputSchema: SuggestDebtStrategyOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(redact(input));
     if (!output) {
       throw new Error('No output returned from suggestDebtStrategyFlow');
     }
