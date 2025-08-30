@@ -98,4 +98,15 @@ describe("internet time", () => {
       "500 Internal Error bad"
     );
   });
+
+  it("throws error for malformed JSON responses", async () => {
+    (fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    await expect(fetchInternetTime("Etc/UTC")).rejects.toThrow(
+      "Invalid response"
+    );
+  });
 });
