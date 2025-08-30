@@ -48,18 +48,19 @@ export default function TransactionsPage() {
   }, [transactions]);
 
   const addTransaction = useCallback(
-    (transaction: Omit<Transaction, "id" | "date">) => {
+    (transaction: Omit<Transaction, "id" | "date" | "userId">) => {
       setTransactions((prev) => [
         {
           ...transaction,
           id: crypto.randomUUID(),
           date: new Date().toISOString().split("T")[0],
+          userId: "demo-user",
         },
         ...prev,
       ]);
       addCategory(transaction.category);
     },
-    [] 
+    []
   );
 
   const handleUploadClick = () => fileInputRef.current?.click();
@@ -69,7 +70,7 @@ export default function TransactionsPage() {
     if (!file) return;
     try {
       const rows = await parseCsv<TransactionRowType>(file);
-      const parsed = validateTransactions(rows, getCategories());
+      const parsed = validateTransactions(rows, getCategories(), "demo-user");
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
     } catch (err) {

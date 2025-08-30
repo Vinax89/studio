@@ -6,7 +6,7 @@ import { getAuth } from "firebase-admin/auth";
  * In test environments, a token value of "test-token" is accepted.
  * @throws Error if the token is missing or invalid.
  */
-export async function verifyFirebaseToken(req: Request): Promise<void> {
+export async function verifyFirebaseToken(req: Request): Promise<string> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new Error("Missing Authorization header");
@@ -18,12 +18,13 @@ export async function verifyFirebaseToken(req: Request): Promise<void> {
     if (token !== "test-token") {
       throw new Error("Invalid token");
     }
-    return;
+    return "test-uid";
   }
 
   if (!getApps().length) {
     initializeApp();
   }
 
-  await getAuth().verifyIdToken(token);
+  const decoded = await getAuth().verifyIdToken(token);
+  return decoded.uid;
 }

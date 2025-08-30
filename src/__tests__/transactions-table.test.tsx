@@ -13,11 +13,13 @@ type Tx = {
   amount: number;
   currency: string;
   isRecurring: boolean;
+  userId: string;
 };
 
 function makeTransactions(count: number): Tx[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `tx-${i}`,
+    userId: 'user1',
     date: '2024-01-01',
     description: `Transaction ${i + 1}`,
     category: 'Misc',

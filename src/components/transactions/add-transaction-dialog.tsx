@@ -22,13 +22,14 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
-import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
 import { logger } from "@/lib/logger"
 
+import type { Transaction } from "@/lib/types"
+
 interface AddTransactionDialogProps {
-  onSave: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
+  onSave: (transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) => void;
 }
 
 export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {

@@ -53,6 +53,7 @@ describe("saveTransactions integration", () => {
     const txs: Transaction[] = [
       {
         id: "a1",
+        userId: "user1",
         date: "2024-01-01",
         description: "one",
         amount: 1,
@@ -63,6 +64,7 @@ describe("saveTransactions integration", () => {
       },
       {
         id: "a2",
+        userId: "user1",
         date: "2024-01-02",
         description: "two",
         amount: 2,
@@ -73,7 +75,7 @@ describe("saveTransactions integration", () => {
       },
     ];
 
-    await saveTransactions(txs);
+    await saveTransactions(txs, "user1");
 
     expect(Array.from(store.keys()).sort()).toEqual(["a1", "a2"]);
   });
@@ -81,6 +83,7 @@ describe("saveTransactions integration", () => {
   it("overwrites existing documents with the same id", async () => {
     const tx: Transaction = {
       id: "t1",
+      userId: "user1",
       date: "2024-01-01",
       description: "first",
       amount: 100,
@@ -90,9 +93,9 @@ describe("saveTransactions integration", () => {
       isRecurring: false,
     };
 
-    await saveTransactions([tx]);
+    await saveTransactions([tx], "user1");
     const updated = { ...tx, description: "updated" };
-    await saveTransactions([updated]);
+    await saveTransactions([updated], "user1");
 
     expect(store.size).toBe(1);
     expect(store.get("t1")?.description).toBe("updated");

@@ -90,7 +90,8 @@ export function chunkTransactions<T>(
  */
 export function validateTransactions(
   rows: TransactionRowType[],
-  validCategories: string[]
+  validCategories: string[],
+  userId: string
 ): Transaction[] {
   const schema = createTransactionRowSchema(validCategories);
   return rows.map((row, index) => {
@@ -109,6 +110,7 @@ export function validateTransactions(
 
     const tx: Transaction = {
       id: crypto.randomUUID(),
+      userId,
       date: data.date,
       description: data.description,
       amount: parsedAmount,
@@ -136,13 +138,16 @@ export function validateTransactions(
  * @throws {Error} If the Firestore batch commit fails.
  * @remarks Writes to Firestore and performs network I/O.
  */
-export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+export async function saveTransactions(
+  transactions: TransactionPayload[],
+  userId: string
+): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
-      batch.set(doc(colRef, tx.id), tx);
+      batch.set(doc(colRef, tx.id), { ...tx, userId });
     });
 
     try {
@@ -179,11 +184,14 @@ async function fetchCategories(): Promise<string[]> {
   }
 }
 
-export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
+export async function importTransactions(
+  rows: TransactionRowType[],
+  userId: string
+): Promise<void> {
   const categories = await fetchCategories();
-  const transactions = validateTransactions(rows, categories);
+  const transactions = validateTransactions(rows, categories, userId);
   try {
-    await saveTransactions(transactions);
+    await saveTransactions(transactions, userId);
   } catch (err) {
     throw new Error(
       `Failed to import transactions: ${
