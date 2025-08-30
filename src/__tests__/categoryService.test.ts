@@ -1,7 +1,22 @@
 import { addCategory, getCategories, removeCategory, clearCategories } from "@/lib/categoryService";
 import { setDoc, deleteDoc } from "firebase/firestore";
 
-jest.mock("@/lib/firebase", () => ({ db: {}, categoriesCollection: {} }));
+jest.mock("@/lib/firebase", () => ({
+  db: {},
+  categoriesCollection: {},
+  initFirebase: jest.fn(),
+}));
+import { initFirebase } from "@/lib/firebase";
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test";
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "test";
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = "test";
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "test";
+  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "test";
+  process.env.NEXT_PUBLIC_FIREBASE_APP_ID = "test";
+  initFirebase();
+});
 
 jest.mock("firebase/firestore", () => ({
   doc: jest.fn(() => ({})),
