@@ -5,7 +5,7 @@ process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
 
-const dataStore: Record<string, Map<string, any>> = {
+const dataStore: Record<string, Map<string, Record<string, unknown>>> = {
   transactions: new Map(),
   transactions_archive: new Map(),
   debts: new Map(),
@@ -28,7 +28,7 @@ jest.mock('../lib/internet-time', () => ({
 }));
 
 jest.mock('firebase/firestore', () => {
-  const where = (field: string, op: string, value: any) => ({
+  const where = (field: string, op: string, value: unknown) => ({
     type: 'where',
     field,
     op,
@@ -36,10 +36,11 @@ jest.mock('firebase/firestore', () => {
   });
   const orderBy = (field: string) => ({ type: 'orderBy', field });
   const limit = (n: number) => ({ type: 'limit', n });
-  const startAfter = (doc: any) => ({ type: 'startAfter', doc });
-  const query = (colRef: any, ...constraints: any[]) => ({ ...colRef, constraints });
+  const startAfter = (doc: { data: () => Record<string, unknown> }) => ({ type: 'startAfter', doc });
+  type Constraint = { type: string; field?: string; op?: string; value?: unknown; doc?: { data: () => Record<string, unknown> }; n?: number };
+  const query = (colRef: { name: string }, ...constraints: Constraint[]) => ({ ...colRef, constraints });
 
-  const getDocs = jest.fn(async (q: any) => {
+  const getDocs = jest.fn(async (q: { name: string; constraints?: Constraint[] }) => {
     const colName = q.name;
     let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
       id,
@@ -50,12 +51,12 @@ jest.mock('firebase/firestore', () => {
     for (const c of constraints) {
       if (c.type === 'where') {
         docs = docs.filter((d) => {
-          const val = d.data()[c.field];
+          const val = (d.data() as Record<string, unknown>)[c.field!];
           switch (c.op) {
             case '<':
-              return val < c.value;
+              return (val as number) < (c.value as number);
             case '<=':
-              return val <= c.value;
+              return (val as number) <= (c.value as number);
             default:
               return true;
           }
@@ -63,46 +64,55 @@ jest.mock('firebase/firestore', () => {
       }
     }
 
-    const order = constraints.find((c: any) => c.type === 'orderBy');
+    const order = constraints.find((c) => c.type === 'orderBy');
     if (order) {
       docs.sort((a, b) => {
-        const av = a.data()[order.field];
-        const bv = b.data()[order.field];
-        if (av > bv) return 1;
-        if (av < bv) return -1;
+        const av = (a.data() as Record<string, unknown>)[order.field!];
+        const bv = (b.data() as Record<string, unknown>)[order.field!];
+        if ((av as number) > (bv as number)) return 1;
+        if ((av as number) < (bv as number)) return -1;
         return 0;
       });
     }
 
-    const start = constraints.find((c: any) => c.type === 'startAfter');
+    const start = constraints.find((c) => c.type === 'startAfter');
     if (start && order) {
-      const startVal = start.doc.data()[order.field];
-      docs = docs.filter((d) => d.data()[order.field] > startVal);
+      const startVal = start.doc!.data()[order.field!];
+      docs = docs.filter(
+        (d) =>
+          (d.data() as Record<string, unknown>)[order.field!] >
+          (startVal as number)
+      );
     }
 
-    const lim = constraints.find((c: any) => c.type === 'limit');
+    const lim = constraints.find((c) => c.type === 'limit');
     if (lim) {
-      docs = docs.slice(0, lim.n);
+      docs = docs.slice(0, lim.n!);
     }
 
     return { docs, size: docs.length, empty: docs.length === 0 };
   });
 
   const writeBatch = jest.fn(() => {
-    const ops: any[] = [];
+    const ops: Array<Record<string, unknown>> = [];
     const batch = {
-      set: (docRef: any, data: any) => {
+      set: (docRef: { name: string; id: string }, data: Record<string, unknown>) => {
         ops.push({ type: 'set', docRef, data });
       },
-      delete: (docRef: any) => {
+      delete: (docRef: { name: string; id: string }) => {
         ops.push({ type: 'delete', docRef });
       },
       commit: jest.fn(async () => {
         for (const op of ops) {
           if (op.type === 'set') {
-            dataStore[op.docRef.name].set(op.docRef.id, op.data);
+            dataStore[(op.docRef as { name: string }).name].set(
+              (op.docRef as { id: string }).id,
+              op.data as Record<string, unknown>
+            );
           } else if (op.type === 'delete') {
-            dataStore[op.docRef.name].delete(op.docRef.id);
+            dataStore[(op.docRef as { name: string }).name].delete(
+              (op.docRef as { id: string }).id
+            );
           }
         }
         ops.length = 0;
@@ -111,7 +121,7 @@ jest.mock('firebase/firestore', () => {
     return batch;
   });
 
-  const addDoc = jest.fn(async (colRef: any, data: any) => {
+  const addDoc = jest.fn(async (colRef: { name: string }, data: Record<string, unknown>) => {
     const id = Math.random().toString(36).slice(2);
     dataStore[colRef.name].set(id, data);
     return { id };
@@ -119,8 +129,8 @@ jest.mock('firebase/firestore', () => {
 
   return {
     getFirestore: jest.fn(() => ({})),
-    collection: (_db: any, name: string) => ({ name }),
-    doc: (_db: any, name: string, id: string) => ({ name, id }),
+    collection: (_db: unknown, name: string) => ({ name }),
+    doc: (_db: unknown, name: string, id: string) => ({ name, id }),
     getDocs,
     addDoc,
     query,
