@@ -2,11 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { Carousel } from '@/components/ui/carousel';
 
-jest.mock('lucide-react', () => ({
-  ArrowLeft: () => null,
-  ArrowRight: () => null,
-}));
-
 const onMock = jest.fn();
 const offMock = jest.fn();
 let emblaApi: any;

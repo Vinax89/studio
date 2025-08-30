@@ -12,7 +12,6 @@ const suggestCategoryMock = jest.fn();
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastMock }),
 }));
-jest.mock('lucide-react', () => ({ PlusCircle: () => null }));
 jest.mock('@/components/ui/dialog', () => {
   const Mock = ({ children }: React.PropsWithChildren) => <div>{children}</div>;
   return {
