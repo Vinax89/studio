@@ -52,3 +52,4 @@ export async function suggestCategory(input: SuggestCategoryInput): Promise<Sugg
   }
   return await suggestCategoryFlow(input);
 }
+
