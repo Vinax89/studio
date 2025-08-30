@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Loader2, Lightbulb, TrendingUp, Sparkles } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { logger } from "@/lib/logger"
 
 export default function InsightsPage() {
   const [userDescription, setUserDescription] = useState("I'm a staff nurse looking to save for a down payment on a house and pay off my student loans within 5 years.")
@@ -29,9 +30,9 @@ export default function InsightsPage() {
       try {
         const result = await predictSpending({ transactions: mockTransactions });
         setForecastData(result.forecast);
-      } catch (error) {
-        console.error("Error predicting spending:", error);
-      }
+        } catch (error) {
+          logger.error("Error predicting spending:", error);
+        }
     };
     loadForecast();
   }, []);
@@ -74,7 +75,7 @@ export default function InsightsPage() {
       });
       setAnalysisResult(result);
     } catch (error) {
-      console.error("Error analyzing spending habits:", error);
+      logger.error("Error analyzing spending habits:", error);
       toast({
         title: "Analysis Failed",
         description: "There was an error generating your financial insights. Please try again.",

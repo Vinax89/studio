@@ -1,4 +1,5 @@
 import { openDB } from "idb"
+import { logger } from "@/lib/logger"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
@@ -8,7 +9,7 @@ let dbPromise: ReturnType<typeof openDB> | null = null
 
 export async function getDb() {
   if (typeof indexedDB === "undefined") {
-    console.error("IndexedDB is not supported in this environment")
+    logger.error("IndexedDB is not supported in this environment")
     return null
   }
 
@@ -26,7 +27,7 @@ export async function getDb() {
  * Enqueue a transaction in IndexedDB for offline processing.
  * The transaction is stored in the `transactions` object store and the
  * queue is capped at `maxQueueSize`, removing the oldest entries when the
- * limit is exceeded. Errors are logged to the console.
+ * limit is exceeded. Errors are logged via the logger.
  *
  * @param tx Data to queue for later processing.
  * @param maxQueueSize Maximum number of transactions retained in storage.
@@ -54,7 +55,7 @@ export async function queueTransaction(
     }
     return true
   } catch (error) {
-    console.error("queueTransaction error", error)
+    logger.error("queueTransaction error", error)
     return false
   }
 }
@@ -62,7 +63,7 @@ export async function queueTransaction(
 /**
  * Retrieve all transactions currently queued in IndexedDB.
  * The returned list reflects the transactions stored by {@link queueTransaction}.
- * Errors are logged to the console.
+ * Errors are logged via the logger.
  *
  * @returns An array of queued transactions or `null` if retrieval fails.
  */
@@ -72,7 +73,7 @@ export async function getQueuedTransactions<T = unknown>() {
     if (!db) return null
     return (await db.getAll(STORE_NAME)) as T[]
   } catch (error) {
-    console.error("getQueuedTransactions error", error)
+    logger.error("getQueuedTransactions error", error)
     return null
   }
 }
@@ -80,7 +81,7 @@ export async function getQueuedTransactions<T = unknown>() {
 /**
  * Remove all queued transactions from IndexedDB storage.
  * This clears the offline queue used by {@link queueTransaction}.
- * Errors are logged to the console.
+ * Errors are logged via the logger.
  *
  * @returns `true` if the queue was cleared successfully, otherwise `false`.
  */
@@ -91,7 +92,7 @@ export async function clearQueuedTransactions() {
     await db.clear(STORE_NAME)
     return true
   } catch (error) {
-    console.error("clearQueuedTransactions error", error)
+    logger.error("clearQueuedTransactions error", error)
     return false
   }
 }
