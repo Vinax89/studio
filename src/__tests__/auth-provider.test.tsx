@@ -3,6 +3,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
+import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
 const pushMock = jest.fn();
@@ -64,9 +65,9 @@ test('redirects to dashboard when authenticated on "/" and updates context', asy
   mockUser = { uid: 'abc' };
 
   render(
-    <AuthProvider>
+    <ClientProviders>
       <DisplayUser />
-    </AuthProvider>
+    </ClientProviders>
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/dashboard'));
@@ -78,9 +79,9 @@ test('redirects to "/" when unauthenticated on protected route', async () => {
   mockUser = null;
 
   render(
-    <AuthProvider>
+    <ClientProviders>
       <DisplayUser />
-    </AuthProvider>
+    </ClientProviders>
   );
 
   await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/'));
@@ -92,9 +93,9 @@ test('handles missing persisted user', () => {
   localStorage.removeItem(key);
   const renderComponent = () =>
     render(
-      <AuthProvider>
+      <ClientProviders>
         <DisplayUser />
-      </AuthProvider>
+      </ClientProviders>
     );
   expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();
@@ -105,9 +106,9 @@ test('handles corrupted persisted user', () => {
   localStorage.setItem(key, '{bad json');
   const renderComponent = () =>
     render(
-      <AuthProvider>
+      <ClientProviders>
         <DisplayUser />
-      </AuthProvider>
+      </ClientProviders>
     );
   expect(renderComponent).not.toThrow();
   expect(screen.getByText('none')).toBeInTheDocument();

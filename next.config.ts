@@ -11,21 +11,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {},
-  webpack: (config, { isServer, webpack }) => {
-    if (isServer) {
-      config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(
-          /handlebars/,
-          (resource: { request: string }) => {
-            if (resource.request === 'handlebars') {
-              resource.request = 'handlebars/dist/cjs/handlebars.js';
-            }
-          }
-        )
-      );
-    }
-    return config;
-  }
 };
 
 export default nextConfig;

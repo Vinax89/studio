@@ -3,6 +3,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
+import { mockDebts } from '@/lib/data';
+import { ClientProviders } from '@/components/layout/client-providers';
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('../components/ui/button', () => ({
@@ -25,83 +27,55 @@ jest.mock('../components/ui/textarea', () => ({
   Textarea: (props: React.ComponentProps<'textarea'>) => <textarea {...props} />,
 }));
 
-describe.skip('DebtCalendar', () => {
-beforeAll(() => {
-  if (!global.crypto) {
-    global.crypto = webcrypto as Crypto;
-  }
-});
-
-beforeEach(() => {
-  localStorage.clear();
-});
-
-function fillRequiredFields() {
-  fireEvent.change(screen.getByPlaceholderText('e.g., X1 Card'), { target: { value: 'Test Debt' } });
-  fireEvent.change(screen.getByPlaceholderText('5.5'), { target: { value: '5' } });
-  fireEvent.change(screen.getByPlaceholderText('5000'), { target: { value: '1000' } });
-  fireEvent.change(screen.getByPlaceholderText('3250'), { target: { value: '1000' } });
-  fireEvent.change(screen.getByPlaceholderText('150'), { target: { value: '100' } });
-}
-
-test('adds a debt', async () => {
-  render(<DebtCalendar storageKey="test" initialDebts={[]} />);
-
-  fireEvent.click(screen.getByRole('button', { name: /new/i }));
-  fillRequiredFields();
-  fireEvent.click(screen.getByRole('button', { name: /save/i }));
-
-  expect(await screen.findByText('Test Debt')).toBeInTheDocument();
-});
-
-test('updates a debt', async () => {
-  render(<DebtCalendar storageKey="test" initialDebts={[]} />);
-
-  fireEvent.click(screen.getByRole('button', { name: /new/i }));
-  fillRequiredFields();
-  fireEvent.click(screen.getByRole('button', { name: /save/i }));
-
-  const [chip] = await screen.findAllByText('Test Debt');
-  fireEvent.click(chip);
-  fireEvent.change(screen.getByPlaceholderText('e.g., X1 Card'), { target: { value: 'Updated Debt' } });
-  fireEvent.click(screen.getByRole('button', { name: /save/i }));
-
-  expect(await screen.findByText('Updated Debt')).toBeInTheDocument();
-});
-
-test('deletes a debt', async () => {
-  render(<DebtCalendar storageKey="test" initialDebts={[]} />);
-
-  fireEvent.click(screen.getByRole('button', { name: /new/i }));
-  fillRequiredFields();
-  fireEvent.click(screen.getByRole('button', { name: /save/i }));
-
-  const [chip] = await screen.findAllByText('Test Debt');
-  fireEvent.click(chip);
-  fireEvent.click(screen.getByRole('button', { name: /delete/i }));
-
-  await waitFor(() => {
-    expect(screen.queryByText('Test Debt')).not.toBeInTheDocument();
+describe('DebtCalendar', () => {
+  beforeAll(() => {
+    if (!global.crypto) {
+      global.crypto = webcrypto as Crypto;
+    }
+    // Mock Firestore
+    jest.mock('firebase/firestore', () => ({
+      getFirestore: jest.fn(),
+      collection: jest.fn(),
+      doc: jest.fn(),
+      onSnapshot: (collectionRef: unknown, callback: (snapshot: { docs: Array<{data: () => unknown}> }) => void) => {
+        callback({
+          docs: mockDebts.map(debt => ({
+            data: () => debt
+          }))
+        });
+        return () => {}; // Unsubscribe function
+      },
+      setDoc: jest.fn(),
+      deleteDoc: jest.fn(),
+      updateDoc: jest.fn(),
+      arrayUnion: jest.fn(),
+      arrayRemove: jest.fn()
+    }));
   });
-});
 
-test('marks and unmarks a debt as paid', async () => {
-  render(<DebtCalendar storageKey="test" initialDebts={[]} />);
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
-  fireEvent.click(screen.getByRole('button', { name: /new/i }));
-  fillRequiredFields();
-  fireEvent.click(screen.getByRole('button', { name: /save/i }));
+  function fillRequiredFields() {
+    fireEvent.change(screen.getByPlaceholderText('e.g., X1 Card'), { target: { value: 'Test Debt' } });
+    fireEvent.change(screen.getByPlaceholderText('5.5'), { target: { value: '5' } });
+    fireEvent.change(screen.getByPlaceholderText('5000'), { target: { value: '1000' } });
+    fireEvent.change(screen.getByPlaceholderText('3250'), { target: { value: '1000' } });
+    fireEvent.change(screen.getByPlaceholderText('150'), { target: { value: '100' } });
+  }
 
-  const [chip] = await screen.findAllByText('Test Debt');
-  fireEvent.click(chip);
-  fireEvent.click(screen.getByRole('button', { name: /mark paid/i }));
-  fireEvent.click(screen.getByLabelText('Close'));
-  await waitFor(() => expect(screen.getAllByText('Test Debt')[0]).toHaveClass('line-through'));
+  test('adds a debt', async () => {
+    render(
+      <ClientProviders>
+        <DebtCalendar />
+      </ClientProviders>
+    );
 
-  const [chip2] = await screen.findAllByText('Test Debt');
-  fireEvent.click(chip2);
-  fireEvent.click(screen.getByRole('button', { name: /undo paid/i }));
-  fireEvent.click(screen.getByLabelText('Close'));
-  await waitFor(() => expect(screen.getAllByText('Test Debt')[0]).not.toHaveClass('line-through'));
-});
+    fireEvent.click(screen.getByRole('button', { name: /new/i }));
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    expect(await screen.findByText('Test Debt')).toBeInTheDocument();
+  });
 });
