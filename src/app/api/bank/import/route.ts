@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
@@ -17,8 +17,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  let uid: string
   try {
-    await verifyFirebaseToken(req)
+    uid = await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
     return NextResponse.json({ error: message }, { status: 401 })
@@ -52,14 +53,16 @@ export async function POST(req: Request) {
   const { provider, transactions } = parsed.data
 
   try {
+    await saveTransactions(
+      transactions.map((tx) => ({ ...tx, userId: uid })) as any,
+    )
     return NextResponse.json({
       provider,
       imported: transactions.length,
     })
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    )
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Internal server error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
