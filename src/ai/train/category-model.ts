@@ -86,10 +86,10 @@ export function classifyCategory(description: string): string | null {
 export async function initCategoryModel(): Promise<void> {
   await trainCategoryModel();
   unsubscribe = onSnapshot(collection(db, "categoryFeedback"), () => {
-    trainCategoryModel();
+    void trainCategoryModel();
   });
   intervalId = setInterval(() => {
-    trainCategoryModel();
+    void trainCategoryModel();
   }, 60 * 60 * 1000);
 }
 

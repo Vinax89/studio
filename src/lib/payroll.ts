@@ -32,24 +32,20 @@ export interface PayPeriodSummary {
  */
 export const getPayPeriodStart = (
   date: Date,
-  anchor: Date = new Date(Date.UTC(2024, 0, 7)),
+  anchor: Date = new Date(Date.UTC(2024, 0, 7))
 ): Date => {
   const d = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
   const a = new Date(
-    Date.UTC(
-      anchor.getUTCFullYear(),
-      anchor.getUTCMonth(),
-      anchor.getUTCDate(),
-    ),
+    Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), anchor.getUTCDate())
   );
 
   const dayOfWeek = d.getUTCDay();
   d.setUTCDate(d.getUTCDate() - dayOfWeek);
 
   const diffWeeks = Math.floor(
-    (d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7),
+    (d.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 7)
   );
   const parity = Math.abs(diffWeeks) % 2;
 
@@ -65,11 +61,10 @@ export const getPayPeriodStart = (
 // already the start of a pay period, that date is considered the pay day.
 export const getNextPayDay = (date: Date = new Date()): Date => {
   const payDayStart = getPayPeriodStart(date);
-  const startOfDay = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
+  const payDayEnd = new Date(payDayStart);
+  payDayEnd.setUTCDate(payDayEnd.getUTCDate() + 1);
 
-  if (payDayStart < startOfDay) {
+  if (date >= payDayEnd) {
     const next = new Date(payDayStart);
     next.setUTCDate(payDayStart.getUTCDate() + 14);
     return next;
@@ -98,7 +93,7 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
   const overtimeDates: Date[] = [];
   for (const weekStartStr in weeklyShifts) {
     const week = weeklyShifts[weekStartStr].sort(
-      (a, b) => a.date.getTime() - b.date.getTime(),
+      (a, b) => a.date.getTime() - b.date.getTime()
     );
 
     let weeklyHours = 0;
@@ -117,7 +112,7 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
 export const calculatePayPeriodSummary = (
   shifts: Shift[],
-  payPeriod: DateRange | undefined,
+  payPeriod: DateRange | undefined
 ): PayPeriodSummary => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) {
     return { totalIncome: 0, regularHours: 0, overtimeHours: 0, totalHours: 0 };
@@ -183,12 +178,10 @@ export const calculatePayPeriodSummary = (
 
 export const getShiftsInPayPeriod = (
   shifts: Shift[],
-  payPeriod: DateRange | undefined,
+  payPeriod: DateRange | undefined
 ): Shift[] => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
   return shifts
-    .filter(
-      (shift) => shift.date >= payPeriod.from && shift.date <= payPeriod.to,
-    )
+    .filter((shift) => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };

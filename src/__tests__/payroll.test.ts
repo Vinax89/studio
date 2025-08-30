@@ -1,8 +1,8 @@
 import {
   getPayPeriodStart,
-  getNextPayDay,
   calculateOvertimeDates,
   calculatePayPeriodSummary,
+  getNextPayDay,
   type Shift,
 } from "../lib/payroll";
 import type { DateRange } from "react-day-picker";
@@ -80,5 +80,17 @@ describe("payroll utilities", () => {
       overtimeHours: 10,
       totalHours: 90,
     });
+  });
+
+  test("getNextPayDay returns next period after the pay day ends", () => {
+    const date = new Date("2024-01-08T00:00:00Z");
+    const next = getNextPayDay(date);
+    expect(next.toISOString().slice(0, 10)).toBe("2024-01-21");
+  });
+
+  test("getNextPayDay keeps the current pay day within 24 hours of start", () => {
+    const date = new Date("2024-01-07T12:00:00Z");
+    const current = getNextPayDay(date);
+    expect(current.toISOString().slice(0, 10)).toBe("2024-01-07");
   });
 });
