@@ -1,20 +1,23 @@
-function setupSuccessMocks(output: unknown) {
+interface Schema<T = unknown> {
+  parse: (value: unknown) => T;
+}
+
+interface FlowConfig<I = unknown, O = unknown> {
+  inputSchema: Schema<I>;
+  outputSchema: Schema<O>;
+}
+
+type FlowHandler<I = unknown, O = unknown> = (input: I) => O | Promise<O>;
+
+function setupSuccessMocks<O>(output: O) {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
-  const defineFlowMock = jest.fn(
-    (
-      config: {
-        inputSchema: { parse: (value: unknown) => unknown };
-        outputSchema: { parse: (value: unknown) => unknown };
-      },
-      handler: (value: unknown) => unknown
-    ) => {
-      return async (input: unknown) => {
-        const parsedInput = config.inputSchema.parse(input);
-        const result = await handler(parsedInput);
-        return config.outputSchema.parse(result);
-      };
-    }
-  );
+  const defineFlowMock = jest.fn(<I>(config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => {
+    return async (input: unknown): Promise<O> => {
+      const parsedInput = config.inputSchema.parse(input);
+      const result = await handler(parsedInput);
+      return config.outputSchema.parse(result);
+    };
+  });
   jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
 }
 
