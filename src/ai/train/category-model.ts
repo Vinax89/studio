@@ -64,29 +64,23 @@ class NaiveBayesClassifier {
 }
 
 let classifier: NaiveBayesClassifier | null = null;
+let unsubscribe: (() => void) | null = null;
+let intervalId: ReturnType<typeof setInterval> | null = null;
 
 async function fetchPairs(): Promise<FeedbackPair[]> {
   const snap = await getDocs(collection(db, "categoryFeedback"));
   return snap.docs.map((d) => d.data() as FeedbackPair);
 }
 
-export async function trainCategoryModel(): Promise<void> {
+async function trainCategoryModel(): Promise<void> {
   const pairs = await fetchPairs();
   classifier = new NaiveBayesClassifier();
   classifier.train(pairs);
 }
 
-export function classifyCategory(description: string): string | null {
-  if (!classifier) return null;
-  return classifier.predict(description);
-}
-
-let unsubscribe: (() => void) | null = null;
-let intervalId: NodeJS.Timeout | null = null;
-
-export function initCategoryModel(): void {
-  if (unsubscribe || intervalId) return;
-  trainCategoryModel();
+export async function initCategoryModel(): Promise<void> {
+  if (classifier) return;
+  await trainCategoryModel();
   unsubscribe = onSnapshot(collection(db, "categoryFeedback"), () => {
     trainCategoryModel();
   });
@@ -96,12 +90,16 @@ export function initCategoryModel(): void {
 }
 
 export function teardownCategoryModel(): void {
-  if (unsubscribe) {
-    unsubscribe();
-    unsubscribe = null;
-  }
+  unsubscribe?.();
+  unsubscribe = null;
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
   }
+  classifier = null;
+}
+
+export function classifyCategory(description: string): string | null {
+  if (!classifier) return null;
+  return classifier.predict(description);
 }
