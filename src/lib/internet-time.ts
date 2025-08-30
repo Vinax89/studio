@@ -37,7 +37,17 @@ export async function fetchInternetTime(tz: string): Promise<Date> {
     );
   }
   const data = await res.json();
+  if (typeof data?.datetime !== "string") {
+    throw new Error(
+      `Invalid response from worldtimeapi.org for timezone ${tz}: missing datetime`
+    );
+  }
   const networkDate = new Date(data.datetime);
+  if (isNaN(networkDate.getTime())) {
+    throw new Error(
+      `Invalid datetime in response from worldtimeapi.org for timezone ${tz}: ${data.datetime}`
+    );
+  }
   const deviceDate = new Date();
   const offset = networkDate.getTime() - deviceDate.getTime();
   offsetCache.set(tz, { offset, ts: Date.now() });
