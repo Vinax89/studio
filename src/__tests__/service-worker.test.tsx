@@ -16,6 +16,27 @@ jest.mock("../lib/firebase", () => ({
 }))
 import { initFirebase } from "../lib/firebase"
 
+const defaultServiceWorker = (
+  navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
+).serviceWorker
+const defaultOnLine = navigator.onLine
+
+afterEach(() => {
+  const nav = navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
+  if (defaultServiceWorker === undefined) {
+    delete nav.serviceWorker
+  } else {
+    Object.defineProperty(navigator, "serviceWorker", {
+      value: defaultServiceWorker,
+      configurable: true,
+    })
+  }
+  Object.defineProperty(navigator, "onLine", {
+    value: defaultOnLine,
+    configurable: true,
+  })
+})
+
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test"
   process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "test"
@@ -119,13 +140,6 @@ describe("Service worker registration", () => {
 
     expect(navigator.serviceWorker.register).toHaveBeenCalledWith("/sw.js", {
       type: "module",
-    })
-
-    const nav = navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
-    delete nav.serviceWorker
-    Object.defineProperty(navigator, "onLine", {
-      value: true,
-      configurable: true,
     })
   })
 })
