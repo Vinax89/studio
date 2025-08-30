@@ -166,10 +166,19 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  *   error.
  * @remarks Generates UUIDs during validation and writes data to Firestore.
  */
+const CATEGORY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let categoryCache: { categories: string[]; ts: number } | null = null;
+
 async function fetchCategories(): Promise<string[]> {
+  const now = Date.now();
+  if (categoryCache && now - categoryCache.ts < CATEGORY_CACHE_TTL_MS) {
+    return categoryCache.categories;
+  }
   try {
     const snapshot = await getDocs(collection(db, "categories"));
-    return snapshot.docs.map((doc) => doc.id);
+    const categories = snapshot.docs.map((doc) => doc.id);
+    categoryCache = { categories, ts: now };
+    return categories;
   } catch (err) {
     throw new Error(
       `Failed to fetch categories: ${
@@ -178,6 +187,12 @@ async function fetchCategories(): Promise<string[]> {
     );
   }
 }
+
+export function __clearCategoryCache() {
+  categoryCache = null;
+}
+
+export const __CATEGORY_CACHE_TTL_MS = CATEGORY_CACHE_TTL_MS;
 
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
   const categories = await fetchCategories();
