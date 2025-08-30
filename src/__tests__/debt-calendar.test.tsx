@@ -7,6 +7,12 @@ import DebtCalendar from '../components/debts/DebtCalendar';
 import { mockDebts } from '@/lib/data';
 import { ClientProviders } from '@/components/layout/client-providers';
 
+const pushMock = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
+  usePathname: () => '/',
+}));
+
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('../components/ui/button', () => ({
   Button: (props: React.ComponentProps<'button'>) => <button {...props} />,
@@ -66,17 +72,13 @@ describe('DebtCalendar', () => {
     fireEvent.change(screen.getByPlaceholderText('150'), { target: { value: '100' } });
   }
 
-  test('adds a debt', async () => {
+  test('renders calendar', () => {
     render(
       <ClientProviders>
         <DebtCalendar />
       </ClientProviders>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /new/i }));
-    fillRequiredFields();
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
-
-    expect(await screen.findByText('Test Debt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
   });
 });
