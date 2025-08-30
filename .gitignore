@@ -7,6 +7,9 @@ out/
 # Deps
 node_modules/
 
+# Generated service worker
+public/sw.js
+
 # Env & local
 .env
 .env.local
