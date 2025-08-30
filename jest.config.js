@@ -4,6 +4,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^lucide-react$': '<rootDir>/__mocks__/lucide-react.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
