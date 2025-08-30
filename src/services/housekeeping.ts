@@ -25,7 +25,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           transCol,
@@ -66,7 +66,7 @@ export async function cleanupDebts(): Promise<void> {
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-  while (true) {
+  for (;;) {
     const q = lastDoc
       ? query(
           debtsCol,
@@ -145,7 +145,7 @@ export async function backupData(
     const items: T[] = [];
     let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
 
-    while (true) {
+    for (;;) {
       const q = lastDoc
         ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
         : query(col, orderBy(orderField), limit(pageSize));

@@ -16,16 +16,19 @@ function createOversizedRequest() {
       this.push(null)
     },
   })
-  const req = new Request("http://localhost", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer test-token",
-      "content-length": String(MAX_BODY_SIZE + 1),
-    },
-    body: stream,
-    // Node's Request type requires duplex when using a stream body
-    duplex: "half" as any,
-  })
+  const req = new Request(
+    "http://localhost",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer test-token",
+        "content-length": String(MAX_BODY_SIZE + 1),
+      },
+      body: stream,
+      // Node's Request type requires duplex when using a stream body
+      duplex: "half",
+    } as RequestInit & { duplex: "half" }
+  )
   return { req, read: () => read }
 }
 

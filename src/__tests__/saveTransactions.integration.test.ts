@@ -13,7 +13,7 @@ function mockDoc(col: { name: string }, id: string) {
   return { col: col.name, id };
 }
 
-function mockWriteBatch(_db: unknown) {
+function mockWriteBatch() {
   const ops: { ref: { id: string }; data: Transaction }[] = [];
   return {
     set(ref: { id: string }, data: Transaction) {
