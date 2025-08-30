@@ -28,13 +28,25 @@ jest.mock("idb", () => {
   }
 })
 
+jest.mock("../lib/firebase", () => ({
+  auth: { currentUser: { getIdToken: jest.fn().mockResolvedValue("token") } },
+  initFirebase: jest.fn(),
+}))
+
+jest.mock("../lib/offline", () => {
+  const actual = jest.requireActual("../lib/offline")
+  return {
+    ...actual,
+    getQueuedTransactions: jest.fn(actual.getQueuedTransactions),
+  }
+})
+
 import {
   queueTransaction,
   getQueuedTransactions,
   clearQueuedTransactions,
 } from "../lib/offline"
 import { render, act } from "@testing-library/react"
-import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
 import React from "react"
 import { logger } from "../lib/logger"
@@ -107,22 +119,26 @@ describe("offline fallbacks", () => {
 describe("ServiceWorker", () => {
   it("handles queued transaction retrieval errors gracefully", async () => {
     jest.useFakeTimers()
-    const getQueuedSpy = jest
-      .spyOn(offline, "getQueuedTransactions")
-      .mockResolvedValueOnce({ ok: false, error: new Error("failed") })
+    const getQueuedMock = offline.getQueuedTransactions as jest.Mock
+    getQueuedMock.mockClear()
+    getQueuedMock.mockResolvedValueOnce({
+      ok: false,
+      error: new Error("failed"),
+    })
 
     const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 
     const fetchMock = jest.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch
 
+    const { ServiceWorker } = require("../components/service-worker")
     render(React.createElement(ServiceWorker))
 
     await act(async () => {
       jest.runOnlyPendingTimers()
     })
 
-    expect(getQueuedSpy).toHaveBeenCalled()
+    expect(getQueuedMock).toHaveBeenCalled()
     expect(fetchMock).not.toHaveBeenCalled()
 
     jest.useRealTimers()
