@@ -29,3 +29,23 @@ process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test'
+
+// Mock lucide-react icons for all tests to avoid ESM issues
+jest.mock('lucide-react', () => new Proxy({}, { get: () => () => null }))
+
+// Provide a basic matchMedia mock for components relying on it
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
+}
