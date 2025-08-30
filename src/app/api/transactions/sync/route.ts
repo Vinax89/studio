@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 
 /**
  * Generic transaction syncing endpoint.
  * Unlike `/api/bank/import`, this expects transactions that have already
- * been fetched from any source. The current implementation only validates
- * and reports how many transactions were received without persisting them.
- * TODO: Implement database persistence for received transactions.
+ * been fetched from any source. The endpoint validates incoming transactions
+ * and persists them to the database in batches.
  */
 const bodySchema = z.object({
   transactions: z.array(TransactionPayloadSchema),
@@ -53,9 +52,11 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    // TODO: Persist transactions to the database.
+    // Persist all transactions using a batch write for atomicity.
+    await saveTransactions(transactions)
     return NextResponse.json({ received: transactions.length })
-  } catch {
+  } catch (err) {
+    console.error("Failed to persist transactions", err)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
