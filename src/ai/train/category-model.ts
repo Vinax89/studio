@@ -65,7 +65,7 @@ class NaiveBayesClassifier {
 
 let classifier: NaiveBayesClassifier | null = null;
 let unsubscribe: (() => void) | null = null;
-let interval: ReturnType<typeof setInterval> | null = null;
+let intervalId: ReturnType<typeof setInterval> | null = null;
 
 async function fetchPairs(): Promise<FeedbackPair[]> {
   const snap = await getDocs(collection(db, "categoryFeedback"));
@@ -90,8 +90,8 @@ export async function initCategoryModel(): Promise<void> {
       void trainCategoryModel();
     });
   }
-  if (!interval) {
-    interval = setInterval(() => {
+  if (!intervalId) {
+    intervalId = setInterval(() => {
       void trainCategoryModel();
     }, 60 * 60 * 1000);
   }
@@ -102,8 +102,8 @@ export function teardownCategoryModel(): void {
     unsubscribe();
     unsubscribe = null;
   }
-  if (interval) {
-    clearInterval(interval);
-    interval = null;
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
   }
 }
