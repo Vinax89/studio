@@ -22,6 +22,15 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+// Basic matchMedia stub for libraries like next-themes
+if (typeof (global as any).matchMedia === 'undefined') {
+  (global as any).matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+  })
+}
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'
