@@ -186,4 +186,3 @@ export const transactionPersistence: TransactionPersistence = {
   saveTransactions,
   importTransactions,
 };
-

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,91 +10,103 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { PlusCircle } from "lucide-react"
-import type { Transaction } from "@/lib/types"
-import { useToast } from "@/hooks/use-toast"
-import { addCategory, getCategories } from "@/lib/categoryService"
-import { recordCategoryFeedback } from "@/lib/category-feedback"
-import { logger } from "@/lib/logger"
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { PlusCircle } from "lucide-react";
+import type { Transaction } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+import { addCategory, getCategories } from "@/lib/categoryService";
+import { recordCategoryFeedback } from "@/lib/category-feedback";
+import { logger } from "@/lib/logger";
 
 interface AddTransactionDialogProps {
-  onSave: (transaction: Omit<Transaction, "id" | "date">) => void
+  onSave: (transaction: Omit<Transaction, "id" | "date">) => void;
 }
 
 export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [description, setDescription] = useState("")
-  const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"Income" | "Expense">("Expense")
-  const [category, setCategory] = useState("")
-  const [categories, setCategories] = useState<string[]>([])
-  const [suggestedCategory, setSuggestedCategory] = useState<string | null>(null)
-  const userModifiedCategory = useRef(false)
-  const [currency, setCurrency] = useState("USD")
-  const [isRecurring, setIsRecurring] = useState(false)
-  const { toast } = useToast()
+  const [open, setOpen] = useState(false);
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState<"Income" | "Expense">("Expense");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [suggestedCategory, setSuggestedCategory] = useState<string | null>(
+    null
+  );
+  const userModifiedCategory = useRef(false);
+  const [currency, setCurrency] = useState("USD");
+  const [isRecurring, setIsRecurring] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
-      setCategories(getCategories())
+      setCategories(getCategories());
     }
-  }, [open])
+  }, [open]);
 
   useEffect(() => {
-    userModifiedCategory.current = false
+    userModifiedCategory.current = false;
     if (!description) {
-      setSuggestedCategory(null)
-      setCategory("")
-      userModifiedCategory.current = false
-      return
+      setSuggestedCategory(null);
+      setCategory("");
+      userModifiedCategory.current = false;
+      return;
     }
     if (process.env.NODE_ENV === "test") {
-      return
+      return;
     }
-    let active = true
+    let active = true;
     const fetchSuggestion = async () => {
       try {
-        const { suggestCategory } = await import("@/ai/flows/suggest-category")
-        const res = await suggestCategory({ description })
+        const { suggestCategory } = await import("@/ai/flows/suggest-category");
+        const res = await suggestCategory({ description });
         if (active) {
-          setSuggestedCategory(res.category)
+          setSuggestedCategory(res.category);
           if (!userModifiedCategory.current) {
-            setCategory(res.category)
+            setCategory(res.category);
           }
-          setCategories(addCategory(res.category))
+          setCategories(addCategory(res.category));
         }
       } catch (error) {
-        logger.error("Failed to suggest category", error)
+        logger.error("Failed to suggest category", error);
         toast({
           title: "Failed to suggest category",
           description: "Could not fetch category suggestion.",
           variant: "destructive",
-        })
+        });
       }
-    }
-    fetchSuggestion()
+    };
+    fetchSuggestion();
     return () => {
-      active = false
-    }
-  }, [description])
+      active = false;
+    };
+  }, [description]);
 
   const handleSave = () => {
-    const numericAmount = Number(amount)
+    const numericAmount = Number(amount);
 
-    if (!description || !amount || !type || !category || !Number.isFinite(numericAmount)) {
-      toast({ title: "Invalid amount", description: "Please enter a valid amount.", variant: "destructive" })
-      return
+    if (
+      !description ||
+      !amount ||
+      !type ||
+      !category ||
+      !Number.isFinite(numericAmount)
+    ) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
     }
 
     onSave({
@@ -104,22 +116,22 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
       type,
       category,
       isRecurring,
-    })
-    setCategories(addCategory(category))
+    });
+    setCategories(addCategory(category));
     if (suggestedCategory && category !== suggestedCategory) {
-      recordCategoryFeedback(description, category)
+      recordCategoryFeedback(description, category);
     }
-    setOpen(false)
+    setOpen(false);
     // Reset form
-    setDescription("")
-    setAmount("")
-    setType("Expense")
-    setCategory("")
-    setSuggestedCategory(null)
-    userModifiedCategory.current = false
-    setCurrency("USD")
-    setIsRecurring(false)
-  }
+    setDescription("");
+    setAmount("");
+    setType("Expense");
+    setCategory("");
+    setSuggestedCategory(null);
+    userModifiedCategory.current = false;
+    setCurrency("USD");
+    setIsRecurring(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -164,7 +176,10 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
             <Label htmlFor="type" className="text-right">
               Type
             </Label>
-            <Select onValueChange={(value: "Income" | "Expense") => setType(value)} value={type}>
+            <Select
+              onValueChange={(value: "Income" | "Expense") => setType(value)}
+              value={type}
+            >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -198,8 +213,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
               placeholder="e.g. Uniforms, Salary"
               value={category}
               onChange={(e) => {
-                setCategory(e.target.value)
-                userModifiedCategory.current = true
+                setCategory(e.target.value);
+                userModifiedCategory.current = true;
               }}
               list="category-options"
               className="col-span-3 capitalize"
@@ -231,5 +246,5 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
