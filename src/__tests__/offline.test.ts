@@ -38,12 +38,18 @@ import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
 import React from "react"
 
+interface TestGlobal {
+  indexedDB?: unknown
+  fetch?: jest.MockedFunction<typeof fetch>
+}
+const g = global as unknown as TestGlobal
+
 beforeAll(() => {
-  ;(global as any).indexedDB = {}
+  g.indexedDB = {}
 })
 
 afterAll(() => {
-  delete (global as any).indexedDB
+  delete g.indexedDB
 })
 
 describe("offline fallbacks", () => {
@@ -78,8 +84,8 @@ describe("ServiceWorker", () => {
       .spyOn(offline, "getQueuedTransactions")
       .mockResolvedValueOnce(null)
 
-    const fetchMock = jest.fn()
-    ;(global as any).fetch = fetchMock
+    const fetchMock = jest.fn() as jest.MockedFunction<typeof fetch>
+    g.fetch = fetchMock
 
     render(React.createElement(ServiceWorker))
 
@@ -91,6 +97,6 @@ describe("ServiceWorker", () => {
     expect(fetchMock).not.toHaveBeenCalled()
 
     jest.useRealTimers()
-    delete (global as any).fetch
+    delete g.fetch
   })
 })
