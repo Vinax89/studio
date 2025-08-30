@@ -55,7 +55,7 @@ describe("saveTransactions", () => {
   });
 
   it("adds all transactions in a single batch and commits once when within limit", async () => {
-    await saveTransactions(transactions);
+    await saveTransactions(transactions, "user1");
     expect(mockSet).toHaveBeenCalledTimes(transactions.length);
     expect(mockWriteBatch).toHaveBeenCalledTimes(1);
     expect(mockCommit).toHaveBeenCalledTimes(1);
@@ -75,7 +75,7 @@ describe("saveTransactions", () => {
       isRecurring: false,
     }));
 
-    await saveTransactions(manyTransactions);
+    await saveTransactions(manyTransactions, "user1");
     expect(mockSet).toHaveBeenCalledTimes(manyTransactions.length);
     // Should create and commit two batches for 501 items
     expect(mockWriteBatch).toHaveBeenCalledTimes(2);
@@ -84,7 +84,7 @@ describe("saveTransactions", () => {
 
   it("throws detailed error when commit fails", async () => {
     mockCommit.mockRejectedValueOnce(new Error("commit failed"));
-    await expect(saveTransactions(transactions)).rejects.toThrow(
+    await expect(saveTransactions(transactions, "user1")).rejects.toThrow(
       "Failed to save transactions batch: commit failed"
     );
   });

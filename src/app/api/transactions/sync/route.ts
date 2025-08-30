@@ -19,8 +19,9 @@ const bodySchema = z.object({
 const MAX_BODY_SIZE = 1024 * 1024 // 1MB
 
 export async function POST(req: Request) {
+  let uid: string
   try {
-    await verifyFirebaseToken(req)
+    uid = await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
     return NextResponse.json({ error: message }, { status: 401 })
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    await saveTransactions(transactions)
+    await saveTransactions(transactions, uid)
     return NextResponse.json({ received: transactions.length })
   } catch (err) {
     logger.error("Failed to persist transactions", err)
