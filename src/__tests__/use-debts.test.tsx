@@ -61,7 +61,7 @@ describe("useDebts", () => {
     render(<TestComponent />);
 
     await act(async () => {
-      await result.deleteDebt("1");
+      await expect(result.deleteDebt("1")).rejects.toBe(err);
     });
 
     expect(result.error).toBe(err);
