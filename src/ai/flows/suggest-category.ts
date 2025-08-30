@@ -4,7 +4,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-import { classifyCategory } from '../train/category-model';
+import { classifyCategory, initCategoryModel } from '../train/category-model';
 
 const SuggestCategoryInputSchema = z.object({
   description: z.string().describe('Description of the transaction'),
@@ -45,6 +45,7 @@ const suggestCategoryFlow = ai.defineFlow(
  * classifier first, falling back to the AI model if no prediction is available.
  */
 export async function suggestCategory(input: SuggestCategoryInput): Promise<SuggestCategoryOutput> {
+  await initCategoryModel();
   const local = classifyCategory(input.description);
   if (local) {
     return { category: local };
