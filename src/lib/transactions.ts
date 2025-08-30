@@ -100,12 +100,12 @@ export function validateTransactions(
     }
     const data = parsed.data;
     const amountString = data.amount.trim();
-    if (!/^[+-]?\d+(\.\d+)?$/.test(amountString)) {
+    const parsedAmount = Number(amountString);
+    if (Number.isNaN(parsedAmount) || !/^\-?\d+(\.\d+)?$/.test(amountString)) {
       throw new Error(
         `Invalid amount in row ${index + 1}: "${data.amount}" is not a valid number`
       );
     }
-    const parsedAmount = Number(amountString);
 
     const tx: Transaction = {
       id: crypto.randomUUID(),

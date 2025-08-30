@@ -8,10 +8,15 @@ const baseRow = {
 };
 
 describe("validateTransactions", () => {
+  const escapeRegex = (str: string) =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
   it.each(["abc", "", "NaN"])("throws for invalid amount '%s'", (amount) => {
     const rows = [{ ...baseRow, amount }];
     expect(() => validateTransactions(rows, ["Misc"])).toThrow(
-      /Invalid amount in row 1/
+      new RegExp(
+        `Invalid amount in row 1: "${escapeRegex(amount)}" is not a valid number`
+      )
     );
   });
 
@@ -20,7 +25,9 @@ describe("validateTransactions", () => {
     (amount) => {
       const rows = [{ ...baseRow, amount }];
       expect(() => validateTransactions(rows, ["Misc"])).toThrow(
-        /Invalid amount in row 1/
+        new RegExp(
+          `Invalid amount in row 1: "${escapeRegex(amount)}" is not a valid number`
+        )
       );
     }
   );
