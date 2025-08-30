@@ -152,13 +152,10 @@ jest.mock('firebase/firestore', () => {
   };
 });
 
-import {
-  archiveOldTransactions,
-  cleanupDebts,
-  backupData,
-  runWithRetry,
-} from '../services/housekeeping';
-import * as firestoreRaw from 'firebase/firestore';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { archiveOldTransactions, cleanupDebts, backupData, runWithRetry } = require('../services/housekeeping');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const firestoreRaw = require('firebase/firestore');
 const firestore = firestoreRaw as unknown as {
   __dataStore: typeof dataStore;
   writeBatch: jest.Mock;

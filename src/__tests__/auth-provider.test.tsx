@@ -3,8 +3,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
-import { auth as authStub } from '@/lib/firebase';
-
 let mockPathname = '/';
 const pushMock = jest.fn();
 
@@ -34,6 +32,14 @@ jest.mock('firebase/auth', () => ({
     ...args: Parameters<typeof onAuthStateChanged>
   ) => onAuthStateChanged(...args),
 }));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { auth: authStub } = require('@/lib/firebase') as {
+  auth: {
+    currentUser: null;
+    app: { options: { apiKey: string }; name: string };
+  };
+};
 
 function DisplayUser() {
   const { user } = useAuth();
