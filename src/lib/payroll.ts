@@ -50,6 +50,7 @@ export const getPayPeriodStart = (
   const parity = Math.abs(diffWeeks) % 2;
 
   if (parity !== 0) {
+    // It's in the second week of a pay period, so the start was the *previous* Sunday
     d.setUTCDate(d.getUTCDate() - 7);
   }
 

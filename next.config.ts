@@ -1,6 +1,6 @@
+import type { NextConfig } from 'next';
+import crypto from 'crypto';
 
-import type { NextConfig } from 'next'
-import crypto from 'crypto'
 const nextConfig: NextConfig = {
   // Enforce type checking and linting during builds
   typescript: { ignoreBuildErrors: false },
@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    const cspNonce = crypto.randomBytes(16).toString('base64')
+    const cspNonce = crypto.randomBytes(16).toString('base64');
     const securityHeaders = [
       {
         key: 'Content-Security-Policy',
@@ -35,14 +35,14 @@ const nextConfig: NextConfig = {
         key: 'Strict-Transport-Security',
         value: 'max-age=63072000; includeSubDomains; preload',
       },
-    ]
+    ];
 
     if (process.env.NODE_ENV === 'development') {
       securityHeaders.push({
         key: 'Access-Control-Allow-Origin',
         value:
           'https://*-firebase-studio-*.cloudworkstations.dev, http://localhost:6006',
-      })
+      });
     }
 
     return [
@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
-    ]
+    ];
   },
   experimental: {},
   webpack: (config, { isServer, webpack }) => {
@@ -60,15 +60,14 @@ const nextConfig: NextConfig = {
           /handlebars/,
           (resource: { request: string }) => {
             if (resource.request === 'handlebars') {
-              resource.request = 'handlebars/dist/cjs/handlebars.js'
+              resource.request = 'handlebars/dist/cjs/handlebars.js';
             }
           }
         )
-      )
+      );
     }
-    return config
+    return config;
   },
-}
+};
 
-export default nextConfig
-
+export default nextConfig;

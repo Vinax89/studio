@@ -1,52 +1,56 @@
-import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore"
-import { db, categoriesCollection } from "./firebase"
+// Utility functions for managing transaction categories stored in Firestore
+// with a local cache for offline support. Categories are compared in a
+// case-insensitive manner while preserving their original casing for display.
 
-const STORAGE_KEY = "categories"
+import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
+import { db, categoriesCollection } from "./firebase";
+
+const STORAGE_KEY = "categories";
 
 // In non-browser environments (e.g. during testing) `localStorage` is not
 // available. We keep an in-memory fallback so the functions still work.
-let memoryStore: string[] = []
+let memoryStore: string[] = [];
 
 const hasLocalStorage = () =>
-  typeof window !== "undefined" && !!window.localStorage
+  typeof window !== "undefined" && !!window.localStorage;
 
-const normalize = (value: string) => value.trim().toLowerCase()
+const normalize = (value: string) => value.trim().toLowerCase();
 
-const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key)
+const isValidKey = (key: string) => key.length > 0 && !/[\/\*\[\]]/.test(key);
 
 function load(): string[] {
   if (hasLocalStorage()) {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
     try {
-      return JSON.parse(raw) as string[]
+      return JSON.parse(raw) as string[];
     } catch {
-      return []
+      return [];
     }
   }
-  return memoryStore
+  return memoryStore;
 }
 
 function save(categories: string[]) {
   if (hasLocalStorage()) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(categories))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
   } else {
-    memoryStore = [...categories]
+    memoryStore = [...categories];
   }
 }
 
 // Synchronize the local cache with Firestore in the background.
 async function syncFromServer() {
   try {
-    const snap = await getDocs(categoriesCollection)
-    const list: string[] = []
+    const snap = await getDocs(categoriesCollection);
+    const list: string[] = [];
     snap.forEach((d) => {
-      const data = d.data() as { name?: string }
-      if (data.name) list.push(data.name)
-    })
-    save(list)
+      const data = d.data() as { name?: string };
+      if (data.name) list.push(data.name);
+    });
+    save(list);
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
 }
 
@@ -57,21 +61,21 @@ async function syncFromServer() {
  */
 export function getCategories(): string[] {
   if (typeof window !== "undefined") {
-    void syncFromServer()
+    void syncFromServer();
   }
-  const categories = load()
-  const map = new Map<string, string>()
+  const categories = load();
+  const map = new Map<string, string>();
   for (const cat of categories) {
-    const trimmed = cat.trim()
-    const key = normalize(trimmed)
+    const trimmed = cat.trim();
+    const key = normalize(trimmed);
     if (!map.has(key)) {
-      map.set(key, trimmed)
+      map.set(key, trimmed);
     }
   }
-  const unique = Array.from(map.values())
+  const unique = Array.from(map.values());
   // Persist the de-duplicated list
-  save(unique)
-  return unique
+  save(unique);
+  return unique;
 }
 
 /**
@@ -80,22 +84,22 @@ export function getCategories(): string[] {
  * the background and failures are logged but do not interrupt the result.
  */
 export function addCategory(category: string): string[] {
-  const categories = getCategories()
-  const trimmed = category.trim()
-  const key = normalize(trimmed)
+  const categories = getCategories();
+  const trimmed = category.trim();
+  const key = normalize(trimmed);
   if (!isValidKey(key)) {
-    console.error("Invalid category name")
-    return categories
+    console.error("Invalid category name");
+    return categories;
   }
-  const exists = categories.some((c) => normalize(c) === key)
+  const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
-    categories.push(trimmed)
+    categories.push(trimmed);
   }
   void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-    console.error,
-  )
-  save(categories)
-  return categories
+    console.error
+  );
+  save(categories);
+  return categories;
 }
 
 /**
@@ -103,28 +107,28 @@ export function addCategory(category: string): string[] {
  * writes are performed in the background.
  */
 export function removeCategory(category: string): string[] {
-  const key = normalize(category)
+  const key = normalize(category);
   if (!isValidKey(key)) {
-    console.error("Invalid category name")
-    return getCategories()
+    console.error("Invalid category name");
+    return getCategories();
   }
-  const categories = getCategories().filter((c) => normalize(c) !== key)
-  save(categories)
-  void deleteDoc(doc(categoriesCollection, key)).catch(console.error)
-  return categories
+  const categories = getCategories().filter((c) => normalize(c) !== key);
+  save(categories);
+  void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
+  return categories;
 }
 
 /** Clear all categories locally and in Firestore. */
 export function clearCategories() {
-  save([])
+  save([]);
   void (async () => {
     try {
-      const snap = await getDocs(categoriesCollection)
-      const batch = writeBatch(db)
-      snap.forEach((d) => batch.delete(d.ref))
-      await batch.commit()
+      const snap = await getDocs(categoriesCollection);
+      const batch = writeBatch(db);
+      snap.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  })()
+  })();
 }
