@@ -83,3 +83,74 @@ describe('payroll utilities', () => {
   });
 });
 
+describe('payroll utilities during DST transitions', () => {
+  const originalTZ = process.env.TZ;
+  beforeAll(() => {
+    process.env.TZ = 'America/New_York';
+  });
+  afterAll(() => {
+    process.env.TZ = originalTZ;
+  });
+
+  test('calculateOvertimeDates handles DST start correctly', () => {
+    const shifts: Shift[] = [
+      { date: new Date('2024-03-10'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-11'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-12'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-13'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-14'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-15'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-16'), hours: 8, rate: 10 },
+    ];
+    const ot = calculateOvertimeDates(shifts);
+    expect(ot.map(d => d.toISOString().slice(0, 10))).toEqual([
+      '2024-03-15',
+      '2024-03-16',
+    ]);
+  });
+
+  test('calculateOvertimeDates handles DST end correctly', () => {
+    const shifts: Shift[] = [
+      { date: new Date('2024-11-03'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-04'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-05'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-06'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-07'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-08'), hours: 8, rate: 10 },
+      { date: new Date('2024-11-09'), hours: 8, rate: 10 },
+    ];
+    const ot = calculateOvertimeDates(shifts);
+    expect(ot.map(d => d.toISOString().slice(0, 10))).toEqual([
+      '2024-11-08',
+      '2024-11-09',
+    ]);
+  });
+
+  test('calculatePayPeriodSummary across DST start', () => {
+    const shifts: Shift[] = [
+      { date: new Date('2024-03-10'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-11'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-12'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-13'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-14'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-15'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-18'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-19'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-20'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-21'), hours: 8, rate: 10 },
+      { date: new Date('2024-03-22'), hours: 8, rate: 10 },
+    ];
+    const period: DateRange = {
+      from: new Date('2024-03-10'),
+      to: new Date('2024-03-23'),
+    };
+    const summary = calculatePayPeriodSummary(shifts, period);
+    expect(summary).toEqual({
+      totalIncome: 920,
+      regularHours: 80,
+      overtimeHours: 8,
+      totalHours: 88,
+    });
+  });
+});
+
