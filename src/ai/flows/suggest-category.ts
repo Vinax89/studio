@@ -1,7 +1,7 @@
 // This file uses server-side code.
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { ai, piiMiddleware } from '@/ai/genkit';
 import { z } from 'genkit';
 
 import { classifyCategory } from '../train/category-model';
@@ -20,6 +20,7 @@ const prompt = ai.definePrompt({
   name: 'suggestCategoryPrompt',
   input: { schema: SuggestCategoryInputSchema },
   output: { schema: SuggestCategoryOutputSchema },
+  use: [piiMiddleware],
   prompt: `You are a financial assistant. Suggest a spending category for the following transaction description suitable for personal budgeting (e.g., Food, Transport, Utilities, Salary, Other).
 
 Description: {{description}}`,

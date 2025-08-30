@@ -9,7 +9,7 @@
  * - SpendingForecastOutput - The return type for the predictSpending function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai, piiMiddleware } from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TransactionSchema = z.object({
@@ -49,6 +49,7 @@ const prompt = ai.definePrompt({
   name: 'spendingForecastPrompt',
   input: {schema: SpendingForecastInputSchema},
   output: {schema: SpendingForecastOutputSchema},
+  use: [piiMiddleware],
   prompt: `You are a financial analyst. Review the user's past transactions and predict the total spending for the next three months.
 
 Transactions:

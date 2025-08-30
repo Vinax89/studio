@@ -9,7 +9,7 @@
  * - SuggestDebtStrategyOutput - The return type for the suggestDebtStrategy function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai, piiMiddleware } from '@/ai/genkit';
 import {z} from 'genkit';
 import { RecurrenceValues } from '@/lib/types';
 
@@ -48,6 +48,7 @@ const prompt = ai.definePrompt({
   name: 'suggestDebtStrategyPrompt',
   input: {schema: SuggestDebtStrategyInputSchema},
   output: {schema: SuggestDebtStrategyOutputSchema},
+  use: [piiMiddleware],
   prompt: `You are an expert financial advisor specializing in debt management for healthcare professionals like nurses. Analyze the following list of debts and recommend the best payoff strategy.
 
 Your primary goal is to help the user save the most money on interest, so you should lean towards the 'avalanche' method (highest interest rate first) unless there is a very small debt that could be paid off quickly for a psychological win (the 'snowball' method).
