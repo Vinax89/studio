@@ -12,14 +12,15 @@ jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }));
 
-jest.mock('@/lib/firebase', () => ({
-  auth: {
+jest.mock('@/lib/firebase', () => {
+  const auth = {
     currentUser: null,
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
-  },
-  initFirebase: jest.fn(),
-}));
-import { auth as authStub, initFirebase } from '@/lib/firebase';
+  };
+  return { getFirebase: jest.fn(() => ({ auth })) };
+});
+import { getFirebase } from '@/lib/firebase';
+const { auth: authStub } = getFirebase();
 
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test';
@@ -28,7 +29,7 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
-  initFirebase();
+  getFirebase();
 });
 
 type User = { uid: string } | null;

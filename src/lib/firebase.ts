@@ -27,10 +27,14 @@ const envSchema = z.object({
   NEXT_PUBLIC_FIREBASE_APP_ID: nonPlaceholder,
 });
 
-let app: ReturnType<typeof initializeApp>;
-let auth: ReturnType<typeof getAuth>;
-let db: ReturnType<typeof getFirestore>;
-let categoriesCollection: ReturnType<typeof collection>;
+type FirebaseServices = {
+  app: ReturnType<typeof initializeApp>;
+  auth: ReturnType<typeof getAuth>;
+  db: ReturnType<typeof getFirestore>;
+  categoriesCollection: ReturnType<typeof collection>;
+};
+
+let services: FirebaseServices | null = null;
 
 // A function to check if all required environment variables are present.
 // This provides a clearer error message than the generic Firebase error.
@@ -52,9 +56,9 @@ function validateFirebaseConfig(config: FirebaseOptions): void {
   }
 }
 
-export function initFirebase() {
-  if (app) {
-    return { app, auth, db, categoriesCollection };
+export function getFirebase(): FirebaseServices {
+  if (services) {
+    return services;
   }
   const env = envSchema.parse(process.env);
   const firebaseConfig: FirebaseOptions = {
@@ -66,12 +70,12 @@ export function initFirebase() {
     appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
   };
   validateFirebaseConfig(firebaseConfig);
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  auth = getAuth(app);
-  db = getFirestore(app);
-  categoriesCollection = collection(db, "categories");
-  return { app, auth, db, categoriesCollection };
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const categoriesCollection = collection(db, "categories");
+  services = { app, auth, db, categoriesCollection };
+  return services;
 }
 
-export { app, auth, db, categoriesCollection };
 

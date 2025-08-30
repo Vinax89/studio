@@ -1,7 +1,7 @@
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
-import { db, initFirebase } from "@/lib/firebase";
+import { getFirebase } from "@/lib/firebase";
 
-initFirebase();
+const { db } = getFirebase();
 
 interface FeedbackPair {
   description: string;

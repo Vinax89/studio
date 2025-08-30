@@ -1,8 +1,8 @@
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db, initFirebase } from "./firebase";
+import { getFirebase } from "./firebase";
 import { logger } from "./logger";
 
-initFirebase();
+const { db } = getFirebase();
 
 /**
  * Persist a (description, category) feedback pair. This is used when a user

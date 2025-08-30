@@ -8,9 +8,7 @@ import {
   createUserWithEmailAndPassword,
   type AuthError,
 } from "firebase/auth"
-import { auth, initFirebase } from "@/lib/firebase"
-
-initFirebase()
+import { getFirebase } from "@/lib/firebase"
 import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +19,8 @@ import { NurseFinAILogo } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { logger } from "@/lib/logger"
+
+const { auth } = getFirebase()
 
 export default function LoginPage() {
   const router = useRouter()

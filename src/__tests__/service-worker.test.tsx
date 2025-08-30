@@ -11,10 +11,11 @@ jest.mock("../lib/offline", () => ({
 }))
 
 jest.mock("../lib/firebase", () => ({
-  auth: { currentUser: { getIdToken: jest.fn().mockResolvedValue("token") } },
-  initFirebase: jest.fn(),
+  getFirebase: jest.fn(() => ({
+    auth: { currentUser: { getIdToken: jest.fn().mockResolvedValue("token") } },
+  })),
 }))
-import { initFirebase } from "../lib/firebase"
+import { getFirebase } from "../lib/firebase"
 
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test"
@@ -23,7 +24,7 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "test"
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "test"
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = "test"
-  initFirebase()
+  getFirebase()
 })
 
 jest.mock("../hooks/use-toast", () => ({ toast: jest.fn() }))
