@@ -1,4 +1,5 @@
 import { openDB } from "idb"
+import { logger } from "@/lib/logger"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
@@ -8,7 +9,7 @@ let dbPromise: ReturnType<typeof openDB> | null = null
 
 export async function getDb() {
   if (typeof indexedDB === "undefined") {
-    console.error("IndexedDB is not supported in this environment")
+    logger.error("IndexedDB is not supported in this environment")
     return null
   }
 
@@ -54,7 +55,7 @@ export async function queueTransaction(
     }
     return true
   } catch (error) {
-    console.error("queueTransaction error", error)
+    logger.error("queueTransaction error", error)
     return false
   }
 }
@@ -72,7 +73,7 @@ export async function getQueuedTransactions<T = unknown>() {
     if (!db) return null
     return (await db.getAll(STORE_NAME)) as T[]
   } catch (error) {
-    console.error("getQueuedTransactions error", error)
+    logger.error("getQueuedTransactions error", error)
     return null
   }
 }
@@ -91,7 +92,7 @@ export async function clearQueuedTransactions() {
     await db.clear(STORE_NAME)
     return true
   } catch (error) {
-    console.error("clearQueuedTransactions error", error)
+    logger.error("clearQueuedTransactions error", error)
     return false
   }
 }

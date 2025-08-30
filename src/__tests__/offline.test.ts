@@ -32,10 +32,12 @@ import {
   queueTransaction,
   getQueuedTransactions,
   clearQueuedTransactions,
+  getDb,
 } from "../lib/offline"
 import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
+import { logger } from "../lib/logger"
 import React from "react"
 
 const globalAny = globalThis as {
@@ -97,5 +99,65 @@ describe("ServiceWorker", () => {
 
     jest.useRealTimers()
     delete globalAny.fetch
+  })
+})
+
+describe("logging", () => {
+  it("logs when IndexedDB is unsupported", async () => {
+    const original = globalAny.indexedDB
+    delete globalAny.indexedDB
+    const spy = jest.spyOn(logger, "error").mockImplementation(() => {})
+    const result = await getDb()
+    expect(result).toBeNull()
+    expect(spy).toHaveBeenCalledWith(
+      "IndexedDB is not supported in this environment",
+    )
+    spy.mockRestore()
+    globalAny.indexedDB = original
+  })
+
+  it("logs errors from queueTransaction", async () => {
+    const error = new Error("fail")
+    const db = await getDb()
+    if (db) {
+      const original = db.add
+      ;(db as any).add = jest.fn().mockRejectedValue(error)
+      const spy = jest.spyOn(logger, "error").mockImplementation(() => {})
+      const result = await queueTransaction({ id: 1 })
+      expect(result).toBe(false)
+      expect(spy).toHaveBeenCalledWith("queueTransaction error", error)
+      spy.mockRestore()
+      ;(db as any).add = original
+    }
+  })
+
+  it("logs errors from getQueuedTransactions", async () => {
+    const error = new Error("fail")
+    const db = await getDb()
+    if (db) {
+      const original = db.getAll
+      ;(db as any).getAll = jest.fn().mockRejectedValue(error)
+      const spy = jest.spyOn(logger, "error").mockImplementation(() => {})
+      const result = await getQueuedTransactions()
+      expect(result).toBeNull()
+      expect(spy).toHaveBeenCalledWith("getQueuedTransactions error", error)
+      spy.mockRestore()
+      ;(db as any).getAll = original
+    }
+  })
+
+  it("logs errors from clearQueuedTransactions", async () => {
+    const error = new Error("fail")
+    const db = await getDb()
+    if (db) {
+      const original = db.clear
+      ;(db as any).clear = jest.fn().mockRejectedValue(error)
+      const spy = jest.spyOn(logger, "error").mockImplementation(() => {})
+      const result = await clearQueuedTransactions()
+      expect(result).toBe(false)
+      expect(spy).toHaveBeenCalledWith("clearQueuedTransactions error", error)
+      spy.mockRestore()
+      ;(db as any).clear = original
+    }
   })
 })
