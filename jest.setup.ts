@@ -4,6 +4,7 @@ import { TextEncoder, TextDecoder } from 'node:util'
 
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
+jest.mock('lucide-react', () => new Proxy({}, { get: () => () => null }))
 
 // Provide a minimal fetch polyfill for tests that expect it
 ;(global as any).fetch = jest.fn(() =>
