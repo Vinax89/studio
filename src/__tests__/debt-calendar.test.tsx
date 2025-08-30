@@ -8,11 +8,12 @@ jest.mock('next/navigation', () => ({
 }));
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
 import { mockDebts } from '@/lib/data';
 import { ClientProviders } from '@/components/layout/client-providers';
+import type { Debt } from '@/lib/types';
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('lucide-react', () => ({ X: () => null }));
@@ -30,7 +31,7 @@ jest.mock('firebase/firestore', () => ({
     cb({ docs: mockDebts.map(debt => ({ data: () => debt })) });
     return () => {};
   },
-  setDoc: jest.fn((_: unknown, debt: any) => {
+  setDoc: jest.fn((_: unknown, debt: Debt) => {
     const index = mockDebts.findIndex(d => d.id === debt.id);
     if (index === -1) {
       mockDebts.push(debt);
@@ -74,14 +75,6 @@ describe('DebtCalendar', () => {
   beforeEach(() => {
     localStorage.clear();
   });
-
-  function fillRequiredFields() {
-    fireEvent.change(screen.getByPlaceholderText('e.g., X1 Card'), { target: { value: 'Test Debt' } });
-    fireEvent.change(screen.getByPlaceholderText('5.5'), { target: { value: '5' } });
-    fireEvent.change(screen.getByPlaceholderText('5000'), { target: { value: '1000' } });
-    fireEvent.change(screen.getByPlaceholderText('3250'), { target: { value: '1000' } });
-    fireEvent.change(screen.getByPlaceholderText('150'), { target: { value: '100' } });
-  }
 
   test('renders calendar', () => {
     render(
