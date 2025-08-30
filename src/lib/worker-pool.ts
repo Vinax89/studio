@@ -23,6 +23,9 @@ export class WorkerPool<T = unknown, R = unknown> {
   private destroyed = false
 
   constructor(private readonly file: string, size: number) {
+    if (!Number.isInteger(size) || size <= 0) {
+      throw new Error("Worker pool size must be a positive integer")
+    }
     for (let i = 0; i < size; i++) {
       this.spawn()
     }

@@ -28,6 +28,15 @@ jest.mock("node:worker_threads", () => {
 import { WorkerPool } from "../lib/worker-pool"
 
 describe("WorkerPool", () => {
+  it.each([0, -1, 1.5])(
+    "throws an error when size is %p",
+    size => {
+      expect(() => new WorkerPool("fake", size)).toThrow(
+        "Worker pool size must be a positive integer"
+      )
+    }
+  )
+
   it("continues processing after a worker crash", async () => {
     const pool = new WorkerPool<number | string, number>("fake", 1)
 
@@ -68,8 +77,10 @@ describe("WorkerPool", () => {
   })
 
   it("rejects queued tasks when destroyed", async () => {
-    const pool = new WorkerPool<number, number>("fake", 0)
+    const pool = new WorkerPool<number | string, number>("fake", 1)
 
+    // Occupy the single worker so subsequent tasks remain queued
+    pool.run("hang").catch(() => {})
     const first = pool.run(1)
     const second = pool.run(2)
 
