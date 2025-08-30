@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2, Calculator, Percent, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { logger } from "@/lib/logger"
 
 type FilingStatus = 'single' | 'married_jointly' | 'married_separately' | 'head_of_household';
 
@@ -44,7 +45,7 @@ export default function TaxEstimatorPage() {
       })
       setTaxResult(result)
     } catch (error) {
-      console.error("Error estimating tax:", error)
+      logger.error("Error estimating tax:", error)
       toast({
         title: "Estimation Failed",
         description: "There was an error estimating your taxes. Please try again.",

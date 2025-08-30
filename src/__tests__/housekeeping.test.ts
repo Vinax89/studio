@@ -5,6 +5,7 @@ process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
 
+import { logger } from "../lib/logger";
 const dataStore: Record<string, Map<string, unknown>> = {
   transactions: new Map(),
   transactions_archive: new Map(),
@@ -355,8 +356,8 @@ describe('runWithRetry', () => {
       .mockRejectedValueOnce(new Error('fail2'))
       .mockResolvedValue('ok');
 
-    const consoleSpy = jest
-      .spyOn(console, 'error')
+    const loggerSpy = jest
+      .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
     const promise = runWithRetry(op, 2, 1000);
@@ -365,7 +366,7 @@ describe('runWithRetry', () => {
     await Promise.resolve();
 
     expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 1000);
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       1,
       'Attempt 1 failed:',
       expect.any(Error)
@@ -375,7 +376,7 @@ describe('runWithRetry', () => {
     await Promise.resolve();
 
     expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 2000);
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
       'Attempt 2 failed:',
       expect.any(Error)
@@ -385,10 +386,10 @@ describe('runWithRetry', () => {
 
     await expect(promise).resolves.toBe('ok');
     expect(op).toHaveBeenCalledTimes(3);
-    expect(consoleSpy).toHaveBeenCalledTimes(2);
+    expect(loggerSpy).toHaveBeenCalledTimes(2);
 
     setTimeoutSpy.mockRestore();
-    consoleSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -398,15 +399,15 @@ describe('runWithRetry', () => {
     const op = jest.fn().mockImplementation(async () => {
       throw new Error('fail');
     });
-    const consoleSpy = jest
-      .spyOn(console, 'error')
+    const loggerSpy = jest
+      .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
     const promise = runWithRetry(op, 1, 1000);
 
     // allow first rejection to be processed
     await Promise.resolve();
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       1,
       'Attempt 1 failed:',
       expect.any(Error)
@@ -415,14 +416,14 @@ describe('runWithRetry', () => {
     const expectation = expect(promise).rejects.toThrow('fail');
     await jest.advanceTimersByTimeAsync(1000);
     await expectation;
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
       'Attempt 2 failed:',
       expect.any(Error)
     );
-    expect(consoleSpy).toHaveBeenCalledTimes(2);
+    expect(loggerSpy).toHaveBeenCalledTimes(2);
 
-    consoleSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -430,6 +431,8 @@ describe('runWithRetry', () => {
     jest.useFakeTimers();
     const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
 
     const op = jest
       .fn()
@@ -446,6 +449,7 @@ describe('runWithRetry', () => {
 
     randomSpy.mockRestore();
     setTimeoutSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -456,6 +460,8 @@ describe('runWithRetry', () => {
     const op = jest.fn().mockRejectedValue(new Error('fail'));
     const isRetryable = jest.fn(() => false);
 
+    const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+
     await expect(
       runWithRetry(op, 3, 1000, 2000, 100, isRetryable)
     ).rejects.toThrow('fail');
@@ -464,6 +470,7 @@ describe('runWithRetry', () => {
     expect(setTimeoutSpy).not.toHaveBeenCalled();
 
     setTimeoutSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 });
