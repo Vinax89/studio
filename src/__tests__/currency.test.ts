@@ -10,7 +10,7 @@ describe('currency code validation', () => {
       ok: true,
       json: async () => ({ rates: { EUR: 0.85 } }),
     });
-    (global as any).fetch = mockFetch;
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch;
 
     const rate = await getFxRate('usd', 'eur');
 
@@ -23,7 +23,7 @@ describe('currency code validation', () => {
 
   it('getFxRate throws on invalid code', async () => {
     const mockFetch = jest.fn();
-    (global as any).fetch = mockFetch;
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch;
 
     await expect(getFxRate('US', 'EUR')).rejects.toThrow('Invalid currency code');
     expect(mockFetch).not.toHaveBeenCalled();
@@ -34,7 +34,7 @@ describe('currency code validation', () => {
       ok: true,
       json: async () => ({ rates: { EUR: 0.5 } }),
     });
-    (global as any).fetch = mockFetch;
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch;
 
     const converted = await convertCurrency(10, 'usd', 'eur');
 
@@ -43,7 +43,7 @@ describe('currency code validation', () => {
 
   it('convertCurrency returns original amount for invalid codes', async () => {
     const mockFetch = jest.fn();
-    (global as any).fetch = mockFetch;
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch;
 
     const converted = await convertCurrency(10, 'u$', 'eur');
 

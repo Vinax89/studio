@@ -24,7 +24,7 @@ function createOversizedRequest() {
     },
     body: stream,
     // Node's Request type requires duplex when using a stream body
-    duplex: "half" as any,
+    duplex: 'half' as unknown as RequestInit['duplex'],
   })
   return { req, read: () => read }
 }
