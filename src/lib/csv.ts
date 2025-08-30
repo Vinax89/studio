@@ -8,7 +8,8 @@ export function parseCsv<T>(file: File): Promise<T[]> {
       dynamicTyping: true,
       complete: results => {
         if (results.errors.length) {
-          reject(results.errors);
+          const message = results.errors.map(e => e.message).join(", ");
+          reject(new Error(message));
         } else {
           resolve(results.data as T[]);
         }
