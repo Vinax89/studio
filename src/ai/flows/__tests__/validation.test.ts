@@ -124,3 +124,19 @@ describe('calculateCostOfLiving validation', () => {
   });
 });
 
+describe('analyzeReceipt validation', () => {
+  it('rejects receipt images larger than 1MB', async () => {
+    jest.resetModules();
+    setupSuccessMocks({ description: '', amount: 0, category: '' });
+    const { analyzeReceipt } = await import('@/ai/flows/analyze-receipt');
+
+    // Create a data URI with size > 1MB after decoding
+    const largeBase64 = Buffer.alloc(1024 * 1024 + 1).toString('base64');
+    const largeDataUri = `data:image/png;base64,${largeBase64}`;
+
+    await expect(
+      analyzeReceipt({ receiptImage: largeDataUri })
+    ).rejects.toThrow();
+  });
+});
+
