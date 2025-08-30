@@ -23,11 +23,11 @@ initFirebase();
  * and removes them from the main transactions collection.
  */
 export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const timestamp = Date.parse(cutoffDate);
-  if (Number.isNaN(timestamp)) {
+  if (Number.isNaN(Date.parse(cutoffDate))) {
     throw new Error("Invalid cutoff date");
   }
-  const cutoff = new Date(timestamp).toISOString();
+  // Use the original cutoff string to avoid timezone shifts
+  const cutoff = cutoffDate;
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;

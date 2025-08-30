@@ -211,6 +211,33 @@ describe('housekeeping services', () => {
     expect(firestore.getDocs).not.toHaveBeenCalled();
   });
 
+  test('archiveOldTransactions uses the same cutoff regardless of server timezone', async () => {
+    const originalTZ = process.env.TZ;
+    const cutoff = '2024-01-01';
+
+    process.env.TZ = 'UTC';
+    await archiveOldTransactions(cutoff);
+    const utcWhere = (firestore.getDocs as jest.Mock).mock.calls[0][0].constraints.find(
+      (c: { type: string }) => c.type === 'where'
+    );
+    (firestore.getDocs as jest.Mock).mockClear();
+
+    process.env.TZ = 'America/Los_Angeles';
+    await archiveOldTransactions(cutoff);
+    const laWhere = (firestore.getDocs as jest.Mock).mock.calls[0][0].constraints.find(
+      (c: { type: string }) => c.type === 'where'
+    );
+
+    expect(utcWhere.value).toBe(cutoff);
+    expect(laWhere.value).toBe(cutoff);
+
+    if (originalTZ === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTZ;
+    }
+  });
+
   test('cleanupDebts removes settled debts', async () => {
     store.debts.set('d1', {
       id: 'd1',
