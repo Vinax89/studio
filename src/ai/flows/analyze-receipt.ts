@@ -10,6 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {redactInput} from '@/ai/redaction';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
 
@@ -50,7 +51,8 @@ const analyzeReceiptFlow = ai.defineFlow(
     outputSchema: AnalyzeReceiptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const redacted = redactInput(input);
+    const {output} = await prompt(redacted);
     if (!output) {
       throw new Error('No output returned from analyzeReceiptPrompt');
     }
