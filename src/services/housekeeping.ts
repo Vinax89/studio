@@ -10,6 +10,9 @@ import {
   startAfter,
   writeBatch,
   QueryDocumentSnapshot,
+  QueryConstraint,
+  CollectionReference,
+  QuerySnapshot,
 } from "firebase/firestore";
 import { db, initFirebase } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -17,6 +20,26 @@ import { getCurrentTime } from "../lib/internet-time";
 import { logger } from "../lib/logger";
 
 initFirebase();
+
+export async function paginateCollection<T>(
+  col: CollectionReference,
+  constraints: QueryConstraint[],
+  onPage: (snapshot: QuerySnapshot<T>) => Promise<void> | void,
+  pageSize = 100
+): Promise<void> {
+  let lastDoc: QueryDocumentSnapshot<T> | undefined;
+  let hasMore = true;
+  while (hasMore) {
+    const q = lastDoc
+      ? query(col, ...constraints, startAfter(lastDoc), limit(pageSize))
+      : query(col, ...constraints, limit(pageSize));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) break;
+    await onPage(snapshot);
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    hasMore = snapshot.size === pageSize;
+  }
+}
 
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
@@ -29,41 +52,19 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   }
   const cutoff = new Date(timestamp).toISOString();
   const transCol = collection(db, "transactions");
-  const pageSize = 100;
-  let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
-  let hasMore = true;
-
-  while (hasMore) {
-    const q = lastDoc
-      ? query(
-          transCol,
-          where("date", "<", cutoff),
-          orderBy("date"),
-          startAfter(lastDoc),
-          limit(pageSize)
-        )
-      : query(
-          transCol,
-          where("date", "<", cutoff),
-          orderBy("date"),
-          limit(pageSize)
-        );
-
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) break;
-
-    const batch = writeBatch(db);
-    for (const snap of snapshot.docs) {
-      const data = snap.data() as Omit<Transaction, "id">;
-      batch.set(doc(db, "transactions_archive", snap.id), { id: snap.id, ...data });
-      batch.delete(doc(db, "transactions", snap.id));
+  await paginateCollection<Transaction>(
+    transCol,
+    [where("date", "<", cutoff), orderBy("date")],
+    async (snapshot) => {
+      const batch = writeBatch(db);
+      for (const snap of snapshot.docs) {
+        const data = snap.data() as Omit<Transaction, "id">;
+        batch.set(doc(db, "transactions_archive", snap.id), { id: snap.id, ...data });
+        batch.delete(doc(db, "transactions", snap.id));
+      }
+      await runWithRetry(() => batch.commit());
     }
-
-    await runWithRetry(() => batch.commit());
-
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    hasMore = snapshot.size === pageSize;
-  }
+  );
 }
 
 /**
@@ -71,39 +72,17 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
  */
 export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
-  const pageSize = 100;
-  let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
-  let hasMore = true;
-
-  while (hasMore) {
-    const q = lastDoc
-      ? query(
-          debtsCol,
-          where("currentAmount", "<=", 0),
-          orderBy("currentAmount"),
-          startAfter(lastDoc),
-          limit(pageSize)
-        )
-      : query(
-          debtsCol,
-          where("currentAmount", "<=", 0),
-          orderBy("currentAmount"),
-          limit(pageSize)
-        );
-
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) break;
-
-    const batch = writeBatch(db);
-    for (const snap of snapshot.docs) {
-      batch.delete(doc(db, "debts", snap.id));
+  await paginateCollection<Debt>(
+    debtsCol,
+    [where("currentAmount", "<=", 0), orderBy("currentAmount")],
+    async (snapshot) => {
+      const batch = writeBatch(db);
+      for (const snap of snapshot.docs) {
+        batch.delete(doc(db, "debts", snap.id));
+      }
+      await runWithRetry(() => batch.commit());
     }
-
-    await runWithRetry(() => batch.commit());
-
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    hasMore = snapshot.size === pageSize;
-  }
+  );
 }
 
 export async function runWithRetry<T>(

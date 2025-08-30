@@ -163,6 +163,7 @@ import {
   cleanupDebts,
   backupData,
   runWithRetry,
+  paginateCollection,
 } from '../services/housekeeping';
 import * as firestore from 'firebase/firestore';
 const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
@@ -472,6 +473,31 @@ describe('runWithRetry', () => {
     setTimeoutSpy.mockRestore();
     loggerSpy.mockRestore();
     jest.useRealTimers();
+  });
+});
+
+describe('paginateCollection', () => {
+  test('handles empty collections without invoking handler', async () => {
+    const handler = jest.fn(async () => {});
+    await paginateCollection(
+      firestore.collection({} as unknown, 'transactions'),
+      [firestore.orderBy('value')],
+      handler
+    );
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  test('invokes handler for each page', async () => {
+    for (let i = 0; i < 250; i++) {
+      store.transactions.set(`p${i}`, { id: `p${i}`, value: i });
+    }
+    const handler = jest.fn(async () => {});
+    await paginateCollection(
+      firestore.collection({} as unknown, 'transactions'),
+      [firestore.orderBy('value')],
+      handler
+    );
+    expect(handler).toHaveBeenCalledTimes(3);
   });
 });
 
