@@ -81,16 +81,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId)
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
-        })
-      }
-
       return {
         ...state,
         toasts: state.toasts.map((t) =>
@@ -131,6 +121,18 @@ function dispatch(action: Action) {
   })
 }
 
+function dismissToast(toastId?: string) {
+  if (toastId) {
+    addToRemoveQueue(toastId)
+    dispatch({ type: "DISMISS_TOAST", toastId })
+  } else {
+    memoryState.toasts.forEach((toast) => {
+      addToRemoveQueue(toast.id)
+    })
+    dispatch({ type: "DISMISS_TOAST" })
+  }
+}
+
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
@@ -141,7 +143,7 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  const dismiss = () => dismissToast(id)
 
   dispatch({
     type: "ADD_TOAST",
@@ -175,7 +177,7 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId?: string) => dismissToast(toastId),
   }
 }
 
