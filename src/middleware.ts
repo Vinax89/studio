@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { allowedOrigins } from '@/lib/allowed-origins'
 
 export function middleware(request: NextRequest) {
   const cspNonce = crypto.randomUUID()
@@ -35,10 +36,6 @@ export function middleware(request: NextRequest) {
   )
 
   const origin = request.headers.get('origin')
-  const allowedOrigins = [
-    /^https:\/\/.*-firebase-studio-.*\.cloudworkstations\.dev$/,
-    'http://localhost:6006',
-  ]
 
   if (
     origin &&
