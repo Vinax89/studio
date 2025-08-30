@@ -40,6 +40,23 @@ export function ServiceWorker() {
         const token = user ? await user.getIdToken() : null
         if (!token) {
           logger.error("Cannot sync queued transactions without auth")
+          retryCount.current += 1
+          const delay = Math.min(
+            1000 * 2 ** (retryCount.current - 1),
+            30000,
+          )
+
+          if (retryCount.current >= 5 && !notified.current) {
+            toast({
+              title: "Sync failed",
+              description:
+                "Unable to sync offline transactions. We'll keep trying in the background.",
+            })
+            notified.current = true
+          }
+
+          if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
+          retryTimeoutId.current = setTimeout(syncQueued, delay)
           return
         }
 

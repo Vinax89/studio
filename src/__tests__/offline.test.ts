@@ -129,4 +129,38 @@ describe("ServiceWorker", () => {
     delete globalAny.fetch
     errorSpy.mockRestore()
   })
+
+  it("retries when auth token is missing", async () => {
+    jest.useFakeTimers()
+
+    const getQueuedSpy = jest
+      .spyOn(offline, "getQueuedTransactions")
+      .mockResolvedValue({ ok: true, value: [{ id: 1 }] })
+
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+
+    const fetchMock = jest.fn()
+    globalAny.fetch = fetchMock as unknown as typeof fetch
+
+    render(React.createElement(ServiceWorker))
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    const initialCalls = getQueuedSpy.mock.calls.length
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(getQueuedSpy).toHaveBeenCalledTimes(initialCalls + 1)
+
+    jest.useRealTimers()
+    delete globalAny.fetch
+    errorSpy.mockRestore()
+    getQueuedSpy.mockRestore()
+  })
 })
