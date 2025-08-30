@@ -2,6 +2,7 @@ This is a NextJS starter in Firebase Studio.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
+- Use npm for dependency management. Yarn and pnpm are not supported.
 - `npm run dev` – start the development server.
 - On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
 - `npm run lint` – run ESLint for code quality.
