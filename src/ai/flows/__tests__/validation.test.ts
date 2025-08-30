@@ -119,3 +119,4 @@ describe('calculateCostOfLiving validation', () => {
     ).toThrow('Unknown region');
   });
 });
+
