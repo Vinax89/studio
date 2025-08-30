@@ -44,6 +44,7 @@ export function middleware(request: NextRequest) {
     )
   ) {
     response.headers.set('Access-Control-Allow-Origin', origin)
+    response.headers.append('Vary', 'Origin')
   }
 
   return response
