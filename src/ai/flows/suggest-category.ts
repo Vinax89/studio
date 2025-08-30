@@ -45,7 +45,7 @@ const suggestCategoryFlow = ai.defineFlow(
  * classifier first, falling back to the AI model if no prediction is available.
  */
 export async function suggestCategory(input: SuggestCategoryInput): Promise<SuggestCategoryOutput> {
-  initCategoryModel();
+  await initCategoryModel();
   const local = classifyCategory(input.description);
   if (local) {
     return { category: local };
