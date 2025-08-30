@@ -106,12 +106,25 @@ export async function cleanupDebts(): Promise<void> {
   }
 }
 
+/**
+ * Runs an asynchronous operation with retry logic using exponential backoff.
+ * A random jitter is added to each delay to reduce contention between retries.
+ *
+ * @param op - Operation to execute.
+ * @param retries - Number of retry attempts after the initial call. Default is 1.
+ * @param delayMs - Initial delay in milliseconds before the first retry. Default is 100.
+ * @param maxDelayMs - Maximum delay between retries. Default is Infinity.
+ * @param jitter - Random jitter in milliseconds added to each delay. Default is 50.
+ * @param isRetryable - Function to determine if an error warrants a retry. Default always returns true.
+ * @returns Result of the successful operation.
+ * @throws If the operation fails with a non-retryable error or all retries are exhausted.
+ */
 export async function runWithRetry<T>(
   op: () => Promise<T>,
   retries = 1,
   delayMs = 100,
   maxDelayMs = Number.POSITIVE_INFINITY,
-  jitter = 0,
+  jitter = 50,
   isRetryable: (err: unknown) => boolean = () => true
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {

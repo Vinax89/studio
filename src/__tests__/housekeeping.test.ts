@@ -365,24 +365,28 @@ describe('runWithRetry', () => {
     // allow first rejection to be processed
     await Promise.resolve();
 
-    expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 1000);
+    const firstDelay = setTimeoutSpy.mock.calls[0][1] as number;
+    expect(firstDelay).toBeGreaterThanOrEqual(1000);
+    expect(firstDelay).toBeLessThanOrEqual(1050);
     expect(loggerSpy).toHaveBeenNthCalledWith(
       1,
       'Attempt 1 failed:',
       expect.any(Error)
     );
 
-    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(firstDelay);
     await Promise.resolve();
 
-    expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 2000);
+    const secondDelay = setTimeoutSpy.mock.calls[1][1] as number;
+    expect(secondDelay).toBeGreaterThanOrEqual(2000);
+    expect(secondDelay).toBeLessThanOrEqual(2050);
     expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
       'Attempt 2 failed:',
       expect.any(Error)
     );
 
-    await jest.advanceTimersByTimeAsync(2000);
+    await jest.advanceTimersByTimeAsync(secondDelay);
 
     await expect(promise).resolves.toBe('ok');
     expect(op).toHaveBeenCalledTimes(3);
@@ -399,6 +403,7 @@ describe('runWithRetry', () => {
     const op = jest.fn().mockImplementation(async () => {
       throw new Error('fail');
     });
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
     const loggerSpy = jest
       .spyOn(logger, 'error')
       .mockImplementation(() => {});
@@ -413,8 +418,9 @@ describe('runWithRetry', () => {
       expect.any(Error)
     );
 
+    const firstDelay = setTimeoutSpy.mock.calls[0][1] as number;
     const expectation = expect(promise).rejects.toThrow('fail');
-    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(firstDelay);
     await expectation;
     expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
@@ -423,6 +429,7 @@ describe('runWithRetry', () => {
     );
     expect(loggerSpy).toHaveBeenCalledTimes(2);
 
+    setTimeoutSpy.mockRestore();
     loggerSpy.mockRestore();
     jest.useRealTimers();
   });
