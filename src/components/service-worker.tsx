@@ -6,6 +6,9 @@ import { auth, initFirebase } from "@/lib/firebase"
 import { toast } from "@/hooks/use-toast"
 import { logger } from "@/lib/logger"
 
+const MAX_BODY_SIZE = 1024 * 1024 // 1MB
+const encoder = new TextEncoder()
+
 initFirebase()
 
 export function ServiceWorker() {
@@ -43,18 +46,46 @@ export function ServiceWorker() {
           return
         }
 
-        const response = await fetch("/api/transactions/sync", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ transactions: queued }),
-          signal: controller.signal,
-        })
+        const batches: string[] = []
+        let current: unknown[] = []
 
-        if (!response.ok) {
-          throw new Error(await response.text())
+        for (const tx of queued) {
+          current.push(tx)
+          let body = JSON.stringify({ transactions: current })
+          if (encoder.encode(body).length > MAX_BODY_SIZE) {
+            current.pop()
+            if (current.length) {
+              batches.push(JSON.stringify({ transactions: current }))
+              current = [tx]
+              body = JSON.stringify({ transactions: current })
+              if (encoder.encode(body).length > MAX_BODY_SIZE) {
+                logger.warn("Skipping transaction exceeding size limit", tx)
+                current = []
+              }
+            } else {
+              logger.warn("Skipping transaction exceeding size limit", tx)
+            }
+          }
+        }
+
+        if (current.length) {
+          batches.push(JSON.stringify({ transactions: current }))
+        }
+
+        for (const body of batches) {
+          const response = await fetch("/api/transactions/sync", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body,
+            signal: controller.signal,
+          })
+
+          if (!response.ok) {
+            throw new Error(await response.text())
+          }
         }
 
         const clearResult = await clearQueuedTransactions()
