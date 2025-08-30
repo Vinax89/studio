@@ -4,6 +4,7 @@ import { db, initFirebase } from "@/lib/firebase";
 import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
+import { handleCors, withCors } from "@/lib/cors";
 
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
@@ -17,9 +18,15 @@ export async function resetRateLimit() {
 
 // HTTP GET endpoint invoked by Cloud Scheduler or cron job
 export async function GET(req: Request) {
+  const cors = handleCors(req);
+  if (cors) return cors;
+
   const secret = req.headers.get(HEADER_NAME);
   if (!secret || secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return withCors(
+      req,
+      NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    );
   }
 
   try {
@@ -35,16 +42,22 @@ export async function GET(req: Request) {
     });
 
     if (!allowed) {
-      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      return withCors(
+        req,
+        NextResponse.json({ error: "Too many requests" }, { status: 429 }),
+      );
     }
 
     await runHousekeeping();
-    return NextResponse.json({ status: "ok" });
+    return withCors(req, NextResponse.json({ status: "ok" }));
   } catch (err) {
     logger.error("Housekeeping run failed", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+    return withCors(
+      req,
+      NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      ),
     );
   }
 }

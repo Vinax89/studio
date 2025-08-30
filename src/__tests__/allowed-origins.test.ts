@@ -1,4 +1,9 @@
-import { getAllowedOrigins } from '@/lib/allowed-origins';
+/**
+ * @jest-environment node
+ */
+import { NextResponse } from 'next/server'
+import { getAllowedOrigins } from '@/lib/allowed-origins'
+import { handleCors, withCors } from '@/lib/cors'
 
 describe('getAllowedOrigins', () => {
   it('parses strings and regex and ignores malformed entries', () => {
@@ -14,3 +19,21 @@ describe('getAllowedOrigins', () => {
     expect(origins[1]).toBeInstanceOf(RegExp);
   });
 });
+
+describe('cors middleware', () => {
+  const allowed = getAllowedOrigins('http://allowed.com,/^https:\/\/sub\\.example\\.com$/')
+
+  it('rejects disallowed origins', () => {
+    const req = new Request('http://localhost', { headers: { Origin: 'http://evil.com' } })
+    const res = handleCors(req, allowed)
+    expect(res?.status).toBe(403)
+  })
+
+  it('adds headers for allowed origins', () => {
+    const req = new Request('http://localhost', { headers: { Origin: 'http://allowed.com' } })
+    const early = handleCors(req, allowed)
+    expect(early).toBeUndefined()
+    const res = withCors(req, NextResponse.json({ ok: true }), allowed)
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('http://allowed.com')
+  })
+})
