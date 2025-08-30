@@ -1,4 +1,4 @@
-import { calculateCostOfLiving } from '@/ai/flows/cost-of-living';
+import { calculateCostOfLiving } from "@/ai/flows/cost-of-living"
 import type { Region } from '@/data/costOfLiving2024';
 
 interface Schema<T = unknown> {
@@ -101,20 +101,20 @@ describe('suggestDebtStrategy validation', () => {
   });
 });
 
-describe('calculateCostOfLiving validation', () => {
-  it('rejects non-positive adult count', () => {
+describe("calculateCostOfLiving validation", () => {
+  it("rejects non-positive adult count", () => {
     expect(() =>
-      calculateCostOfLiving({ region: 'California', adults: 0, children: 0 })
-    ).toThrow();
-  });
+      calculateCostOfLiving({ region: "California", adults: 0, children: 0 })
+    ).toThrow()
+  })
 
-  it('rejects unknown region', () => {
+  it("rejects unknown region", () => {
     expect(() =>
       calculateCostOfLiving({
-        region: 'Atlantis' as unknown as Region,
+        region: "Atlantis" as unknown as Region,
         adults: 1,
         children: 0,
       })
-    ).toThrow('Unknown region');
-  });
-});
+    ).toThrow("Unknown region")
+  })
+})

@@ -1,0 +1,15 @@
+name: Verify lockfile
+
+on:
+  pull_request:
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Check package-lock.json
+        run: |
+          git status --porcelain package-lock.json
+          test -z "$(git status --porcelain package-lock.json)"

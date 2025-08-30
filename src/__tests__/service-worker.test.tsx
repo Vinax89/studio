@@ -101,3 +101,31 @@ describe("ServiceWorker aborts in-flight sync", () => {
     expect(signals[1].aborted).toBe(false)
   })
 })
+
+describe("Service worker registration", () => {
+  it("registers with module type", async () => {
+    Object.defineProperty(navigator, "serviceWorker", {
+      value: { register: jest.fn().mockResolvedValue(undefined) },
+      configurable: true,
+    })
+    Object.defineProperty(navigator, "onLine", {
+      value: false,
+      configurable: true,
+    })
+
+    render(<ServiceWorker />)
+
+    await act(async () => {})
+
+    expect(navigator.serviceWorker.register).toHaveBeenCalledWith("/sw.js", {
+      type: "module",
+    })
+
+    const nav = navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
+    delete nav.serviceWorker
+    Object.defineProperty(navigator, "onLine", {
+      value: true,
+      configurable: true,
+    })
+  })
+})
