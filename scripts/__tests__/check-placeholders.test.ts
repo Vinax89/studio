@@ -1,4 +1,4 @@
-import {mkdtempSync, writeFileSync} from 'node:fs';
+import {copyFileSync, mkdtempSync, mkdirSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -27,5 +27,15 @@ describe('check-placeholders script', () => {
     const result = spawnSync('node', [script, dir]);
     expect(result.status).toBe(1);
     expect(result.stderr.toString()).toContain('...');
+  });
+
+  it('ignores the checker script itself', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'place-self-'));
+    const scriptsDir = join(dir, 'scripts');
+    mkdirSync(scriptsDir);
+    const target = join(scriptsDir, 'check-placeholders.mjs');
+    copyFileSync(script, target);
+    const result = spawnSync('node', [script, dir]);
+    expect(result.status).toBe(0);
   });
 });
