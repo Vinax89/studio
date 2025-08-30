@@ -3,6 +3,7 @@ import { runHousekeeping } from "@/lib/housekeeping";
 import { db } from "@/lib/firebase";
 import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
+import { logger } from "@/lib/logger";
 
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
@@ -38,11 +39,11 @@ export async function GET(req: Request) {
 
     await runHousekeeping();
     return NextResponse.json({ status: "ok" });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    } catch (err) {
+      logger.error((err as Error).message, err);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      );
+    }
   }
-}

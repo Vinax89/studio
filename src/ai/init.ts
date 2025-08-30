@@ -1,7 +1,8 @@
 import { initCategoryModel, teardownCategoryModel } from "./train/category-model";
+import { logger } from "../lib/logger";
 
 initCategoryModel().catch((err) => {
-  console.error("Failed to initialize category model", err);
+  logger.error("Failed to initialize category model", err);
 });
 
 if (typeof process !== "undefined") {

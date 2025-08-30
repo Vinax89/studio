@@ -20,6 +20,7 @@ import { parseCsv, downloadCsv } from "@/lib/csv";
 import { validateTransactions, TransactionRowType } from "@/lib/transactions";
 import { addCategory, getCategories } from "@/lib/categoryService";
 import { Upload, Download, ScanLine, Loader2 } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -71,12 +72,12 @@ export default function TransactionsPage() {
       const parsed = validateTransactions(rows, getCategories());
       parsed.forEach((t) => addCategory(t.category));
       setTransactions((prev) => [...parsed, ...prev]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      e.target.value = "";
-    }
-  };
+      } catch (err) {
+        logger.error((err as Error).message, err);
+      } finally {
+        e.target.value = "";
+      }
+    };
 
   const handleDownload = () => {
     downloadCsv(

@@ -163,6 +163,7 @@ import {
   backupData,
   runWithRetry,
 } from '../services/housekeeping';
+import { logger } from '@/lib/logger';
 import * as firestore from 'firebase/firestore';
 const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
 
@@ -344,8 +345,8 @@ describe('runWithRetry', () => {
       .mockRejectedValueOnce(new Error('fail2'))
       .mockResolvedValue('ok');
 
-    const consoleSpy = jest
-      .spyOn(console, 'error')
+    const loggerSpy = jest
+      .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
     const promise = runWithRetry(op, 2, 1000);
@@ -354,7 +355,7 @@ describe('runWithRetry', () => {
     await Promise.resolve();
 
     expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 1000);
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       1,
       'Attempt 1 failed:',
       expect.any(Error)
@@ -364,7 +365,7 @@ describe('runWithRetry', () => {
     await Promise.resolve();
 
     expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 2000);
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
       'Attempt 2 failed:',
       expect.any(Error)
@@ -374,10 +375,10 @@ describe('runWithRetry', () => {
 
     await expect(promise).resolves.toBe('ok');
     expect(op).toHaveBeenCalledTimes(3);
-    expect(consoleSpy).toHaveBeenCalledTimes(2);
+    expect(loggerSpy).toHaveBeenCalledTimes(2);
 
     setTimeoutSpy.mockRestore();
-    consoleSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -387,15 +388,15 @@ describe('runWithRetry', () => {
     const op = jest.fn().mockImplementation(async () => {
       throw new Error('fail');
     });
-    const consoleSpy = jest
-      .spyOn(console, 'error')
+    const loggerSpy = jest
+      .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
     const promise = runWithRetry(op, 1, 1000);
 
     // allow first rejection to be processed
     await Promise.resolve();
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       1,
       'Attempt 1 failed:',
       expect.any(Error)
@@ -404,14 +405,14 @@ describe('runWithRetry', () => {
     const expectation = expect(promise).rejects.toThrow('fail');
     await jest.advanceTimersByTimeAsync(1000);
     await expectation;
-    expect(consoleSpy).toHaveBeenNthCalledWith(
+    expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
       'Attempt 2 failed:',
       expect.any(Error)
     );
-    expect(consoleSpy).toHaveBeenCalledTimes(2);
+    expect(loggerSpy).toHaveBeenCalledTimes(2);
 
-    consoleSpy.mockRestore();
+    loggerSpy.mockRestore();
     jest.useRealTimers();
   });
 
