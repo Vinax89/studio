@@ -6,6 +6,11 @@ import { currencyCodeSchema } from "./currency";
 
 initFirebase();
 
+let cachedCategories: string[] | null = null;
+
+export function invalidateCategoriesCache(): void {
+  cachedCategories = null;
+}
 export const TransactionPayloadSchema = z.object({
   id: z.string(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -167,9 +172,13 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  * @remarks Generates UUIDs during validation and writes data to Firestore.
  */
 async function fetchCategories(): Promise<string[]> {
+  if (cachedCategories) {
+    return cachedCategories;
+  }
   try {
     const snapshot = await getDocs(collection(db, "categories"));
-    return snapshot.docs.map((doc) => doc.id);
+    cachedCategories = snapshot.docs.map((doc) => doc.id);
+    return cachedCategories;
   } catch (err) {
     throw new Error(
       `Failed to fetch categories: ${
