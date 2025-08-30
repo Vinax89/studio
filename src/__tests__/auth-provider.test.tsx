@@ -3,7 +3,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../components/auth/auth-provider';
-import { auth as authStub } from '@/lib/firebase';
 
 let mockPathname = '/';
 const pushMock = jest.fn();
