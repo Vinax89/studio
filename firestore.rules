@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    match /{col=transactions|receipts|paystubs|debts|budgets|rules}/{docId} {
+      allow read, write: if isOwner(resource.data.user_id);
+    }
+  }
+}
