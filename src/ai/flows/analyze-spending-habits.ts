@@ -11,7 +11,7 @@
  * - AnalyzeSpendingHabitsOutput - The return type for the analyzeSpendingHabits function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai, piiMiddleware } from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
 import {z} from 'genkit';
 
@@ -57,6 +57,7 @@ const prompt = ai.definePrompt({
   name: 'analyzeSpendingHabitsPrompt',
   input: {schema: AnalyzeSpendingHabitsInputSchema},
   output: {schema: AnalyzeSpendingHabitsOutputSchema},
+  use: [piiMiddleware],
   prompt: `You are a personal finance advisor for nursing professionals. Analyze the user's spending habits based on the provided financial documents, their personal description, and their stated financial goals.
 
 Crucially, you must consider the 'importance' ranking of each goal. Recommendations should prioritize achieving the goals the user has marked as most important.

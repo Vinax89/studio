@@ -9,7 +9,7 @@
  * - CalculateCashflowOutput - The return type for the calculateCashflow function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai, piiMiddleware } from '@/ai/genkit';
 import {z} from 'genkit';
 
 const CalculateCashflowInputSchema = z.object({
@@ -51,6 +51,7 @@ const prompt = ai.definePrompt({
   name: 'calculateCashflowPrompt',
   input: {schema: CalculateCashflowInputSchema},
   output: {schema: CalculateCashflowOutputSchema},
+  use: [piiMiddleware],
   prompt: `You are a financial analyst. Based on the user's provided income, taxes, and deductions, calculate their gross and net monthly cashflow.
 
 Annual Income: {{{annualIncome}}}
