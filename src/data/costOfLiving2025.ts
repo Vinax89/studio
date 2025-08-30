@@ -13,9 +13,9 @@ export interface CostOfLivingDataset {
   regions: Record<string, RegionCost>;
 }
 
-export const costOfLiving2024: CostOfLivingDataset = {
+export const costOfLiving2025: CostOfLivingDataset = {
   baseYear: 2025,
-  source: 'BEA Regional Price Parities 2024',
+  source: 'BEA Regional Price Parities 2025',
   regions: {
     California: {
       housing: 24000,
@@ -36,4 +36,4 @@ export const costOfLiving2024: CostOfLivingDataset = {
   },
 } as const;
 
-export type Region = keyof typeof costOfLiving2024.regions;
+export type Region = keyof typeof costOfLiving2025.regions;
