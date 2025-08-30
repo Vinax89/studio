@@ -52,8 +52,8 @@ describe('taxEstimation validation', () => {
       location: 'NY',
       filingStatus: 'single',
     });
-    expect(result.estimatedTax).toBeCloseTo(9214, 0);
-    expect(result.taxRate).toBeCloseTo(11.52, 2);
+    expect(result.estimatedTax).toBeCloseTo(15334, 0);
+    expect(result.taxRate).toBeCloseTo(19.17, 2);
   });
 });
 

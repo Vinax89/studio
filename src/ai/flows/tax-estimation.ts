@@ -10,7 +10,7 @@
  */
 
 import {z} from 'genkit';
-import {calculateIncomeTax} from '@/lib/taxes';
+import {calculateTaxes} from '@/lib/taxes';
 
 const TaxEstimationInputSchema = z.object({
   income: z
@@ -47,14 +47,15 @@ export type TaxEstimationOutput = z.infer<typeof TaxEstimationOutputSchema>;
 
 export async function estimateTax(input: TaxEstimationInput): Promise<TaxEstimationOutput> {
   const parsed = TaxEstimationInputSchema.parse(input);
-  const {tax, breakdown} = calculateIncomeTax(
+  const {incomeTax, payrollTaxes, breakdown} = calculateTaxes(
     parsed.income,
     parsed.deductions,
     parsed.filingStatus
   );
-  const taxRate = parsed.income === 0 ? 0 : (tax / parsed.income) * 100;
+  const totalTax = incomeTax + payrollTaxes.total;
+  const taxRate = parsed.income === 0 ? 0 : (totalTax / parsed.income) * 100;
   return TaxEstimationOutputSchema.parse({
-    estimatedTax: tax,
+    estimatedTax: totalTax,
     taxRate,
     breakdown,
   });
