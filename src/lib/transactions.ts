@@ -139,21 +139,28 @@ export function validateTransactions(
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
-  for (const chunk of chunks) {
+  const commits = chunks.map((chunk) => {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
+    return batch.commit();
+  });
 
-    try {
-      await batch.commit();
-    } catch (err) {
-      throw new Error(
-        `Failed to save transactions batch: ${
-          err instanceof Error ? err.message : String(err)
+  const results = await Promise.allSettled(commits);
+  const errors: string[] = [];
+  results.forEach((result, index) => {
+    if (result.status === "rejected") {
+      errors.push(
+        `batch ${index + 1}: ${
+          result.reason instanceof Error ? result.reason.message : String(result.reason)
         }`
       );
     }
+  });
+
+  if (errors.length) {
+    throw new Error(`Failed to save transactions batches: ${errors.join(", ")}`);
   }
 }
 
