@@ -1,6 +1,8 @@
 function setupNoOutputMocks() {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
-  const defineFlowMock = jest.fn((_config: any, handler: any) => handler);
+  const defineFlowMock = jest.fn(
+    (_config: unknown, handler: unknown) => handler as unknown
+  );
   jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
 }
 

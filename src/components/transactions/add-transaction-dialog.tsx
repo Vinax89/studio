@@ -75,7 +75,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         }
         fetchSuggestion()
         return () => { active = false }
-    }, [description])
+    }, [description, toast])
 
     const handleSave = () => {
         const numericAmount = Number(amount)
@@ -120,7 +120,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
         <DialogHeader>
           <DialogTitle>Add New Transaction</DialogTitle>
           <DialogDescription>
-            Enter the details of your transaction below. Click save when you're done.
+            Enter the details of your transaction below. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

@@ -1,12 +1,20 @@
-function setupSuccessMocks(output: any) {
+function setupSuccessMocks(output: unknown) {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
-  const defineFlowMock = jest.fn((config: any, handler: any) => {
-    return async (input: any) => {
-      const parsedInput = config.inputSchema.parse(input);
-      const result = await handler(parsedInput);
-      return config.outputSchema.parse(result);
-    };
-  });
+  const defineFlowMock = jest.fn(
+    (
+      config: {
+        inputSchema: { parse: (value: unknown) => unknown };
+        outputSchema: { parse: (value: unknown) => unknown };
+      },
+      handler: (value: unknown) => unknown
+    ) => {
+      return async (input: unknown) => {
+        const parsedInput = config.inputSchema.parse(input);
+        const result = await handler(parsedInput);
+        return config.outputSchema.parse(result);
+      };
+    }
+  );
   jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
 }
 

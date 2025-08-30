@@ -1,6 +1,1 @@
-src/ai
-src/app
-src/components
-src/hooks
-src/lib
-tailwind.config.ts
+# Empty for now: previously broad ignores removed.
