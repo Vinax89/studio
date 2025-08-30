@@ -37,6 +37,15 @@ describe("WorkerPool", () => {
     }
   )
 
+  it.each([0, -1, 1.5])(
+    "throws an error when maxQueueSize is %p",
+    maxQueueSize => {
+      expect(() => new WorkerPool("fake", 1, maxQueueSize)).toThrow(
+        "maxQueueSize must be a positive integer"
+      )
+    }
+  )
+
   it("continues processing after a worker crash", async () => {
     const pool = new WorkerPool<number | string, number>("fake", 1)
 
