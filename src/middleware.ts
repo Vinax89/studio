@@ -1,22 +1,17 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  const cspNonce = btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  const cspNonce = crypto.randomUUID()
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", cspNonce);
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', cspNonce)
 
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
-  });
+  })
 
   const csp = [
     "default-src 'self'",
@@ -28,36 +23,36 @@ export function middleware(request: NextRequest) {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-  ].join("; ");
+  ].join('; ')
 
-  response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set('Content-Security-Policy', csp)
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set(
-    "Strict-Transport-Security",
-    "max-age=63072000; includeSubDomains; preload"
-  );
+    'Strict-Transport-Security',
+    'max-age=63072000; includeSubDomains; preload'
+  )
 
-  const origin = request.headers.get("origin");
+  const origin = request.headers.get('origin')
   const allowedOrigins = [
     /^https:\/\/.*-firebase-studio-.*\.cloudworkstations\.dev$/,
-    "http://localhost:6006",
-  ];
+    'http://localhost:6006',
+  ]
 
   if (
     origin &&
     allowedOrigins.some((allowed) =>
-      typeof allowed === "string" ? allowed === origin : allowed.test(origin)
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
     )
   ) {
-    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set('Access-Control-Allow-Origin', origin)
   }
 
-  return response;
+  return response
 }
 
 export const config = {
-  matcher: "/:path*",
-};
+  matcher: '/:path*',
+}
 
