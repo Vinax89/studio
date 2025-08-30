@@ -1,4 +1,4 @@
-import { openDB } from "idb"
+import { openDB } from "./idb.js"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
