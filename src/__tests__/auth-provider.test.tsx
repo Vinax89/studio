@@ -19,7 +19,6 @@ jest.mock('@/lib/firebase', () => ({
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
 }));
-import { auth as authStub } from '@/lib/firebase';
 
 interface MockUser {
   uid: string;
