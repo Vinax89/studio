@@ -4,7 +4,17 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-import { classifyCategory } from '../train/category-model';
+import {
+  classifyCategory,
+  initCategoryModel,
+  teardownCategoryModel,
+} from '../train/category-model';
+
+// Initialize the local category model on startup and clean up on exit.
+void initCategoryModel().catch(console.error);
+if (typeof process !== 'undefined') {
+  process.on('exit', teardownCategoryModel);
+}
 
 const SuggestCategoryInputSchema = z.object({
   description: z.string().describe('Description of the transaction'),
