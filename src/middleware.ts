@@ -36,7 +36,7 @@ export function middleware(request: NextRequest) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
     "Strict-Transport-Security",
-    "max-age=63072000; includeSubDomains; preload"
+    "max-age=63072000; includeSubDomains; preload",
   );
 
   const origin = request.headers.get("origin");
@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
   if (
     origin &&
     allowedOrigins.some((allowed) =>
-      typeof allowed === "string" ? allowed === origin : allowed.test(origin)
+      typeof allowed === "string" ? allowed === origin : allowed.test(origin),
     )
   ) {
     response.headers.set("Access-Control-Allow-Origin", origin);
@@ -60,4 +60,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: "/:path*",
 };
-
