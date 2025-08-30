@@ -31,7 +31,7 @@ describe("mapWorker", () => {
     const worker = createWorker()
     const result = await new Promise(resolve => {
       worker.once("message", resolve)
-      worker.postMessage({ type: "square", payload: [1, "a"] as any })
+      worker.postMessage({ type: "square", payload: [1, "a"] as unknown as number[] })
     })
     await worker.terminate()
     expect(result).toEqual({
@@ -44,7 +44,7 @@ describe("mapWorker", () => {
     const worker = createWorker()
     const result = await new Promise(resolve => {
       worker.once("message", resolve)
-      worker.postMessage({ type: "boom", payload: [] as any })
+      worker.postMessage({ type: "boom", payload: [] as unknown as number[] })
     })
     await worker.terminate()
     expect(result).toEqual({

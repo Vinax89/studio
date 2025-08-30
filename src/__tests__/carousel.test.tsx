@@ -9,7 +9,15 @@ jest.mock('lucide-react', () => ({
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: any;
+type EmblaApiMock = {
+  on: jest.Mock;
+  off: jest.Mock;
+  canScrollPrev: jest.Mock;
+  canScrollNext: jest.Mock;
+  scrollPrev: jest.Mock;
+  scrollNext: jest.Mock;
+};
+let emblaApi: EmblaApiMock;
 
 function mockUseEmbla() {
   emblaApi = {

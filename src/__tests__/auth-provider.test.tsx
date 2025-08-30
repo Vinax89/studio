@@ -2,7 +2,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../components/auth/auth-provider';
+import { useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
