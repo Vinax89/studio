@@ -1,8 +1,13 @@
 name: "PR Automation"
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   auto-label:
