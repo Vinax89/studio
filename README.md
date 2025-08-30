@@ -44,6 +44,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed request origins for CORS. Regex patterns may be wrapped in `/`. |
+| `LOG_LEVEL` | Minimum log level to output (`info`, `warn`, or `error`). Defaults to `info`. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
 
