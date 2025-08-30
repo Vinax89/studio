@@ -41,13 +41,13 @@ describe('currency code validation', () => {
     expect(converted).toBe(5);
   });
 
-  it('convertCurrency returns original amount for invalid codes', async () => {
+  it('convertCurrency throws for invalid codes', async () => {
     const mockFetch = jest.fn();
     (globalThis as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
 
-    const converted = await convertCurrency(10, 'u$', 'eur');
-
-    expect(converted).toBe(10);
+    await expect(convertCurrency(10, 'u$', 'eur')).rejects.toThrow(
+      'Invalid currency code',
+    );
     expect(mockFetch).not.toHaveBeenCalled();
   });
 });

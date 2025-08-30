@@ -52,13 +52,8 @@ export async function convertCurrency(
   from: string,
   to: string,
 ): Promise<number> {
-  try {
-    const rate = await getFxRate(from, to);
-    return amount * rate;
-  } catch (err) {
-    console.error('Currency conversion failed', err);
-    return amount;
-  }
+  const rate = await getFxRate(from, to);
+  return amount * rate;
 }
 
 export function formatCurrency(amount: number, currency: string, locale = 'en-US'): string {
