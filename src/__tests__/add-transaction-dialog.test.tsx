@@ -11,25 +11,40 @@ jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastMock }),
 }));
 jest.mock('lucide-react', () => ({ PlusCircle: () => null }));
+type PropsWithChildren = React.PropsWithChildren;
+
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children }: any) => <div>{children}</div>,
-  DialogTrigger: ({ children }: any) => <div>{children}</div>,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
+  Dialog: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogTrigger: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogContent: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogDescription: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogFooter: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogHeader: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  DialogTitle: ({ children }: PropsWithChildren) => <div>{children}</div>,
 }));
 jest.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectValue: ({ children }: any) => <div>{children}</div>,
+  Select: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  SelectContent: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  SelectItem: (
+    { children, ...props }: PropsWithChildren & Record<string, unknown>
+  ) => <div {...props}>{children}</div>,
+  SelectTrigger: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  SelectValue: ({ children }: PropsWithChildren) => <div>{children}</div>,
 }));
 jest.mock('@/components/ui/switch', () => ({
-  Switch: ({ onCheckedChange, ...props }: any) => (
-    <input type="checkbox" onChange={onCheckedChange} {...props} />
+  Switch: (
+    {
+      onCheckedChange,
+      ...props
+    }: {
+      onCheckedChange?: (checked: boolean) => void
+    } & React.InputHTMLAttributes<HTMLInputElement>
+  ) => (
+    <input
+      type="checkbox"
+      onChange={e => onCheckedChange?.(e.target.checked)}
+      {...props}
+    />
   ),
 }));
 

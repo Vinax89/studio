@@ -5,15 +5,18 @@ import {
 } from "@/lib/internet-time";
 
 describe("internet time", () => {
+  const g = global as unknown as { fetch: jest.MockedFunction<typeof fetch> };
+  const originalFetch = global.fetch;
   beforeEach(() => {
     jest.useFakeTimers();
     __resetInternetTimeOffset();
-    (global as any).fetch = jest.fn();
+    g.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
     delete process.env.DEFAULT_TZ;
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    g.fetch = originalFetch as typeof fetch;
     jest.restoreAllMocks();
   });
 
@@ -76,7 +79,7 @@ describe("internet time", () => {
         new Promise((_resolve, reject) => {
           opts.signal.addEventListener("abort", () => {
             const err = new Error("aborted");
-            (err as any).name = "AbortError";
+            err.name = "AbortError";
             reject(err);
           });
         })
