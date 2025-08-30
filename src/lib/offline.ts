@@ -39,6 +39,12 @@ export async function queueTransaction(
   tx: unknown,
   maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
 ): Promise<Result<void, Error>> {
+  if (maxQueueSize < 0) {
+    return {
+      ok: false,
+      error: new Error("maxQueueSize must be non-negative"),
+    }
+  }
   try {
     const db = await getDb()
     if (!db) {

@@ -77,6 +77,15 @@ describe("offline fallbacks", () => {
 
     await clearQueuedTransactions()
   })
+
+  it("rejects negative maxQueueSize", async () => {
+    await clearQueuedTransactions()
+    const result = await queueTransaction({ id: 1 }, -1)
+    expect(result.ok).toBe(false)
+    const queued = await getQueuedTransactions()
+    expect(queued.ok).toBe(true)
+    expect(queued.value).toEqual([])
+  })
 })
 
 describe("ServiceWorker", () => {
