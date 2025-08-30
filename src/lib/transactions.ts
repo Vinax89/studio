@@ -3,6 +3,7 @@ import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
+import { getRandomId } from "./random-id";
 
 initFirebase();
 
@@ -108,7 +109,7 @@ export function validateTransactions(
     const parsedAmount = Number(amountString);
 
     const tx: Transaction = {
-      id: crypto.randomUUID(),
+      id: getRandomId(),
       date: data.date,
       description: data.description,
       amount: parsedAmount,
