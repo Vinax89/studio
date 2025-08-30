@@ -4,7 +4,7 @@ const fxRateCache = new Map<string, { rate: number; ts: number }>();
 const fxRateRequests = new Map<string, Promise<number>>();
 const FX_RATE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
+export const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
 
 function parseCurrencyCode(code: string): string {
   const parsed = currencyCodeSchema.safeParse(code.trim().toUpperCase());
