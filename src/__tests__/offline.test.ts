@@ -37,6 +37,7 @@ import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
 import * as offline from "../lib/offline"
 import React from "react"
+import { logger } from "../lib/logger"
 
 const globalAny = globalThis as {
   indexedDB?: unknown
@@ -95,6 +96,8 @@ describe("ServiceWorker", () => {
       .spyOn(offline, "getQueuedTransactions")
       .mockResolvedValueOnce({ ok: false, error: new Error("failed") })
 
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+
     const fetchMock = jest.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch
 
@@ -109,5 +112,6 @@ describe("ServiceWorker", () => {
 
     jest.useRealTimers()
     delete globalAny.fetch
+    errorSpy.mockRestore()
   })
 })
