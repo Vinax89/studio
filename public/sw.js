@@ -1,4 +1,4 @@
-import { openDB } from "idb"
+import { openDB } from "https://cdn.jsdelivr.net/npm/idb@7/build/esm/index.js"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
