@@ -29,3 +29,12 @@ process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test'
+
+// Stub lucide-react icons for tests
+jest.mock('lucide-react', () => new Proxy({}, { get: () => () => null }))
+
+// Minimal matchMedia stub for components using it
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  // @ts-expect-error - simplifying for tests
+  window.matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} })
+}
