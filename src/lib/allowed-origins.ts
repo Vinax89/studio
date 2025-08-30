@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export type AllowedOrigin = string | RegExp;
 
 function parseItem(item: string): AllowedOrigin | null {
@@ -29,3 +31,21 @@ export function getAllowedOrigins(env: string | undefined = process.env.ALLOWED_
 }
 
 export const allowedOrigins: AllowedOrigin[] = getAllowedOrigins();
+
+function matches(origin: string, allowed: AllowedOrigin): boolean {
+  return typeof allowed === "string" ? allowed === origin : allowed.test(origin);
+}
+
+export function isOriginAllowed(origin: string): boolean {
+  return allowedOrigins.some((allowed) => matches(origin, allowed));
+}
+
+export function withAllowedOrigin(req: Request, res: NextResponse): NextResponse {
+  const origin = req.headers.get("Origin");
+  if (!origin) return res;
+  if (isOriginAllowed(origin)) {
+    res.headers.set("Access-Control-Allow-Origin", origin);
+    return res;
+  }
+  return NextResponse.json({ error: "Origin not allowed" }, { status: 403 });
+}

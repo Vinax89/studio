@@ -22,6 +22,37 @@ if (typeof (global as any).Headers === 'undefined') {
   (global as any).Headers = class {}
 }
 
+// Basic browser APIs used by some components
+if (
+  typeof window !== 'undefined' &&
+  typeof (window as any).matchMedia !== 'function'
+) {
+  ;(window as any).matchMedia = () => ({
+    matches: false,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+    media: '',
+  })
+}
+
+jest.mock('lucide-react', () => {
+  const React = require('react')
+  return new Proxy(
+    {},
+    {
+      get: () => () => React.createElement('svg'),
+    },
+  )
+})
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  usePathname: () => '/',
+}))
+
 // Stub Firebase environment variables expected by zod validation
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test'
