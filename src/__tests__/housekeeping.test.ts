@@ -133,8 +133,13 @@ jest.mock('firebase/firestore', () => {
   };
 });
 
-const { archiveOldTransactions, cleanupDebts, backupData, runWithRetry } = require('../services/housekeeping');
-const firestore = require('firebase/firestore');
+import {
+  archiveOldTransactions,
+  cleanupDebts,
+  backupData,
+  runWithRetry,
+} from '../services/housekeeping';
+import * as firestore from 'firebase/firestore';
 const store = firestore.__dataStore as typeof dataStore;
 
 beforeEach(() => {

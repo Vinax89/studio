@@ -2,8 +2,9 @@
  * @jest-environment node
  */
 
+import { EventEmitter } from "events"
+
 jest.mock("node:worker_threads", () => {
-  const { EventEmitter } = require("events")
   return {
     Worker: class MockWorker extends EventEmitter {
       postMessage(data: unknown) {
