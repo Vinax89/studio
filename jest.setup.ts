@@ -2,6 +2,12 @@ import '@testing-library/jest-dom'
 import { jest } from '@jest/globals'
 import { TextEncoder, TextDecoder } from 'node:util'
 
+// Stub all icons from lucide-react to empty components
+jest.mock(
+  'lucide-react',
+  () => new Proxy({}, { get: () => () => null })
+)
+
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
 

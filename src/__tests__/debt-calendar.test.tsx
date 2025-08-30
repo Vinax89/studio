@@ -14,7 +14,6 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock UI components to avoid Radix and other dependencies
-jest.mock('lucide-react', () => ({ X: () => null }));
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
   usePathname: () => '/',
