@@ -73,8 +73,13 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                 })
             }
         }
-        fetchSuggestion()
-        return () => { active = false }
+        const handler = setTimeout(() => {
+            fetchSuggestion()
+        }, 500)
+        return () => {
+            active = false
+            clearTimeout(handler)
+        }
     }, [description])
 
     const handleSave = () => {
