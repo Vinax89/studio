@@ -20,14 +20,19 @@ jest.mock('@/lib/firebase', () => ({
 }));
 const { auth: authStub } = require('@/lib/firebase');
 
-let mockUser: any = null;
-const onAuthStateChanged = jest.fn((_auth: unknown, cb: (u: any) => void) => {
-  cb(mockUser);
-  return () => {};
-});
+type MockUser = { uid: string };
+let mockUser: MockUser | null = null;
+const onAuthStateChanged = jest.fn(
+  (_auth: unknown, cb: (u: MockUser | null) => void) => {
+    cb(mockUser);
+    return () => {};
+  }
+);
 
 jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: (...args: any[]) => (onAuthStateChanged as any)(...args),
+  onAuthStateChanged: (
+    ...args: Parameters<typeof onAuthStateChanged>
+  ) => onAuthStateChanged(...args),
 }));
 
 function DisplayUser() {
@@ -45,7 +50,7 @@ beforeEach(() => {
 
 test('redirects to dashboard when authenticated on "/" and updates context', async () => {
   mockPathname = '/';
-  mockUser = { uid: 'abc' } as any;
+  mockUser = { uid: 'abc' };
 
   render(
     <AuthProvider>
