@@ -1,67 +1,58 @@
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { tmpdir } from 'os';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
-interface RawRow {
-  GeoName: string;
-  DataValue: string;
-}
+interface MetroRpp { rpp: number; }
 
-interface RegionCostBreakdown {
-  housing: number;
-  groceries: number;
-  utilities: number;
-  transportation: number;
-  healthcare: number;
-  miscellaneous: number;
-}
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-async function fetchRpp(year: number, apiKey: string) {
-  const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=STATE&Year=${year}&ResultFormat=JSON`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`);
+function parseCsvLine(line: string): string[] {
+  const result: string[] = []; let current = ''; let inQuotes = false;
+  for (const c of line) {
+    if (c === '"') { inQuotes = !inQuotes; }
+    else if (c === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += c; }
   }
-  const data = await res.json();
-  return data.BEAAPI.Results.Data as RawRow[];
+  result.push(current);
+  return result.map((s) => s.trim().replace(/^"|"$/g, ''));
+}
+
+function downloadRppCsv(): string {
+  const url = 'https://apps.bea.gov/regional/zip/RPP.zip';
+  const zipPath = join(tmpdir(), 'RPP.zip');
+  execSync(`curl -L -o "${zipPath}" ${url}`);
+  return execSync(`unzip -p "${zipPath}" MARPP_MSA_2008_2023.csv`, { encoding: 'utf-8' });
 }
 
 async function main() {
-  const year = new Date().getFullYear();
-  const apiKey = process.env.BEA_API_KEY;
-  if (!apiKey) {
-    throw new Error('BEA_API_KEY environment variable is required');
-  }
-  const dryRun = process.argv.includes('--dry-run');
-  const rows = await fetchRpp(year, apiKey);
-  const regions = rows.reduce((acc, row) => {
-    const index = Number(row.DataValue.replace(/,/g, '')) / 100; // convert index to multiplier
-    acc[row.GeoName] = {
-      housing: index * 20000,
-      groceries: index * 5000,
-      utilities: index * 3000,
-      transportation: index * 6000,
-      healthcare: index * 5000,
-      miscellaneous: index * 4000,
-    };
-    return acc;
-  }, {} as Record<string, RegionCostBreakdown>);
-
-  const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: 'BEA Regional Price Parities',\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
-  const dir = join(__dirname, '..', 'src', 'data');
-  if (!existsSync(dir)) {
-    if (dryRun) {
-      console.info(`Dry run - would create directory ${dir}`);
-    } else {
-      mkdirSync(dir, { recursive: true });
+  const csv = downloadRppCsv();
+  const lines = csv.trim().split(/\r?\n/);
+  const header = parseCsvLine(lines[0]);
+  const yearCols = header.filter((h) => /^\d{4}$/.test(h));
+  const rppYear = Number(yearCols[yearCols.length - 1]);
+  const datasetYear = rppYear + 1;
+  const baseYear = datasetYear + 1;
+  const metros: Record<string, MetroRpp> = {};
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]);
+    if (cols[4] === '3') { // LineCode 3: RPPs, all items
+      const name = cols[1];
+      const value = Number(cols[cols.length - 1]);
+      if (!Number.isNaN(value)) {
+        metros[name] = { rpp: value / 100 };
+      }
     }
   }
-  const target = join(dir, `costOfLiving${year}.ts`);
-  if (dryRun) {
-    console.info(`Dry run - would write to ${target}:\n${content}`);
-  } else {
-    writeFileSync(target, content);
-    console.info(`Updated dataset for ${year}`);
+  const content = `export interface MetroCost { rpp: number; }\nexport interface CostOfLivingDataset { baseYear: number; source: string; metros: Record<string, MetroCost>; }\nexport const costOfLiving${datasetYear} : CostOfLivingDataset = {\n  baseYear: ${baseYear},\n  source: 'BEA Regional Price Parities ${rppYear}',\n  metros: ${JSON.stringify(metros, null, 2)}\n} as const;\n\nexport type MetroArea = keyof typeof costOfLiving${datasetYear}.metros;\n`;
+  const dir = join(__dirname, '..', 'src', 'data');
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
   }
+  const target = join(dir, `costOfLiving${datasetYear}.ts`);
+  writeFileSync(target, content);
+  console.info(`Updated dataset for ${datasetYear}`);
 }
 
 main().catch((err) => {

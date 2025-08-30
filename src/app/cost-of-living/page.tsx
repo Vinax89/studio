@@ -16,8 +16,8 @@ import {
 } from '@/components/ui/select';
 
 export default function CostOfLivingPage() {
-  const regions = Object.keys(costOfLiving2024.regions);
-  const [region, setRegion] = useState(regions[0]);
+  const metros = Object.keys(costOfLiving2024.metros);
+  const [metro, setMetro] = useState(metros[0]);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [result, setResult] = useState<CostOfLivingBreakdown | null>(null);
@@ -25,7 +25,7 @@ export default function CostOfLivingPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const breakdown = calculateCostOfLiving({
-      region: region as keyof typeof costOfLiving2024.regions,
+      metro: metro as keyof typeof costOfLiving2024.metros,
       adults,
       children,
     });
@@ -37,7 +37,7 @@ export default function CostOfLivingPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Cost of Living</h1>
         <p className="text-muted-foreground">
-          Estimate household expenses by region.
+          Estimate household expenses by metro area.
         </p>
       </div>
       <Card>
@@ -47,15 +47,15 @@ export default function CostOfLivingPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="region">Region</Label>
-              <Select value={region} onValueChange={setRegion}>
-                <SelectTrigger id="region">
-                  <SelectValue placeholder="Select region" />
+              <Label htmlFor="metro">Metro Area</Label>
+              <Select value={metro} onValueChange={setMetro}>
+                <SelectTrigger id="metro">
+                  <SelectValue placeholder="Select metro" />
                 </SelectTrigger>
                 <SelectContent>
-                  {regions.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
+                  {metros.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
                     </SelectItem>
                   ))}
                 </SelectContent>

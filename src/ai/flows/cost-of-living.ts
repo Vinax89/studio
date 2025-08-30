@@ -1,7 +1,16 @@
-import { costOfLiving2024, Region, RegionCost } from '@/data/costOfLiving2024';
+import { costOfLiving2024, MetroArea } from '@/data/costOfLiving2024';
+
+export interface RegionCost {
+  housing: number;
+  groceries: number;
+  utilities: number;
+  transportation: number;
+  healthcare: number;
+  miscellaneous: number;
+}
 
 export interface CalculateCostOfLivingInput {
-  region: Region;
+  metro: MetroArea;
   adults: number;
   children: number;
 }
@@ -10,6 +19,15 @@ export interface CostOfLivingBreakdown {
   monthly: { total: number; categories: RegionCost };
   annual: { total: number; categories: RegionCost };
 }
+
+const BASELINE_COSTS: RegionCost = {
+  housing: 20000,
+  groceries: 5000,
+  utilities: 3000,
+  transportation: 6000,
+  healthcare: 5000,
+  miscellaneous: 4000,
+};
 
 const CHILD_MULTIPLIERS: Record<keyof RegionCost, number> = {
   housing: 0.5,
@@ -20,18 +38,19 @@ const CHILD_MULTIPLIERS: Record<keyof RegionCost, number> = {
   miscellaneous: 0.5,
 };
 
-export function calculateCostOfLiving({ region, adults, children }: CalculateCostOfLivingInput): CostOfLivingBreakdown {
+export function calculateCostOfLiving({ metro, adults, children }: CalculateCostOfLivingInput): CostOfLivingBreakdown {
   if (adults <= 0 || children < 0) {
     throw new Error('Invalid household composition');
   }
-  const base = costOfLiving2024.regions[region];
-  if (!base) {
-    throw new Error(`Unknown region: ${region}`);
+  const metroInfo = costOfLiving2024.metros[metro];
+  if (!metroInfo) {
+    throw new Error(`Unknown metro: ${metro}`);
   }
 
-  const annualCategories = Object.keys(base).reduce((acc, key) => {
+  const annualCategories = Object.keys(BASELINE_COSTS).reduce((acc, key) => {
     const k = key as keyof RegionCost;
-    const amount = base[k] * adults + base[k] * CHILD_MULTIPLIERS[k] * children;
+    const base = BASELINE_COSTS[k] * metroInfo.rpp;
+    const amount = base * adults + base * CHILD_MULTIPLIERS[k] * children;
     acc[k] = amount;
     return acc;
   }, {} as RegionCost);
