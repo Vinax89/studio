@@ -42,6 +42,7 @@ const onAuthStateChanged = jest.fn(
 );
 
 jest.mock('firebase/auth', () => ({
+  ...jest.requireActual('firebase/auth'),
   onAuthStateChanged: (
     ...args: Parameters<typeof onAuthStateChanged>
   ) => onAuthStateChanged(...args),
@@ -51,6 +52,12 @@ function DisplayUser() {
   const { user } = useAuth();
   return <div>{user ? user.uid : 'none'}</div>;
 }
+
+// Mock the ServiceWorker component as it's not relevant to this test
+jest.mock('@/components/service-worker', () => ({
+  ServiceWorker: () => null,
+}));
+
 
 beforeEach(() => {
   mockUser = null;
