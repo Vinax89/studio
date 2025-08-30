@@ -43,6 +43,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
+| `LOG_LEVEL` | Optional logging level: `info`, `error`, or `silent`. Defaults to `info` locally and `error` in production. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
 
