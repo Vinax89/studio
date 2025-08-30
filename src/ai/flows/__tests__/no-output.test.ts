@@ -32,3 +32,25 @@ describe('suggestDebtStrategyFlow', () => {
   });
 });
 
+describe('analyzeSpendingHabitsFlow', () => {
+  it('throws an error when prompt returns no output', async () => {
+    jest.resetModules();
+    setupNoOutputMocks();
+    const { analyzeSpendingHabits } = await import('@/ai/flows/analyze-spending-habits');
+    await expect(
+      analyzeSpendingHabits({ financialDocuments: [], userDescription: '', goals: [] })
+    ).rejects.toThrow('No output returned from analyzeSpendingHabitsPrompt');
+  });
+});
+
+describe('spendingForecastFlow', () => {
+  it('throws an error when prompt returns no output', async () => {
+    jest.resetModules();
+    setupNoOutputMocks();
+    const { predictSpending } = await import('@/ai/flows/spendingForecast');
+    await expect(
+      predictSpending({ transactions: [] })
+    ).rejects.toThrow('No output returned from spendingForecastPrompt');
+  });
+});
+
