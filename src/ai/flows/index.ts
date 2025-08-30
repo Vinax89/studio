@@ -31,12 +31,12 @@ export type { SuggestCategoryInput, SuggestCategoryOutput } from './suggest-cate
 
 export { calculateCashflow } from './calculate-cashflow';
 export type { CalculateCashflowInput, CalculateCashflowOutput } from './calculate-cashflow';
+export { predictSpending } from './spendingForecast';
+export type { SpendingForecastInput, SpendingForecastOutput } from './spendingForecast';
+
 export { calculateCostOfLiving } from './cost-of-living';
 export type {
   CalculateCostOfLivingInput,
   CostOfLivingBreakdown,
 } from './cost-of-living';
-
-export { predictSpending } from './spendingForecast';
-export type { SpendingForecastInput, SpendingForecastOutput } from './spendingForecast';
 
