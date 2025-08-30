@@ -24,9 +24,9 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
+  let hasMore = true;
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  while (hasMore) {
     const q = lastDoc
       ? query(
           transCol,
@@ -55,7 +55,7 @@ export async function archiveOldTransactions(cutoffDate: string): Promise<void> 
     await runWithRetry(() => batch.commit());
 
     lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    if (snapshot.size < pageSize) break;
+    hasMore = snapshot.size === pageSize;
   }
 }
 
@@ -66,9 +66,9 @@ export async function cleanupDebts(): Promise<void> {
   const debtsCol = collection(db, "debts");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
+  let hasMore = true;
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  while (hasMore) {
     const q = lastDoc
       ? query(
           debtsCol,
@@ -95,7 +95,7 @@ export async function cleanupDebts(): Promise<void> {
     await runWithRetry(() => batch.commit());
 
     lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    if (snapshot.size < pageSize) break;
+    hasMore = snapshot.size === pageSize;
   }
 }
 
@@ -146,9 +146,9 @@ export async function backupData(
     const pageSize = 100;
     const items: T[] = [];
     let lastDoc: QueryDocumentSnapshot<unknown> | undefined;
+    let hasMore = true;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (hasMore) {
       const q = lastDoc
         ? query(col, orderBy(orderField), startAfter(lastDoc), limit(pageSize))
         : query(col, orderBy(orderField), limit(pageSize));
@@ -161,7 +161,7 @@ export async function backupData(
       }
 
       lastDoc = snap.docs[snap.docs.length - 1];
-      if (snap.size < pageSize) break;
+      hasMore = snap.size === pageSize;
     }
     return items;
   }
