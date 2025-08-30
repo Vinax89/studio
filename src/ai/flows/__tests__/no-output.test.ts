@@ -32,7 +32,7 @@ describe('calculateCashflowFlow', () => {
         estimatedAnnualTaxes: 10000,
         totalMonthlyDeductions: 2000,
       })
-    ).rejects.toThrow('No output returned from calculateCashflowFlow');
+    ).rejects.toThrow(/No output returned/);
   });
 });
 
@@ -41,9 +41,18 @@ describe('suggestDebtStrategyFlow', () => {
     jest.resetModules();
     setupNoOutputMocks();
     const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
+    await expect(suggestDebtStrategy({ debts: [] })).rejects.toThrow(/No output returned/);
+  });
+});
+
+describe('suggestCategoryFlow', () => {
+  it('throws an error when prompt returns no output', async () => {
+    jest.resetModules();
+    setupNoOutputMocks();
+    const { suggestCategory } = await import('@/ai/flows/suggest-category');
     await expect(
-      suggestDebtStrategy({ debts: [] })
-    ).rejects.toThrow('No output returned from suggestDebtStrategyFlow');
+      suggestCategory({ description: 'Coffee shop latte' })
+    ).rejects.toThrow(/No output returned/);
   });
 });
 
