@@ -7,6 +7,7 @@ To get started, take a look at src/app/page.tsx.
 - On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
 - `npm run lint` – run ESLint for code quality.
 - `npm test` – run unit tests with Jest.
+- `npm run e2e` – run Playwright end-to-end tests. Run `npx playwright install-deps` first to install required system dependencies.
 - Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
