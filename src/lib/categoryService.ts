@@ -4,6 +4,7 @@
 
 import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
 import { db, categoriesCollection } from "./firebase";
+import { logger } from "@/lib/logger";
 
 const STORAGE_KEY = "categories";
 
@@ -50,7 +51,7 @@ async function syncFromServer() {
     });
     save(list);
   } catch (err) {
-    console.error(err);
+    logger.error("Error syncing categories", err);
   }
 }
 
@@ -88,14 +89,14 @@ export function addCategory(category: string): string[] {
   const trimmed = category.trim();
   const key = normalize(trimmed);
   if (!isValidKey(key)) {
-    console.error("Invalid category name");
+    logger.error("Invalid category name");
     return categories;
   }
   const exists = categories.some((c) => normalize(c) === key);
   if (!exists) {
     categories.push(trimmed);
-    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-      console.error
+    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch((err) =>
+      logger.error("Error adding category", err)
     );
   }
   save(categories);
@@ -109,12 +110,14 @@ export function addCategory(category: string): string[] {
 export function removeCategory(category: string): string[] {
   const key = normalize(category);
   if (!isValidKey(key)) {
-    console.error("Invalid category name");
+    logger.error("Invalid category name");
     return getCategories();
   }
   const categories = getCategories().filter((c) => normalize(c) !== key);
   save(categories);
-  void deleteDoc(doc(categoriesCollection, key)).catch(console.error);
+  void deleteDoc(doc(categoriesCollection, key)).catch((err) =>
+    logger.error("Error removing category", err)
+  );
   return categories;
 }
 
@@ -128,7 +131,7 @@ export function clearCategories() {
       snap.forEach((d) => batch.delete(d.ref));
       await batch.commit();
     } catch (err) {
-      console.error(err);
+      logger.error("Error clearing categories", err);
     }
   })();
 }
