@@ -35,6 +35,19 @@ jest.mock("firebase/firestore", () => {
     }>;
     set: (ref: unknown, data: { lastRun: number }) => void;
   }
+  class MockTimestamp {
+    constructor(public seconds: number, public nanoseconds: number) {}
+    static fromDate(date: Date) {
+      const ms = date.getTime();
+      return new MockTimestamp(Math.floor(ms / 1000), (ms % 1000) * 1e6);
+    }
+    toDate() {
+      return new Date(this.seconds * 1000 + this.nanoseconds / 1e6);
+    }
+    toMillis() {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+  }
   return {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     doc: (_db: unknown, _col: string, _id: string) => ({}),
@@ -69,6 +82,7 @@ jest.mock("firebase/firestore", () => {
     setDoc: jest.fn(async (_ref: unknown, data: { lastRun: number }) => {
       store.lastRun = data.lastRun;
     }),
+    Timestamp: MockTimestamp,
     __store: store,
   };
 });

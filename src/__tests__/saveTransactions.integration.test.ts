@@ -1,5 +1,6 @@
 import { saveTransactions } from "../lib/transactions";
 import type { Transaction } from "../lib/types";
+import { Timestamp } from "firebase/firestore";
 
 jest.mock("../lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
 import { initFirebase } from "../lib/firebase";
@@ -38,11 +39,27 @@ function mockWriteBatch() {
   };
 }
 
-jest.mock("firebase/firestore", () => ({
-  collection: mockCollection,
-  doc: mockDoc,
-  writeBatch: mockWriteBatch,
-}));
+jest.mock("firebase/firestore", () => {
+  class MockTimestamp {
+    constructor(public seconds: number, public nanoseconds: number) {}
+    static fromDate(date: Date) {
+      const ms = date.getTime();
+      return new MockTimestamp(Math.floor(ms / 1000), (ms % 1000) * 1e6);
+    }
+    toDate() {
+      return new Date(this.seconds * 1000 + this.nanoseconds / 1e6);
+    }
+    toMillis() {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+  }
+  return {
+    collection: mockCollection,
+    doc: mockDoc,
+    writeBatch: mockWriteBatch,
+    Timestamp: MockTimestamp,
+  };
+});
 
 describe("saveTransactions integration", () => {
   beforeEach(() => {
@@ -53,7 +70,7 @@ describe("saveTransactions integration", () => {
     const txs: Transaction[] = [
       {
         id: "a1",
-        date: "2024-01-01",
+        date: Timestamp.fromDate(new Date("2024-01-01")),
         description: "one",
         amount: 1,
         type: "Income",
@@ -63,7 +80,7 @@ describe("saveTransactions integration", () => {
       },
       {
         id: "a2",
-        date: "2024-01-02",
+        date: Timestamp.fromDate(new Date("2024-01-02")),
         description: "two",
         amount: 2,
         type: "Expense",
@@ -81,7 +98,7 @@ describe("saveTransactions integration", () => {
   it("overwrites existing documents with the same id", async () => {
     const tx: Transaction = {
       id: "t1",
-      date: "2024-01-01",
+      date: Timestamp.fromDate(new Date("2024-01-01")),
       description: "first",
       amount: 100,
       type: "Income",
