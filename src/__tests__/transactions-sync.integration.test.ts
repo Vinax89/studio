@@ -59,7 +59,7 @@ const sample = {
   date: "2024-01-01",
   description: "test",
   amount: 100,
-  currency: "USD",
+  currency: "EUR",
   type: "Income" as const,
   category: "Misc",
   isRecurring: false,
@@ -71,7 +71,7 @@ describe("/api/transactions/sync persistence", () => {
     failCommit = false;
   });
 
-  it("persists transactions via importTransactions", async () => {
+  it("persists transactions via saveTransactions and preserves fields", async () => {
     const req = new Request("http://localhost", {
       method: "POST",
       headers: { Authorization: "Bearer test-token" },
@@ -81,11 +81,13 @@ describe("/api/transactions/sync persistence", () => {
     const res = await transactionsSync(req);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ imported: 1 });
+    expect(body).toEqual({ saved: 1 });
     expect(store.size).toBe(1);
     const saved = Array.from(store.values())[0];
     expect(saved.description).toBe(sample.description);
     expect(saved.amount).toBe(sample.amount);
+    expect(saved.id).toBe(sample.id);
+    expect(saved.currency).toBe(sample.currency);
   });
 
   it("returns 500 when persistence fails", async () => {
@@ -99,6 +101,6 @@ describe("/api/transactions/sync persistence", () => {
     const res = await transactionsSync(req);
     expect(res.status).toBe(500);
     const body = await res.json();
-    expect(body.error).toMatch(/Failed to import transactions/);
+    expect(body.error).toMatch(/Failed to save transactions/);
   });
 });
