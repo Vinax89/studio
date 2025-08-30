@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { costOfLiving2024 } from '@/data/costOfLiving2024';
+import { costOfLiving2025 } from '@/data/costOfLiving2025';
 import { calculateCostOfLiving, CostOfLivingBreakdown } from '@/ai/flows/cost-of-living';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 
 export default function CostOfLivingPage() {
-  const regions = Object.keys(costOfLiving2024.regions);
+  const regions = Object.keys(costOfLiving2025.regions);
   const [region, setRegion] = useState(regions[0]);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
@@ -25,7 +25,7 @@ export default function CostOfLivingPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const breakdown = calculateCostOfLiving({
-      region: region as keyof typeof costOfLiving2024.regions,
+      region: region as keyof typeof costOfLiving2025.regions,
       adults,
       children,
     });
@@ -119,7 +119,7 @@ export default function CostOfLivingPage() {
                 ${Math.round(result.annual.total).toLocaleString()} / yr
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                Source: {costOfLiving2024.source} ({costOfLiving2024.baseYear})
+                Source: {costOfLiving2025.source} ({costOfLiving2025.baseYear})
               </p>
             </CardContent>
           </Card>

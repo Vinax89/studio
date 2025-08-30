@@ -1,4 +1,4 @@
-import type { Region } from '@/data/costOfLiving2024';
+import type { Region } from '@/data/costOfLiving2025';
 
 interface Schema<T = unknown> {
   parse: (value: unknown) => T;
