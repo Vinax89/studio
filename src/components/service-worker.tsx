@@ -98,7 +98,14 @@ export function ServiceWorker() {
     const registerAndListen = async () => {
       if ("serviceWorker" in navigator) {
         try {
-          await navigator.serviceWorker.register("/sw.js", { type: "module" })
+          const existing = navigator.serviceWorker.getRegistration
+            ? await navigator.serviceWorker.getRegistration()
+            : undefined
+          if (!navigator.serviceWorker.controller && existing) {
+            // Service worker already registered, no need to register again
+          } else {
+            await navigator.serviceWorker.register("/sw.js", { type: "module" })
+          }
         } catch (error) {
           logger.error("Service worker registration failed", error)
         }
