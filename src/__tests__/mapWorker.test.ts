@@ -5,6 +5,7 @@ import { Worker } from "node:worker_threads"
 import fs from "node:fs"
 import path from "node:path"
 import ts from "typescript"
+import type { SquareMessage } from "../lib/mapWorker"
 
 function createWorker() {
   const filePath = path.resolve(__dirname, "../lib/mapWorker.ts")
@@ -33,8 +34,8 @@ describe("mapWorker", () => {
       worker.once("message", resolve)
       worker.postMessage({
         type: "square",
-        payload: [1, "a"] as unknown as number[],
-      })
+        payload: [1, "a"],
+      } as unknown as SquareMessage)
     })
     await worker.terminate()
     expect(result).toEqual({
@@ -47,10 +48,7 @@ describe("mapWorker", () => {
     const worker = createWorker()
     const result = await new Promise(resolve => {
       worker.once("message", resolve)
-      worker.postMessage({
-        type: "boom",
-        payload: [] as unknown as number[],
-      })
+      worker.postMessage({ type: "boom", payload: [] } as unknown as SquareMessage)
     })
     await worker.terminate()
     expect(result).toEqual({

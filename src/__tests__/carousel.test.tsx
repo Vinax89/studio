@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Carousel } from '@/components/ui/carousel';
-
+ 
 jest.mock('lucide-react', () => ({
   ArrowLeft: () => null,
   ArrowRight: () => null,
@@ -9,7 +9,7 @@ jest.mock('lucide-react', () => ({
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: {
+type MockEmblaApi = {
   on: jest.Mock;
   off: jest.Mock;
   canScrollPrev: jest.Mock;
@@ -17,6 +17,7 @@ let emblaApi: {
   scrollPrev: jest.Mock;
   scrollNext: jest.Mock;
 };
+let emblaApi: MockEmblaApi;
 
 function mockUseEmbla() {
   emblaApi = {
