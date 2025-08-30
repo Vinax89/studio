@@ -11,8 +11,8 @@
  * - AnalyzeSpendingHabitsOutput - The return type for the analyzeSpendingHabits function.
  */
 
-import {ai} from '@/ai/genkit';
 import {DATA_URI_REGEX} from '@/lib/data-uri';
+import {definePromptFlow} from './utils';
 import {z} from 'genkit';
 
 const GoalSchema = z.object({
@@ -49,14 +49,13 @@ const AnalyzeSpendingHabitsOutputSchema = z.object({
 });
 export type AnalyzeSpendingHabitsOutput = z.infer<typeof AnalyzeSpendingHabitsOutputSchema>;
 
-export async function analyzeSpendingHabits(input: AnalyzeSpendingHabitsInput): Promise<AnalyzeSpendingHabitsOutput> {
-  return analyzeSpendingHabitsFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'analyzeSpendingHabitsPrompt',
-  input: {schema: AnalyzeSpendingHabitsInputSchema},
-  output: {schema: AnalyzeSpendingHabitsOutputSchema},
+export const analyzeSpendingHabits = definePromptFlow<
+  AnalyzeSpendingHabitsInput,
+  AnalyzeSpendingHabitsOutput
+>({
+  name: 'analyzeSpendingHabits',
+  inputSchema: AnalyzeSpendingHabitsInputSchema,
+  outputSchema: AnalyzeSpendingHabitsOutputSchema,
   prompt: `You are a personal finance advisor for nursing professionals. Analyze the user's spending habits based on the provided financial documents, their personal description, and their stated financial goals.
 
 Crucially, you must consider the 'importance' ranking of each goal. Recommendations should prioritize achieving the goals the user has marked as most important.
@@ -82,18 +81,3 @@ Based on all this information, provide:
 2.  **savingsOpportunities**: Areas where the user could potentially save money.
 3.  **recommendations**: Personalized, actionable recommendations that help the user achieve their *most important* goals faster.`,
 });
-
-const analyzeSpendingHabitsFlow = ai.defineFlow(
-  {
-    name: 'analyzeSpendingHabitsFlow',
-    inputSchema: AnalyzeSpendingHabitsInputSchema,
-    outputSchema: AnalyzeSpendingHabitsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from analyzeSpendingHabitsPrompt');
-    }
-    return output;
-  }
-);

@@ -9,7 +9,7 @@
  * - CalculateCashflowOutput - The return type for the calculateCashflow function.
  */
 
-import {ai} from '@/ai/genkit';
+import {definePromptFlow} from './utils';
 import {z} from 'genkit';
 
 const CalculateCashflowInputSchema = z.object({
@@ -43,14 +43,13 @@ const CalculateCashflowOutputSchema = z.object({
 });
 export type CalculateCashflowOutput = z.infer<typeof CalculateCashflowOutputSchema>;
 
-export async function calculateCashflow(input: CalculateCashflowInput): Promise<CalculateCashflowOutput> {
-  return calculateCashflowFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'calculateCashflowPrompt',
-  input: {schema: CalculateCashflowInputSchema},
-  output: {schema: CalculateCashflowOutputSchema},
+export const calculateCashflow = definePromptFlow<
+  CalculateCashflowInput,
+  CalculateCashflowOutput
+>({
+  name: 'calculateCashflow',
+  inputSchema: CalculateCashflowInputSchema,
+  outputSchema: CalculateCashflowOutputSchema,
   prompt: `You are a financial analyst. Based on the user's provided income, taxes, and deductions, calculate their gross and net monthly cashflow.
 
 Annual Income: {{{annualIncome}}}
@@ -63,18 +62,3 @@ Total Monthly Deductions: {{{totalMonthlyDeductions}}}
 
 Return the results in the specified output format.`,
 });
-
-const calculateCashflowFlow = ai.defineFlow(
-  {
-    name: 'calculateCashflowFlow',
-    inputSchema: CalculateCashflowInputSchema,
-    outputSchema: CalculateCashflowOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from calculateCashflowFlow');
-    }
-    return output;
-  }
-);

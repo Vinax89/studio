@@ -1,10 +1,10 @@
 // This file uses server-side code.
 'use server';
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 import { classifyCategory } from '../train/category-model';
+import { definePromptFlow } from './utils';
 
 const SuggestCategoryInputSchema = z.object({
   description: z.string().describe('Description of the transaction'),
@@ -16,29 +16,17 @@ const SuggestCategoryOutputSchema = z.object({
 });
 export type SuggestCategoryOutput = z.infer<typeof SuggestCategoryOutputSchema>;
 
-const prompt = ai.definePrompt({
-  name: 'suggestCategoryPrompt',
-  input: { schema: SuggestCategoryInputSchema },
-  output: { schema: SuggestCategoryOutputSchema },
+const suggestCategoryFlow = definePromptFlow<
+  SuggestCategoryInput,
+  SuggestCategoryOutput
+>({
+  name: 'suggestCategory',
+  inputSchema: SuggestCategoryInputSchema,
+  outputSchema: SuggestCategoryOutputSchema,
   prompt: `You are a financial assistant. Suggest a spending category for the following transaction description suitable for personal budgeting (e.g., Food, Transport, Utilities, Salary, Other).
 
 Description: {{description}}`,
 });
-
-const suggestCategoryFlow = ai.defineFlow(
-  {
-    name: 'suggestCategoryFlow',
-    inputSchema: SuggestCategoryInputSchema,
-    outputSchema: SuggestCategoryOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('No output returned from suggestCategoryFlow');
-    }
-    return output;
-  }
-);
 
 /**
  * Suggest a category for a transaction description. Attempts to use the local
