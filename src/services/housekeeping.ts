@@ -10,6 +10,7 @@ import {
   startAfter,
   writeBatch,
   QueryDocumentSnapshot,
+  Timestamp,
 } from "firebase/firestore";
 import { db, initFirebase } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
@@ -22,12 +23,18 @@ initFirebase();
  * Moves transactions older than the provided cutoff date to an archive collection
  * and removes them from the main transactions collection.
  */
-export async function archiveOldTransactions(cutoffDate: string): Promise<void> {
-  const timestamp = Date.parse(cutoffDate);
-  if (Number.isNaN(timestamp)) {
+export async function archiveOldTransactions(
+  cutoffDate: Date | Timestamp,
+): Promise<void> {
+  const cutoff =
+    cutoffDate instanceof Timestamp
+      ? cutoffDate
+      : cutoffDate instanceof Date && !Number.isNaN(cutoffDate.getTime())
+        ? Timestamp.fromDate(cutoffDate)
+        : null;
+  if (!cutoff) {
     throw new Error("Invalid cutoff date");
   }
-  const cutoff = new Date(timestamp).toISOString();
   const transCol = collection(db, "transactions");
   const pageSize = 100;
   let lastDoc: QueryDocumentSnapshot<unknown> | undefined;

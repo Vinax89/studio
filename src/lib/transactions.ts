@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
+import { collection, doc, writeBatch, getDocs, Timestamp } from "firebase/firestore";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
@@ -142,7 +142,10 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
-      batch.set(doc(colRef, tx.id), tx);
+      batch.set(doc(colRef, tx.id), {
+        ...tx,
+        date: Timestamp.fromDate(new Date(tx.date)),
+      });
     });
 
     try {

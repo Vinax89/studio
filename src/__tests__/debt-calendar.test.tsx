@@ -8,6 +8,7 @@ import { mockDebts } from '@/lib/data';
 import { ClientProviders } from '@/components/layout/client-providers';
 
 // Mock UI components to avoid Radix and other dependencies
+jest.mock('lucide-react', () => new Proxy({}, { get: () => () => null }));
 jest.mock('../components/ui/button', () => ({
   Button: (props: React.ComponentProps<'button'>) => <button {...props} />,
 }));
@@ -28,34 +29,46 @@ jest.mock('../components/ui/textarea', () => ({
   Textarea: (props: React.ComponentProps<'textarea'>) => <textarea {...props} />,
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => '/',
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  collection: jest.fn(),
+  doc: jest.fn(),
+  onSnapshot: (
+    _ref: unknown,
+    callback: (snapshot: { docs: Array<{ data: () => unknown }> }) => void,
+  ) => {
+    callback({ docs: mockDebts.map((debt) => ({ data: () => debt })) });
+    return () => {};
+  },
+  setDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  arrayUnion: jest.fn(),
+  arrayRemove: jest.fn(),
+}));
+
 describe('DebtCalendar', () => {
   beforeAll(() => {
     if (!global.crypto) {
       global.crypto = webcrypto as Crypto;
     }
-    // Mock Firestore
-    jest.mock('firebase/firestore', () => ({
-      getFirestore: jest.fn(),
-      collection: jest.fn(),
-      doc: jest.fn(),
-      onSnapshot: (collectionRef: unknown, callback: (snapshot: { docs: Array<{data: () => unknown}> }) => void) => {
-        callback({
-          docs: mockDebts.map(debt => ({
-            data: () => debt
-          }))
-        });
-        return () => {}; // Unsubscribe function
-      },
-      setDoc: jest.fn(),
-      deleteDoc: jest.fn(),
-      updateDoc: jest.fn(),
-      arrayUnion: jest.fn(),
-      arrayRemove: jest.fn()
-    }));
   });
 
   beforeEach(() => {
     localStorage.clear();
+    (window as unknown as { matchMedia?: unknown }).matchMedia = () => ({
+      matches: false,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    });
   });
 
   function fillRequiredFields() {
