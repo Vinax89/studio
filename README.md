@@ -90,8 +90,8 @@ defaults to the pay period beginning on January 7, 2024.
 ## Cost of Living Dataset
 
 Annual expense benchmarks are sourced from the **BEA Regional Price Parities**
-release. The data file `src/data/costOfLiving2024.ts` stores per-adult yearly
+release. The data file `src/data/costOfLiving2025.ts` stores per-adult yearly
 costs for housing, groceries, utilities, transportation, healthcare, and
-miscellaneous categories. Use `calculateCostOfLiving` to scale values by
-household composition. Run `node scripts/update-cost-of-living.ts` each year to
-fetch new figures.
+miscellaneous categories along with source metadata. Use `calculateCostOfLiving`
+to scale values by household composition. Run `node scripts/update-cost-of-living.ts`
+each year to fetch new figures.

@@ -16,7 +16,7 @@ interface RegionCostBreakdown {
 }
 
 async function fetchRpp(year: number, apiKey: string) {
-  const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=STATE&Year=${year}&ResultFormat=JSON`;
+  const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=MSA&Year=${year}&ResultFormat=JSON`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status}`);
@@ -46,7 +46,9 @@ async function main() {
     return acc;
   }, {} as Record<string, RegionCostBreakdown>);
 
-  const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: 'BEA Regional Price Parities',\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
+  const retrieved = new Date().toISOString().split('T')[0];
+  const version = String(year - 1);
+  const content = `export const costOfLiving${year} = {\n  baseYear: ${year},\n  source: { name: 'BEA Regional Price Parities', version: '${version}', retrieved: '${retrieved}' },\n  regions: ${JSON.stringify(regions, null, 2)}\n} as const;\n`;
   const dir = join(__dirname, '..', 'src', 'data');
   if (!existsSync(dir)) {
     if (dryRun) {
