@@ -8,6 +8,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.test.json' }],
+    '^.+node_modules/lucide-react/.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: [
     "/node_modules/(?!lucide-react|d3-.*|recharts|embla-carousel-react)",
