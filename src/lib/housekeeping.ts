@@ -1,13 +1,31 @@
 import { getAuth } from "firebase/auth";
 import { logger } from "./logger";
+import {
+  archiveOldTransactions,
+  cleanupDebts,
+  backupData,
+} from "../services/housekeeping";
 
-// Placeholder housekeeping service that cleans up outdated data.
-// Replace with actual implementation as needed.
-export async function runHousekeeping(): Promise<void> {
-  // Example: ensure auth SDK is initialized to avoid cold-start costs
-  // and perform cleanup tasks such as removing expired sessions.
+export interface HousekeepingOptions {
+  cutoffDate?: string;
+}
+
+export async function runHousekeeping(
+  options: HousekeepingOptions = {}
+): Promise<void> {
+  // Initialize auth SDK to avoid cold-start costs
   getAuth();
+
+  const retentionDays = Number(process.env.RETENTION_DAYS ?? "30");
+  const cutoff =
+    options.cutoffDate ||
+    new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
+
+  await archiveOldTransactions(cutoff);
+  await cleanupDebts();
+  await backupData();
+
   if (process.env.NEXT_PUBLIC_ENABLE_HOUSEKEEPING_LOG === "true") {
-    logger.info("Housekeeping job executed: Firebase auth initialized");
+    logger.info("Housekeeping job executed");
   }
 }

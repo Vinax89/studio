@@ -29,12 +29,15 @@ Values outside these patterns are ignored to prevent unsafe CSS injection.
 
 ## Housekeeping service
 
-The housekeeping service removes outdated files from Cloud Storage to manage costs and data retention.
+The housekeeping service archives old transactions, removes settled debts, and
+creates a backup snapshot of current data.
 
 ### Running locally
 1. Install dependencies with `npm install`.
 2. Provide the environment variables listed below.
 3. Start the service with `npm run housekeeping` or `node scripts/housekeeping.ts`.
+   - Pass `--cutoff=YYYY-MM-DD` to override the default archive cutoff date
+     derived from `RETENTION_DAYS` (30 days by default).
 
 ### Scheduled deployment
 - Deploy the service with `firebase deploy --only run.housekeeping`.
@@ -51,7 +54,7 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 |----------|-------------|
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project containing the storage bucket. |
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Default Cloud Storage bucket for uploads. |
-| `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
+| `RETENTION_DAYS` | Days to retain transactions before archiving (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed request origins for CORS. Regex patterns may be wrapped in `/`. |
