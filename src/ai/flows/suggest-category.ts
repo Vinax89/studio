@@ -2,6 +2,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
+import { redact } from '@/ai/redact';
 import { z } from 'genkit';
 
 import { classifyCategory } from '../train/category-model';
@@ -31,12 +32,13 @@ const suggestCategoryFlow = ai.defineFlow(
     inputSchema: SuggestCategoryInputSchema,
     outputSchema: SuggestCategoryOutputSchema,
   },
-  async (input) => {
-    const { output } = await prompt(input);
+  async input => {
+    const cleanInput = redact(input);
+    const { output } = await prompt(cleanInput);
     if (!output) {
       throw new Error('No output returned from suggestCategoryFlow');
     }
-    return output;
+    return redact(output);
   }
 );
 

@@ -9,9 +9,10 @@
  * - AnalyzeReceiptOutput - The return type for the analyzeReceipt function.
  */
 
-import {ai} from '@/ai/genkit';
-import {DATA_URI_REGEX} from '@/lib/data-uri';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { redact } from '@/ai/redact';
+import { DATA_URI_REGEX } from '@/lib/data-uri';
+import { z } from 'genkit';
 
 export const AnalyzeReceiptInputSchema = z.object({
   receiptImage: z
@@ -50,10 +51,11 @@ const analyzeReceiptFlow = ai.defineFlow(
     outputSchema: AnalyzeReceiptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const cleanInput = redact(input);
+    const { output } = await prompt(cleanInput);
     if (!output) {
       throw new Error('No output returned from analyzeReceiptPrompt');
     }
-    return output;
+    return redact(output);
   }
 );

@@ -11,6 +11,14 @@ To get started, take a look at src/app/page.tsx.
 - Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
+## AI redaction
+
+All prompts and model responses are sanitized before leaving the server. The
+redaction middleware in `src/ai/redact.ts` removes email addresses, phone
+numbers, and obvious account identifiers. Each flow applies this redaction step
+prior to invoking the model to help maintain compliance with data handling
+requirements.
+
 ## Package manager
 
 This project uses **npm** exclusively. Install dependencies with `npm ci` and
