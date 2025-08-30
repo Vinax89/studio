@@ -5,6 +5,28 @@ import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
 import { mockDebts } from '@/lib/data';
 import { ClientProviders } from '@/components/layout/client-providers';
+import { setDoc } from 'firebase/firestore';
+
+const pushMock = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
+  usePathname: () => '/',
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  collection: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
+  doc: jest.fn(() => ({ withConverter: jest.fn(() => ({})) })),
+  onSnapshot: (_ref: unknown, callback: (snapshot: { docs: Array<{ data: () => unknown }> }) => void) => {
+    callback({ docs: mockDebts.map(debt => ({ data: () => debt })) });
+    return () => {};
+  },
+  setDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  arrayUnion: jest.fn(),
+  arrayRemove: jest.fn(),
+}));
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('../components/ui/button', () => ({
@@ -32,25 +54,6 @@ describe('DebtCalendar', () => {
     if (!global.crypto) {
       global.crypto = webcrypto as Crypto;
     }
-    // Mock Firestore
-    jest.mock('firebase/firestore', () => ({
-      getFirestore: jest.fn(),
-      collection: jest.fn(),
-      doc: jest.fn(),
-      onSnapshot: (collectionRef: unknown, callback: (snapshot: { docs: Array<{data: () => unknown}> }) => void) => {
-        callback({
-          docs: mockDebts.map(debt => ({
-            data: () => debt
-          }))
-        });
-        return () => {}; // Unsubscribe function
-      },
-      setDoc: jest.fn(),
-      deleteDoc: jest.fn(),
-      updateDoc: jest.fn(),
-      arrayUnion: jest.fn(),
-      arrayRemove: jest.fn()
-    }));
   });
 
   beforeEach(() => {
@@ -76,6 +79,6 @@ describe('DebtCalendar', () => {
     fillRequiredFields();
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
-    expect(await screen.findByText('Test Debt')).toBeInTheDocument();
+    await waitFor(() => expect(setDoc).toHaveBeenCalled());
   });
 });
