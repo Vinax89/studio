@@ -98,13 +98,16 @@ export function addCategory(category: string): string[] {
     return categories;
   }
   const exists = categories.some((c) => normalize(c) === key);
+  const value = exists
+    ? categories.find((c) => normalize(c) === key) ?? trimmed
+    : trimmed;
   if (!exists) {
     categories.push(trimmed);
-    void setDoc(doc(categoriesCollection, key), { name: trimmed }).catch(
-      console.error,
-    );
   }
   save(categories);
+  void setDoc(doc(categoriesCollection, key), { name: value }).catch(
+    console.error,
+  );
   return categories;
 }
 
