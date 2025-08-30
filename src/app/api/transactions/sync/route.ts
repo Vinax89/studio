@@ -4,6 +4,7 @@ import { verifyFirebaseToken } from "@/lib/server-auth"
 import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 import { logger } from "@/lib/logger"
+import { withAllowedOrigin } from "@/lib/allowed-origins"
 
 /**
  * Generic transaction syncing endpoint.
@@ -23,7 +24,10 @@ export async function POST(req: Request) {
     await verifyFirebaseToken(req)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
-    return NextResponse.json({ error: message }, { status: 401 })
+    return withAllowedOrigin(
+      req,
+      NextResponse.json({ error: message }, { status: 401 }),
+    )
   }
 
   let text: string
@@ -31,7 +35,10 @@ export async function POST(req: Request) {
     text = await readBodyWithLimit(req, MAX_BODY_SIZE)
   } catch (err) {
     if (err instanceof PayloadTooLargeError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
+      return withAllowedOrigin(
+        req,
+        NextResponse.json({ error: err.message }, { status: err.status }),
+      )
     }
     throw err
   }
@@ -40,14 +47,20 @@ export async function POST(req: Request) {
   try {
     json = JSON.parse(text)
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    return withAllowedOrigin(
+      req,
+      NextResponse.json({ error: "Invalid JSON" }, { status: 400 }),
+    )
   }
 
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid payload", details: parsed.error.flatten() },
-      { status: 400 },
+    return withAllowedOrigin(
+      req,
+      NextResponse.json(
+        { error: "Invalid payload", details: parsed.error.flatten() },
+        { status: 400 },
+      ),
     )
   }
 
@@ -55,7 +68,10 @@ export async function POST(req: Request) {
 
   try {
     await saveTransactions(transactions)
-    return NextResponse.json({ received: transactions.length })
+    return withAllowedOrigin(
+      req,
+      NextResponse.json({ received: transactions.length }),
+    )
   } catch (err) {
     logger.error("Failed to persist transactions", err)
     const message =
@@ -64,6 +80,9 @@ export async function POST(req: Request) {
       typeof err === "object" && err && "status" in err
         ? (err as { status?: number }).status || 500
         : 500
-    return NextResponse.json({ error: message }, { status })
+    return withAllowedOrigin(
+      req,
+      NextResponse.json({ error: message }, { status }),
+    )
   }
 }

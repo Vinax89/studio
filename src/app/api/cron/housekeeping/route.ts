@@ -4,6 +4,7 @@ import { db, initFirebase } from "@/lib/firebase";
 import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
+import { withAllowedOrigin } from "@/lib/allowed-origins";
 
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
@@ -19,7 +20,10 @@ export async function resetRateLimit() {
 export async function GET(req: Request) {
   const secret = req.headers.get(HEADER_NAME);
   if (!secret || secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return withAllowedOrigin(
+      req,
+      NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    );
   }
 
   try {
@@ -35,16 +39,22 @@ export async function GET(req: Request) {
     });
 
     if (!allowed) {
-      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      return withAllowedOrigin(
+        req,
+        NextResponse.json({ error: "Too many requests" }, { status: 429 }),
+      );
     }
 
     await runHousekeeping();
-    return NextResponse.json({ status: "ok" });
+    return withAllowedOrigin(req, NextResponse.json({ status: "ok" }));
   } catch (err) {
     logger.error("Housekeeping run failed", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+    return withAllowedOrigin(
+      req,
+      NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      ),
     );
   }
 }
