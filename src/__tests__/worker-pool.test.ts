@@ -26,14 +26,17 @@ jest.mock("node:worker_threads", () => {
 import { WorkerPool } from "../lib/worker-pool"
 
 describe("WorkerPool", () => {
-  it("continues processing after a worker crash", async () => {
+  it("respawns a worker after a crash", async () => {
     const pool = new WorkerPool<number | string, number>("fake", 1)
 
+    const firstWorker = (pool as unknown as { workers: unknown[] }).workers[0]
     const fail = pool.run("crash")
     const success = pool.run(5)
 
     await expect(fail).rejects.toThrow("boom")
     await expect(success).resolves.toBe(10)
+    const secondWorker = (pool as unknown as { workers: unknown[] }).workers[0]
+    expect(secondWorker).not.toBe(firstWorker)
 
     await pool.destroy()
   })
