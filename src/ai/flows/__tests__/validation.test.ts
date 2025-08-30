@@ -1,30 +1,45 @@
-function setupSuccessMocks(output: unknown) {
+interface Schema<T = unknown> {
+  parse: (value: unknown) => T;
+}
+
+interface FlowConfig<I = unknown, O = unknown> {
+  inputSchema: Schema<I>;
+  outputSchema: Schema<O>;
+}
+
+type FlowHandler<I = unknown, O = unknown> = (input: I) => O | Promise<O>;
+
+function setupSuccessMocks<O>(output: O) {
   const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
   const defineFlowMock = jest.fn(
-    (
-      config: {
-        inputSchema: { parse: (value: unknown) => unknown };
-        outputSchema: { parse: (value: unknown) => unknown };
-      },
-      handler: (value: unknown) => unknown
-    ) => {
-      return async (input: unknown) => {
+    <I>(config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => {
+      return async (input: unknown): Promise<O> => {
         const parsedInput = config.inputSchema.parse(input);
         const result = await handler(parsedInput);
         return config.outputSchema.parse(result);
       };
     }
   );
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  jest.doMock('@/ai/genkit', () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
 }
 
 describe('calculateCashflow validation', () => {
   it('rejects negative annual income', async () => {
     jest.resetModules();
-    setupSuccessMocks({ grossMonthlyIncome: 0, netMonthlyIncome: 0, analysis: '' });
+    setupSuccessMocks({
+      grossMonthlyIncome: 0,
+      netMonthlyIncome: 0,
+      analysis: '',
+    });
     const { calculateCashflow } = await import('@/ai/flows/calculate-cashflow');
     await expect(
-      calculateCashflow({ annualIncome: -1, estimatedAnnualTaxes: 0, totalMonthlyDeductions: 0 })
+      calculateCashflow({
+        annualIncome: -1,
+        estimatedAnnualTaxes: 0,
+        totalMonthlyDeductions: 0,
+      })
     ).rejects.toThrow();
   });
 });
@@ -34,7 +49,12 @@ describe('taxEstimation validation', () => {
     jest.resetModules();
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     await expect(
-      estimateTax({ income: -1, deductions: 0, location: 'NY', filingStatus: 'single' })
+      estimateTax({
+        income: -1,
+        deductions: 0,
+        location: 'NY',
+        filingStatus: 'single',
+      })
     ).rejects.toThrow();
   });
 
@@ -61,7 +81,9 @@ describe('suggestDebtStrategy validation', () => {
       payoffOrder: [],
       summary: '',
     });
-    const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
+    const { suggestDebtStrategy } = await import(
+      '@/ai/flows/suggest-debt-strategy'
+    );
     await expect(
       suggestDebtStrategy({
         debts: [
@@ -88,7 +110,9 @@ describe('suggestDebtStrategy validation', () => {
       payoffOrder: [{ debtName: 'Card', priority: 0 }],
       summary: '',
     });
-    const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
+    const { suggestDebtStrategy } = await import(
+      '@/ai/flows/suggest-debt-strategy'
+    );
     await expect(
       suggestDebtStrategy({ debts: [] })
     ).rejects.toThrow();
@@ -106,7 +130,12 @@ describe('calculateCostOfLiving validation', () => {
   it('rejects unknown region', () => {
     const { calculateCostOfLiving } = require('@/ai/flows/cost-of-living');
     expect(() =>
-      calculateCostOfLiving({ region: 'Atlantis', adults: 1, children: 0 } as any)
+      calculateCostOfLiving({
+        region: 'Atlantis',
+        adults: 1,
+        children: 0,
+      } as any)
     ).toThrow('Unknown region');
   });
 });
+
