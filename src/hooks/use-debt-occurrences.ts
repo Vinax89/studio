@@ -1,6 +1,7 @@
 
 import { useMemo } from "react";
 import { Recurrence, Debt } from "@/lib/types";
+import { logger } from "@/lib/logger";
 import {
   addDays,
   addMonths,
@@ -61,8 +62,8 @@ function nextOccurrenceOnOrAfter(
  * Generates all occurrences of a debt within the given date range.
  *
  * The iteration stops after `maxOccurrences` cycles; if more occurrences
- * exist within the range after that point, a console warning is emitted to
- * signal truncation.
+ * exist within the range after that point, a warning is emitted to signal
+ * truncation.
  *
  * @param debt - Debt to expand into individual occurrences.
  * @param from - Start of the date range (inclusive).
@@ -75,12 +76,13 @@ function allOccurrencesInRange(
   from: Date,
   to: Date,
   maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
-): Date[] {
+): { dates: Date[]; truncated: boolean } {
   const out: Date[] = [];
+  let truncated = false;
   if (debt.recurrence === "none") {
     const d = parseISO(debt.dueDate);
     if (!isBefore(d, from) && !isAfter(d, to)) out.push(d);
-    return out;
+    return { dates: out, truncated };
   }
   let cur = nextOccurrenceOnOrAfter(debt.dueDate, debt.recurrence, from);
   let iter = 0;
@@ -96,33 +98,46 @@ function allOccurrencesInRange(
         : addDays(cur, stepDays);
   }
   if (cur && !isAfter(cur, to)) {
-    console.warn(
-      `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${debt.name}`
-    );
+    truncated = true;
   }
-  return out;
+  return { dates: out, truncated };
 }
 
 function computeDebtOccurrences(
   debts: Debt[],
   from: Date,
   to: Date,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES,
+  warnOnTruncation = true
 ) {
   const occurrences: Occurrence[] = [];
   const grouped = new Map<string, Occurrence[]>();
+  let truncated = false;
   debts.forEach((d) => {
-    const occ = allOccurrencesInRange(d, from, to, maxOccurrences);
-    occ.forEach((dt) => {
+    const { dates, truncated: debtTruncated } = allOccurrencesInRange(
+      d,
+      from,
+      to,
+      maxOccurrences
+    );
+    dates.forEach((dt) => {
       const oc = { date: iso(dt), debt: d };
       occurrences.push(oc);
       const arr = grouped.get(oc.date) ?? [];
       arr.push(oc);
       grouped.set(oc.date, arr);
     });
+    if (debtTruncated) {
+      truncated = true;
+      if (warnOnTruncation) {
+        logger.warn(
+          `Debt occurrences truncated at ${maxOccurrences} iterations for debt ${d.name}`
+        );
+      }
+    }
   });
   occurrences.sort((a, b) => a.date.localeCompare(b.date));
-  return { occurrences, grouped } as const;
+  return { occurrences, grouped, truncated } as const;
 }
 
 export type Occurrence = { date: string; debt: Debt };
@@ -147,19 +162,21 @@ export function useDebtOccurrences(
   from: Date,
   to: Date,
   query: string,
-  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES
+  maxOccurrences: number = DEFAULT_MAX_OCCURRENCES,
+  opts?: { returnTruncated?: boolean }
 ) {
   const fromTime = from.getTime();
   const toTime = to.getTime();
-  const { occurrences, grouped } = useMemo(
+  const { occurrences, grouped, truncated } = useMemo(
     () =>
       computeDebtOccurrences(
         debts,
         new Date(fromTime),
         new Date(toTime),
-        maxOccurrences
+        maxOccurrences,
+        !opts?.returnTruncated
       ),
-    [debts, fromTime, toTime, maxOccurrences]
+    [debts, fromTime, toTime, maxOccurrences, opts?.returnTruncated]
   );
 
   const filtered = useMemo(() => {
@@ -176,5 +193,8 @@ export function useDebtOccurrences(
     return map;
   }, [grouped, query]);
 
+  if (opts?.returnTruncated) {
+    return { occurrences, grouped: filtered, truncated } as const;
+  }
   return { occurrences, grouped: filtered } as const;
 }
