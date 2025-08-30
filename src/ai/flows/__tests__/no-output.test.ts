@@ -17,6 +17,7 @@ function setupNoOutputMocks() {
   );
   jest.doMock('@/ai/genkit', () => ({
     ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+    redact: (v: unknown) => v,
   }));
   return { definePromptMock, defineFlowMock };
 }

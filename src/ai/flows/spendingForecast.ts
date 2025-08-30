@@ -9,7 +9,7 @@
  * - SpendingForecastOutput - The return type for the predictSpending function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai, redact} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TransactionSchema = z.object({
@@ -68,7 +68,7 @@ const spendingForecastFlow = ai.defineFlow(
     outputSchema: SpendingForecastOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(redact(input));
     if (!output) {
       throw new Error('No output returned from spendingForecastPrompt');
     }
