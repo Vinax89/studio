@@ -61,9 +61,8 @@ export const getPayPeriodStart = (
 // already the start of a pay period, that date is considered the pay day.
 export const getNextPayDay = (date: Date = new Date()): Date => {
   const payDayStart = getPayPeriodStart(date);
-  const startOfDay = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  );
+  const startOfDay = new Date(date);
+  startOfDay.setUTCHours(0, 0, 0, 0);
 
   if (payDayStart < startOfDay) {
     const next = new Date(payDayStart);
@@ -78,7 +77,7 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
   const weeklyShifts: Record<string, Shift[]> = {};
 
   // Group shifts by week
-  shifts.forEach(shift => {
+  shifts.forEach((shift) => {
     const shiftDay = shift.date.getDay(); // Sunday = 0
     const weekStart = new Date(shift.date);
     weekStart.setDate(shift.date.getDate() - shiftDay);
@@ -93,7 +92,9 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
   const overtimeDates: Date[] = [];
   for (const weekStartStr in weeklyShifts) {
-    const week = weeklyShifts[weekStartStr].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const week = weeklyShifts[weekStartStr].sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    );
 
     let weeklyHours = 0;
     for (const shift of week) {
@@ -130,7 +131,7 @@ export const calculatePayPeriodSummary = (
   let totalOvertimeHours = 0;
 
   const calculateWeekPay = (start: Date, end: Date) => {
-    const weekShifts = shifts.filter(s => s.date >= start && s.date <= end);
+    const weekShifts = shifts.filter((s) => s.date >= start && s.date <= end);
     if (weekShifts.length === 0) return 0;
 
     let weeklyHours = 0;
@@ -138,7 +139,7 @@ export const calculatePayPeriodSummary = (
     let weeklyPremiumPay = 0;
 
     // First pass: Calculate total hours and sum premium pay
-    weekShifts.forEach(shift => {
+    weekShifts.forEach((shift) => {
       weeklyHours += shift.hours;
       weeklyPremiumPay += shift.premiumPay || 0;
     });
@@ -153,7 +154,8 @@ export const calculatePayPeriodSummary = (
       return weeklyPremiumPay;
     }
 
-    const avgRate = weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
+    const avgRate =
+      weekShifts.reduce((acc, s) => acc + s.rate * s.hours, 0) / weeklyHours;
     const regularPay = regularHours * avgRate;
     const overtimePay = overtimeHours * avgRate * 1.5;
     weeklyIncome = regularPay + overtimePay + weeklyPremiumPay;
@@ -180,6 +182,6 @@ export const getShiftsInPayPeriod = (
 ): Shift[] => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
   return shifts
-    .filter(shift => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
+    .filter((shift) => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };

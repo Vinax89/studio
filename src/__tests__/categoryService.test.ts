@@ -24,9 +24,8 @@ describe("categoryService validation", () => {
   let clearCategories: typeof import("@/lib/categoryService").clearCategories;
 
   beforeAll(async () => {
-    ({ addCategory, getCategories, removeCategory, clearCategories } = await import(
-      "@/lib/categoryService"
-    ));
+    ({ addCategory, getCategories, removeCategory, clearCategories } =
+      await import("@/lib/categoryService"));
   });
 
   beforeEach(() => {
