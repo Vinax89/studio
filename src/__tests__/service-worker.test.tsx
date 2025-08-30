@@ -128,4 +128,34 @@ describe("Service worker registration", () => {
       configurable: true,
     })
   })
+
+  it("does not register when existing registration without controller", async () => {
+    const register = jest.fn().mockResolvedValue(undefined)
+    const getRegistration = jest.fn().mockResolvedValue({})
+    Object.defineProperty(navigator, "serviceWorker", {
+      value: {
+        register,
+        getRegistration,
+        controller: undefined,
+      },
+      configurable: true,
+    })
+    Object.defineProperty(navigator, "onLine", {
+      value: false,
+      configurable: true,
+    })
+
+    render(<ServiceWorker />)
+
+    await act(async () => {})
+
+    expect(register).not.toHaveBeenCalled()
+
+    const nav = navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }
+    delete nav.serviceWorker
+    Object.defineProperty(navigator, "onLine", {
+      value: true,
+      configurable: true,
+    })
+  })
 })
