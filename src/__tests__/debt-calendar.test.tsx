@@ -4,8 +4,68 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { webcrypto } from 'crypto';
 import DebtCalendar from '../components/debts/DebtCalendar';
-import { mockDebts } from '@/lib/data';
 import { ClientProviders } from '@/components/layout/client-providers';
+
+jest.mock('firebase/firestore', () => {
+  const debtsData: any[] = [];
+  let snapshotCb: ((snapshot: { docs: Array<{ data: () => unknown }> }) => void) | null = null;
+  return {
+    getFirestore: jest.fn(),
+    collection: jest.fn(() => ({ withConverter: jest.fn().mockReturnValue({}) })),
+    doc: jest.fn(() => ({ withConverter: jest.fn().mockReturnValue({}) })),
+    onSnapshot: (_: unknown, cb: (snapshot: { docs: Array<{ data: () => unknown }> }) => void) => {
+      snapshotCb = cb;
+      cb({
+        docs: debtsData.map((debt) => ({
+          data: () => debt,
+        })),
+      });
+      return () => {};
+    },
+    setDoc: jest.fn((_ref, data) => {
+      debtsData.push(data);
+      snapshotCb?.({
+        docs: debtsData.map((debt) => ({ data: () => debt })),
+      });
+      return Promise.resolve();
+    }),
+    deleteDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    arrayUnion: jest.fn(),
+    arrayRemove: jest.fn(),
+  };
+});
+
+let mockPathname = '/';
+const pushMock = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
+  usePathname: () => mockPathname,
+}));
+
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: { uid: 'user' },
+    app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
+  },
+  initFirebase: jest.fn(),
+}));
+import { auth as authStub, initFirebase } from '@/lib/firebase';
+
+const onAuthStateChanged = jest.fn(
+  (_auth: unknown, cb: (u: unknown) => void) => {
+    cb(authStub.currentUser);
+    return () => {};
+  }
+);
+
+jest.mock('firebase/auth', () => ({
+  ...jest.requireActual('firebase/auth'),
+  onAuthStateChanged: (
+    ...args: Parameters<typeof onAuthStateChanged>
+  ) => onAuthStateChanged(...args),
+}));
 
 // Mock UI components to avoid Radix and other dependencies
 jest.mock('../components/ui/button', () => ({
@@ -33,25 +93,7 @@ describe('DebtCalendar', () => {
     if (!global.crypto) {
       global.crypto = webcrypto as Crypto;
     }
-    // Mock Firestore
-    jest.mock('firebase/firestore', () => ({
-      getFirestore: jest.fn(),
-      collection: jest.fn(),
-      doc: jest.fn(),
-      onSnapshot: (collectionRef: unknown, callback: (snapshot: { docs: Array<{data: () => unknown}> }) => void) => {
-        callback({
-          docs: mockDebts.map(debt => ({
-            data: () => debt
-          }))
-        });
-        return () => {}; // Unsubscribe function
-      },
-      setDoc: jest.fn(),
-      deleteDoc: jest.fn(),
-      updateDoc: jest.fn(),
-      arrayUnion: jest.fn(),
-      arrayRemove: jest.fn()
-    }));
+    initFirebase();
   });
 
   beforeEach(() => {

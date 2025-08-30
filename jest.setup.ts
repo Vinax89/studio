@@ -5,6 +5,20 @@ import { TextEncoder, TextDecoder } from 'node:util'
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
 
+// Provide a window.matchMedia mock for libraries that expect it
+if (typeof window !== 'undefined' && (window as any).matchMedia === undefined) {
+  (window as any).matchMedia = jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  }))
+}
+
 // Provide a minimal fetch polyfill for tests that expect it
 ;(global as any).fetch = jest.fn(() =>
   Promise.resolve({
