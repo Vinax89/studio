@@ -1,5 +1,5 @@
 function setupSuccessMocks(output: unknown) {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output }));
+  const definePromptMock = jest.fn(() => async () => ({ output }));
   const defineFlowMock = jest.fn(
     (config: unknown, handler: (parsed: unknown) => unknown) => {
       return async (input: unknown) => {
@@ -13,7 +13,9 @@ function setupSuccessMocks(output: unknown) {
       };
     }
   );
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  jest.doMock('@/ai/genkit', () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
 }
 
 describe('calculateCashflow validation', () => {

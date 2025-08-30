@@ -1,9 +1,11 @@
 function setupNoOutputMocks() {
-  const definePromptMock = jest.fn().mockReturnValue(async () => ({ output: undefined }));
+  const definePromptMock = jest.fn(() => async () => ({ output: undefined }));
   const defineFlowMock = jest.fn(
     (_config: unknown, handler: (...args: unknown[]) => unknown) => handler
   );
-  jest.doMock('@/ai/genkit', () => ({ ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock } }));
+  jest.doMock('@/ai/genkit', () => ({
+    ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock },
+  }));
 }
 
 describe('calculateCashflowFlow', () => {

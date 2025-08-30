@@ -18,12 +18,12 @@ export async function fetchInternetTime(tz: string): Promise<Date> {
       signal: controller.signal,
     });
   } catch (err: unknown) {
-      clearTimeout(timeout);
-      if ((err as { name?: string })?.name === "AbortError") {
-        throw new Error(`Request to worldtimeapi.org timed out`);
-      }
-      throw err;
+    clearTimeout(timeout);
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error(`Request to worldtimeapi.org timed out`);
     }
+    throw err;
+  }
   clearTimeout(timeout);
   if (!res.ok) {
     let body: string;
