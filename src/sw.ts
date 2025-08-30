@@ -1,8 +1,8 @@
 /// <reference lib="webworker" />
-import { openDB } from 'idb'
+import { openDB } from "idb"
 
-const DB_NAME = 'offline-db'
-const STORE_NAME = 'transactions'
+const DB_NAME = "offline-db"
+const STORE_NAME = "transactions"
 const MAX_QUEUE_LENGTH = 100
 
 const dbPromise = openDB(DB_NAME, 1, {
@@ -11,12 +11,12 @@ const dbPromise = openDB(DB_NAME, 1, {
   },
 })
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const { request } = event
   if (
-    request.method === 'POST' &&
-    request.url.includes('/api/transactions') &&
-    !request.url.includes('/sync')
+    request.method === "POST" &&
+    request.url.includes("/api/transactions") &&
+    !request.url.includes("/sync")
   ) {
     event.respondWith(
       (async () => {
@@ -30,7 +30,7 @@ self.addEventListener('fetch', (event) => {
           const total = await db.count(STORE_NAME)
           const overflow = total - MAX_QUEUE_LENGTH
           if (overflow > 0) {
-            const tx = db.transaction(STORE_NAME, 'readwrite')
+            const tx = db.transaction(STORE_NAME, "readwrite")
             let cursor = await tx.store.openKeyCursor()
             for (let i = 0; cursor && i < overflow; i++) {
               await cursor.delete()
@@ -40,7 +40,7 @@ self.addEventListener('fetch', (event) => {
           }
           return new Response(JSON.stringify({ offline: true }), {
             status: 202,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
           })
         }
       })()
