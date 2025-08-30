@@ -55,6 +55,14 @@ cache the offset between the device clock and network time. Subsequent calls to
 the API is unreachable. The optional `tz` parameter accepts any IANA timezone
 string and defaults to `DEFAULT_TZ` or the runtime's resolved timezone.
 
+## Currency utilities
+
+`getFxRate(from, to)` retrieves foreign exchange rates and caches them in
+memory for one hour to avoid unnecessary network requests. Use
+`clearFxRateCache()` in tests or development to reset the cache. The helper
+`convertCurrency(amount, from, to)` uses these rates to convert between
+currencies.
+
 ## Upgrading Next.js
 
 This project pins Next.js to a specific version. When upgrading, follow the steps in [docs/next-upgrade.md](docs/next-upgrade.md) to review releases, update the version, and verify the changes.

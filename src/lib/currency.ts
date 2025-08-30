@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+const fxRateCache = new Map<string, { rate: number; ts: number }>();
+const FX_RATE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
 const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
 
 function parseCurrencyCode(code: string): string {
@@ -14,6 +17,14 @@ export async function getFxRate(from: string, to: string): Promise<number> {
   const fromCode = parseCurrencyCode(from);
   const toCode = parseCurrencyCode(to);
   if (fromCode === toCode) return 1;
+
+  const cacheKey = `${fromCode}-${toCode}`;
+  const now = Date.now();
+  const cache = fxRateCache.get(cacheKey);
+  if (cache && now - cache.ts < FX_RATE_TTL_MS) {
+    return cache.rate;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
   let res: Response;
@@ -44,6 +55,7 @@ export async function getFxRate(from: string, to: string): Promise<number> {
   if (typeof rate !== 'number') {
     throw new Error('Invalid FX rate data');
   }
+  fxRateCache.set(cacheKey, { rate, ts: now });
   return rate;
 }
 
@@ -58,4 +70,8 @@ export async function convertCurrency(
 
 export function formatCurrency(amount: number, currency: string, locale = 'en-US'): string {
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+}
+
+export function clearFxRateCache(): void {
+  fxRateCache.clear();
 }
