@@ -139,21 +139,52 @@ export function validateTransactions(
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
-  for (const chunk of chunks) {
+  const batches = chunks.map((chunk) => {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
+    return { batch, chunk };
+  });
 
-    try {
-      await batch.commit();
-    } catch (err) {
-      throw new Error(
-        `Failed to save transactions batch: ${
-          err instanceof Error ? err.message : String(err)
-        }`
-      );
+  const results = await Promise.allSettled(
+    batches.map(({ batch }) => batch.commit())
+  );
+
+  const failures: { index: number; reason: unknown }[] = [];
+  results.forEach((res, index) => {
+    if (res.status === "rejected") {
+      failures.push({ index, reason: res.reason });
     }
+  });
+
+  if (failures.length > 0) {
+    const successes = results
+      .map((res, index) => ({ res, index }))
+      .filter(({ res }) => res.status === "fulfilled")
+      .map(({ index }) => index);
+
+    await Promise.allSettled(
+      successes.map((idx) => {
+        const delBatch = writeBatch(db);
+        batches[idx].chunk.forEach((tx) => {
+          delBatch.delete(doc(colRef, tx.id));
+        });
+        return delBatch.commit();
+      })
+    );
+
+    const failedChunks = failures
+      .map((f) => f.index + 1)
+      .join(", ");
+    const reason = failures
+      .map((f) =>
+        f.reason instanceof Error ? f.reason.message : String(f.reason)
+      )
+      .join("; ");
+    throw new Error(
+      `Failed to save transactions batch(es) ${failedChunks}: ${reason}`
+    );
   }
 }
 

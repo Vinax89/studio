@@ -14,8 +14,13 @@ beforeAll(() => {
 });
 
 const mockSet = jest.fn();
+const mockDelete = jest.fn();
 const mockCommit = jest.fn();
-const mockWriteBatch = jest.fn(() => ({ set: mockSet, commit: mockCommit }));
+const mockWriteBatch = jest.fn(() => ({
+  set: mockSet,
+  delete: mockDelete,
+  commit: mockCommit,
+}));
 const mockDoc = jest.fn(() => ({}));
 const mockCollection = jest.fn(() => ({}));
 
@@ -85,8 +90,37 @@ describe("saveTransactions", () => {
   it("throws detailed error when commit fails", async () => {
     mockCommit.mockRejectedValueOnce(new Error("commit failed"));
     await expect(saveTransactions(transactions)).rejects.toThrow(
-      "Failed to save transactions batch: commit failed"
+      "Failed to save transactions batch(es) 1: commit failed"
     );
+  });
+
+  it("rolls back successfully written batches when a later commit fails", async () => {
+    const manyTransactions = Array.from({ length: 501 }, (_, i) => ({
+      id: String(i),
+      date: "2024-01-01",
+      description: `Test${i}`,
+      amount: i,
+      type: "Income" as const,
+      category: "Misc",
+      currency: "USD",
+      isRecurring: false,
+    }));
+
+    mockCommit
+      .mockResolvedValueOnce(undefined) // first chunk commit
+      .mockRejectedValueOnce(new Error("commit failed")) // second chunk commit
+      .mockResolvedValueOnce(undefined); // rollback delete commit
+
+    await expect(saveTransactions(manyTransactions)).rejects.toThrow(
+      "Failed to save transactions batch(es) 2: commit failed"
+    );
+
+    // initial two write batches + one rollback batch
+    expect(mockWriteBatch).toHaveBeenCalledTimes(3);
+    // delete called for every transaction in successful chunk
+    expect(mockDelete).toHaveBeenCalledTimes(500);
+    // total commits: 2 for writes + 1 for rollback
+    expect(mockCommit).toHaveBeenCalledTimes(3);
   });
 });
 
