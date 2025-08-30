@@ -163,6 +163,36 @@ async function fetchCategories(): Promise<string[]> {
 
 export async function importTransactions(rows: TransactionRowType[]): Promise<void> {
   const categories = await fetchCategories();
+
+  // Determine any categories from the incoming rows that are not yet stored in Firestore
+  const existingSet = new Set(categories.map((c) => c.trim().toLowerCase()));
+  const incomingMap = new Map<string, string>();
+  for (const row of rows) {
+    const trimmed = row.category.trim();
+    incomingMap.set(trimmed.toLowerCase(), trimmed);
+  }
+  const newCategoryEntries = Array.from(incomingMap.entries()).filter(
+    ([key]) => !existingSet.has(key)
+  );
+
+  if (newCategoryEntries.length > 0) {
+    const colRef = collection(db, "categories");
+    const batch = writeBatch(db);
+    newCategoryEntries.forEach(([key, name]) => {
+      batch.set(doc(colRef, key), { name });
+      categories.push(key);
+    });
+    try {
+      await batch.commit();
+    } catch (err) {
+      throw new Error(
+        `Failed to save categories batch: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    }
+  }
+
   const transactions = validateTransactions(rows, categories);
   try {
     await saveTransactions(transactions);
