@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https:",
+    "connect-src 'self' https: wss:",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",

@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
+    "pree2e": "node scripts/check-playwright-deps.js",
+    "e2e": "npx playwright test",
     "prepare": "husky"
   },
   "dependencies": {
@@ -61,6 +63,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",

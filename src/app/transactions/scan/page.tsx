@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Camera, Sparkles, Wand2 } from "lucide-react"
 import Image from "next/image"
+import { logger } from "@/lib/logger"
 
 export default function ScanReceiptPage() {
   const router = useRouter()
@@ -53,7 +54,7 @@ export default function ScanReceiptPage() {
           videoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error("Error accessing camera:", error);
+        logger.error("Error accessing camera:", error);
         setHasCameraPermission(false);
         toast({
           variant: "destructive",
@@ -112,7 +113,7 @@ export default function ScanReceiptPage() {
       setAnalysisResult(result);
       setSuggestedCategory(result.category);
     } catch (error) {
-      console.error("Error analyzing receipt:", error);
+      logger.error("Error analyzing receipt:", error);
       toast({ title: "Analysis Failed", description: "Could not analyze the receipt. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
