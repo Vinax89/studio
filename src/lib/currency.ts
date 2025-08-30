@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const fxRateCache = new Map<string, { rate: number; ts: number }>();
+const fxRateRequests = new Map<string, Promise<number>>();
 const FX_RATE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
@@ -25,38 +26,50 @@ export async function getFxRate(from: string, to: string): Promise<number> {
     return cache.rate;
   }
 
+  const inFlight = fxRateRequests.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
-  let res: Response;
-  try {
-    res = await fetch(
-      `https://api.exchangerate.host/latest?base=${fromCode}&symbols=${toCode}`,
-      { signal: controller.signal },
-    );
-  } catch (err) {
-    if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) {
-      throw new Error(
-        `FX rate request from ${fromCode} to ${toCode} timed out after 5s`,
+  const promise = (async () => {
+    let res: Response;
+    try {
+      res = await fetch(
+        `https://api.exchangerate.host/latest?base=${fromCode}&symbols=${toCode}`,
+        { signal: controller.signal },
       );
+    } catch (err) {
+      if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) {
+        throw new Error(
+          `FX rate request from ${fromCode} to ${toCode} timed out after 5s`,
+        );
+      }
+      throw new Error(
+        `Network error while fetching FX rates: ${
+          err instanceof Error ? err.message : err
+        }`,
+      );
+    } finally {
+      clearTimeout(timeout);
     }
-    throw new Error(
-      `Network error while fetching FX rates: ${
-        err instanceof Error ? err.message : err
-      }`,
-    );
-  } finally {
-    clearTimeout(timeout);
-  }
-  if (!res.ok) {
-    throw new Error('Failed to fetch FX rates');
-  }
-  const data = await res.json();
-  const rate = data?.rates?.[toCode];
-  if (typeof rate !== 'number') {
-    throw new Error('Invalid FX rate data');
-  }
-  fxRateCache.set(cacheKey, { rate, ts: now });
-  return rate;
+    if (!res.ok) {
+      throw new Error('Failed to fetch FX rates');
+    }
+    const data = await res.json();
+    const rate = data?.rates?.[toCode];
+    if (typeof rate !== 'number') {
+      throw new Error('Invalid FX rate data');
+    }
+    fxRateCache.set(cacheKey, { rate, ts: Date.now() });
+    return rate;
+  })().finally(() => {
+    fxRateRequests.delete(cacheKey);
+  });
+
+  fxRateRequests.set(cacheKey, promise);
+  return promise;
 }
 
 export async function convertCurrency(
