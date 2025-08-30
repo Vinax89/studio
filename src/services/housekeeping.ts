@@ -14,6 +14,7 @@ import {
 import { db } from "../lib/firebase";
 import type { Transaction, Debt, Goal } from "../lib/types";
 import { getCurrentTime } from "../lib/internet-time";
+import { logger } from "../lib/logger";
 
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
@@ -111,7 +112,7 @@ export async function runWithRetry<T>(
     try {
       return await op();
     } catch (err) {
-      console.error(`Attempt ${attempt + 1} failed:`, err);
+      logger.error(`Attempt ${attempt + 1} failed:`, err);
       if (!isRetryable(err) || attempt === retries) {
         // Final failure after exhausting retries
         throw err;
