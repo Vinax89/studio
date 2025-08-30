@@ -1,5 +1,6 @@
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { logger } from '../src/lib/logger';
 
 interface RawRow {
   GeoName: string;
@@ -65,6 +66,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  logger.error('update-cost-of-living failed', err);
   process.exit(1);
 });

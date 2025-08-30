@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from './logger';
 
 const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
 
@@ -56,7 +57,7 @@ export async function convertCurrency(
     const rate = await getFxRate(from, to);
     return amount * rate;
   } catch (err) {
-    console.error('Currency conversion failed', err);
+    logger.error('Currency conversion failed', err);
     return amount;
   }
 }

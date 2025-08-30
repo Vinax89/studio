@@ -10,6 +10,7 @@ import {
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { authErrorMessages, DEFAULT_AUTH_ERROR_MESSAGE } from "@/lib/auth-errors"
+import { logger } from "@/lib/logger"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,9 +46,9 @@ export default function LoginPage() {
       const errorMessage = authErrorMessages[authError.code] ?? DEFAULT_AUTH_ERROR_MESSAGE
       // If we don't have a user-friendly message for this error, log it for debugging
       // while showing a generic message to the user to avoid exposing raw error codes.
-      if (!authErrorMessages[authError.code]) {
-        console.error(authError.code, authError.message)
-      }
+        if (!authErrorMessages[authError.code]) {
+          logger.error(authError.code, authError.message)
+        }
       toast({
         title: isLoginView ? "Sign In Failed" : "Sign Up Failed",
         description: errorMessage,

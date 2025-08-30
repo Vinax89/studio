@@ -16,6 +16,9 @@ import type { Transaction, Debt, Goal } from "../lib/types";
 import { getCurrentTime } from "../lib/internet-time";
 import { logger } from "../lib/logger";
 
+const MAX_RETRIES = Number(process.env.HOUSEKEEPING_MAX_RETRIES ?? 1);
+const BASE_DELAY_MS = Number(process.env.HOUSEKEEPING_BASE_DELAY_MS ?? 100);
+
 /**
  * Moves transactions older than the provided cutoff date to an archive collection
  * and removes them from the main transactions collection.
@@ -102,8 +105,8 @@ export async function cleanupDebts(): Promise<void> {
 
 export async function runWithRetry<T>(
   op: () => Promise<T>,
-  retries = 1,
-  delayMs = 100,
+  retries = MAX_RETRIES,
+  delayMs = BASE_DELAY_MS,
   maxDelayMs = Number.POSITIVE_INFINITY,
   jitter = 0,
   isRetryable: (err: unknown) => boolean = () => true

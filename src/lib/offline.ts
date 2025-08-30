@@ -1,4 +1,5 @@
 import { openDB } from "idb"
+import { logger } from "./logger"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
@@ -7,10 +8,10 @@ const DEFAULT_MAX_QUEUE_SIZE = 100
 let dbPromise: ReturnType<typeof openDB> | null = null
 
 export async function getDb() {
-  if (typeof indexedDB === "undefined") {
-    console.error("IndexedDB is not supported in this environment")
-    return null
-  }
+    if (typeof indexedDB === "undefined") {
+      logger.error("IndexedDB is not supported in this environment")
+      return null
+    }
 
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, 1, {
@@ -53,10 +54,10 @@ export async function queueTransaction(
       await txDelete.done
     }
     return true
-  } catch (error) {
-    console.error("queueTransaction error", error)
-    return false
-  }
+    } catch (error) {
+      logger.error("queueTransaction error", error)
+      return false
+    }
 }
 
 /**
@@ -71,10 +72,10 @@ export async function getQueuedTransactions<T = unknown>() {
     const db = await getDb()
     if (!db) return null
     return (await db.getAll(STORE_NAME)) as T[]
-  } catch (error) {
-    console.error("getQueuedTransactions error", error)
-    return null
-  }
+    } catch (error) {
+      logger.error("getQueuedTransactions error", error)
+      return null
+    }
 }
 
 /**
@@ -90,8 +91,8 @@ export async function clearQueuedTransactions() {
     if (!db) return false
     await db.clear(STORE_NAME)
     return true
-  } catch (error) {
-    console.error("clearQueuedTransactions error", error)
-    return false
-  }
+    } catch (error) {
+      logger.error("clearQueuedTransactions error", error)
+      return false
+    }
 }

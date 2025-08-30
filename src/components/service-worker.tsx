@@ -4,6 +4,11 @@ import { useEffect, useRef } from "react"
 import { getQueuedTransactions, clearQueuedTransactions } from "@/lib/offline"
 import { auth } from "@/lib/firebase"
 import { toast } from "@/hooks/use-toast"
+import { logger } from "@/lib/logger"
+
+const BASE_RETRY_DELAY_MS = Number(process.env.NEXT_PUBLIC_SYNC_BASE_DELAY_MS ?? 1000)
+const MAX_RETRIES = Number(process.env.NEXT_PUBLIC_SYNC_MAX_RETRIES ?? 5)
+const MAX_DELAY_MS = 30000
 
 export function ServiceWorker() {
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -16,7 +21,7 @@ export function ServiceWorker() {
     const syncQueued = async () => {
       const queued = await getQueuedTransactions()
       if (queued === null) {
-        console.error("Failed to retrieve queued transactions")
+        logger.error("Failed to retrieve queued transactions")
         return
       }
       if (!queued.length) return
@@ -35,7 +40,7 @@ export function ServiceWorker() {
         const user = auth.currentUser
         const token = user ? await user.getIdToken() : null
         if (!token) {
-          console.error("Cannot sync queued transactions without auth")
+          logger.error("Cannot sync queued transactions without auth")
           return
         }
 
@@ -60,9 +65,11 @@ export function ServiceWorker() {
         if (controller.signal.aborted && !timedOut) return
 
         retryCount.current += 1
-        const delay = Math.min(1000 * 2 ** (retryCount.current - 1), 30000)
+        const baseDelay = BASE_RETRY_DELAY_MS * 2 ** (retryCount.current - 1)
+        const jitter = Math.random() * BASE_RETRY_DELAY_MS
+        const delay = Math.min(baseDelay + jitter, MAX_DELAY_MS)
 
-        if (retryCount.current >= 5 && !notified.current) {
+        if (retryCount.current >= MAX_RETRIES && !notified.current) {
           toast({
             title: "Sync failed",
             description:
@@ -71,7 +78,7 @@ export function ServiceWorker() {
           notified.current = true
         }
 
-        console.error("Failed to sync queued transactions", error)
+        logger.error("Failed to sync queued transactions", error)
         if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
         retryTimeoutId.current = setTimeout(syncQueued, delay)
       } finally {
@@ -93,7 +100,7 @@ export function ServiceWorker() {
         try {
           await navigator.serviceWorker.register("/sw.js")
         } catch (error) {
-          console.error(error)
+          logger.error((error as Error).message, error)
         }
       }
 
