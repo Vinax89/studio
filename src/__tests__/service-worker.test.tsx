@@ -1,5 +1,7 @@
 import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
+import { getQueuedTransactions } from "../lib/offline"
+import { logger } from "../lib/logger"
 
 jest.mock("../lib/offline", () => ({
   getQueuedTransactions: jest
@@ -159,5 +161,79 @@ describe("Service worker registration", () => {
       value: true,
       configurable: true,
     })
+  })
+})
+
+describe("payload size handling", () => {
+  const MAX_BODY_SIZE = 1024 * 1024
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    ;(fetch as jest.Mock).mockReset()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it("skips oversized single transaction", async () => {
+    const largeTx = { data: "a".repeat(MAX_BODY_SIZE) }
+    ;(getQueuedTransactions as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      value: [largeTx],
+    })
+    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {})
+
+    Object.defineProperty(navigator, "onLine", {
+      value: true,
+      configurable: true,
+    })
+
+    render(<ServiceWorker />)
+
+    await act(async () => {
+      jest.runOnlyPendingTimers()
+      await Promise.resolve()
+    })
+
+    expect(fetch).not.toHaveBeenCalled()
+    expect(warnSpy).toHaveBeenCalled()
+    warnSpy.mockRestore()
+  })
+
+  it("splits transactions at 1MB boundary", async () => {
+    const enc = new TextEncoder()
+    const n2 = 10
+    const n1 = MAX_BODY_SIZE - 42 - n2
+    const tx1 = { data: "a".repeat(n1) }
+    const tx2 = { data: "a".repeat(n2) }
+    const tx3 = { data: "a" }
+
+    ;(getQueuedTransactions as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      value: [tx1, tx2, tx3],
+    })
+
+    ;(fetch as jest.Mock).mockResolvedValue({ ok: true, text: async () => "" })
+
+    Object.defineProperty(navigator, "onLine", {
+      value: true,
+      configurable: true,
+    })
+
+    render(<ServiceWorker />)
+
+    await act(async () => {
+      jest.runOnlyPendingTimers()
+      await Promise.resolve()
+    })
+
+    const fetchMock = fetch as jest.Mock
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const body1 = fetchMock.mock.calls[0][1].body
+    const body2 = fetchMock.mock.calls[1][1].body
+    expect(enc.encode(body1).length).toBe(MAX_BODY_SIZE)
+    expect(JSON.parse(body1).transactions).toHaveLength(2)
+    expect(JSON.parse(body2).transactions).toHaveLength(1)
   })
 })
