@@ -9,7 +9,7 @@ import type { DateRange } from "react-day-picker";
 
 describe("payroll utilities", () => {
   test("getPayPeriodStart returns beginning Sunday of pay period", () => {
-    const date = new Date("2024-01-15T12:00:00Z"); // Monday in second week
+    const date = new Date("2024-01-15T12:00:00Z");
     const start = getPayPeriodStart(date);
     expect(start.toISOString().slice(0, 10)).toBe("2024-01-07");
   });
@@ -82,3 +82,4 @@ describe("payroll utilities", () => {
     });
   });
 });
+
