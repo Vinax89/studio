@@ -54,10 +54,26 @@ Create a `.env.local` file by copying `.env.example` and populate it with the re
 | `RETENTION_DAYS` | Number of days to retain files before deletion (default: 30). |
 | `CRON_SECRET` | Shared secret expected in the `X-CRON-SECRET` header for housekeeping runs. |
 | `DEFAULT_TZ` | Optional IANA timezone used when synchronizing time with the network. Defaults to the system timezone. |
-| `ALLOWED_ORIGINS` | Comma-separated list of allowed request origins for CORS. Regex patterns may be wrapped in `/`. |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed request origins for CORS checks. Regex patterns may be wrapped in `/`. Requests from other origins receive HTTP 403. |
 | `LOG_LEVEL` | Minimum log level to output (`info`, `warn`, or `error`). Defaults to `info`. |
 
 Adjust the retention threshold by setting `RETENTION_DAYS` before running the service or updating the scheduled job configuration.
+
+### Configuring allowed origins
+
+Use the `ALLOWED_ORIGINS` variable to restrict which browser origins may call the API. The value is a comma-separated list of exact origins or regular expressions wrapped in `/`.
+
+Examples:
+
+```bash
+# Exact matches for two sites
+ALLOWED_ORIGINS=https://example.com,https://www.example.org
+
+# Allow any subdomain of example.com and one specific partner site
+ALLOWED_ORIGINS=/\\.example\\.com$/,https://partner.com
+```
+
+Requests with an `Origin` header that does not match any entry are rejected with HTTP 403.
 
 ## Internet time helper
 

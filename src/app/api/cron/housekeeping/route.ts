@@ -4,6 +4,7 @@ import { db, initFirebase } from "@/lib/firebase";
 import { getCurrentTime } from "@/lib/internet-time";
 import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
+import { isOriginAllowed } from "@/lib/allowed-origins";
 
 const HEADER_NAME = "x-cron-secret";
 const WINDOW_MS = 60_000; // 1 minute
@@ -17,6 +18,9 @@ export async function resetRateLimit() {
 
 // HTTP GET endpoint invoked by Cloud Scheduler or cron job
 export async function GET(req: Request) {
+  if (!isOriginAllowed(req.headers.get("origin"))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const secret = req.headers.get(HEADER_NAME);
   if (!secret || secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

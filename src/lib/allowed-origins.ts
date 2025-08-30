@@ -29,3 +29,18 @@ export function getAllowedOrigins(env: string | undefined = process.env.ALLOWED_
 }
 
 export const allowedOrigins: AllowedOrigin[] = getAllowedOrigins();
+
+export function isOriginAllowed(
+  origin: string | null,
+  allowed: AllowedOrigin[] = allowedOrigins,
+): boolean {
+  if (!origin) return true;
+  try {
+    const normalized = new URL(origin).origin;
+    return allowed.some((item) =>
+      typeof item === "string" ? item === normalized : item.test(normalized),
+    );
+  } catch {
+    return false;
+  }
+}
