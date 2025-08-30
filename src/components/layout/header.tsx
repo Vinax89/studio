@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { auth, initFirebase } from "@/lib/firebase"
+import { getAuthInstance } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import {
   CircleUser,
@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { logger } from "@/lib/logger"
 
-initFirebase()
+const auth = getAuthInstance()
 
 export default function AppHeader() {
   const router = useRouter()

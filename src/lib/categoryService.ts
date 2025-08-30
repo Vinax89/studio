@@ -3,10 +3,11 @@
 // case-insensitive manner while preserving their original casing for display.
 
 import { doc, getDocs, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
-import { db, categoriesCollection, initFirebase } from "./firebase";
+import { getDb, getCategoriesCollection } from "./firebase";
 import { logger } from "./logger";
 
-initFirebase();
+const db = getDb();
+const categoriesCollection = getCategoriesCollection();
 
 const STORAGE_KEY = "categories";
 

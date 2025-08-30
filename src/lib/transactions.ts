@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
-import { db, initFirebase } from "./firebase";
+import { getDb } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
 
-initFirebase();
+const db = getDb();
 
 export const TransactionPayloadSchema = z.object({
   id: z.string(),

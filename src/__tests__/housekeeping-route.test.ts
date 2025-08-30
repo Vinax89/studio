@@ -13,8 +13,7 @@ jest.mock("@/lib/internet-time", () => ({
   getCurrentTime: jest.fn(),
 }));
 
-jest.mock("@/lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
-import { initFirebase } from "@/lib/firebase";
+jest.mock("@/lib/firebase", () => ({ getDb: jest.fn(() => ({})) }));
 
 beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY = "test";
@@ -23,7 +22,6 @@ beforeAll(() => {
   process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = "test";
   process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "test";
   process.env.NEXT_PUBLIC_FIREBASE_APP_ID = "test";
-  initFirebase();
 });
 
 jest.mock("firebase/firestore", () => {
