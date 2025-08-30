@@ -24,7 +24,6 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle } from "lucide-react"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { addCategory, getCategories } from "@/lib/categoryService"
 import { recordCategoryFeedback } from "@/lib/category-feedback"
 import { logger } from "@/lib/logger"
 import { suggestCategoryAction } from "@/app/actions"
@@ -39,7 +38,6 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
   const [amount, setAmount] = useState("")
   const [type, setType] = useState<"Income" | "Expense">("Expense")
   const [category, setCategory] = useState("")
-  const [categories, setCategories] = useState<string[]>([])
   const [suggestedCategory, setSuggestedCategory] = useState<string | null>(null)
   const userModifiedCategory = useRef(false)
   const [currency, setCurrency] = useState("USD")
@@ -47,13 +45,6 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (open) {
-      setCategories(getCategories())
-    }
-  }, [open])
-
-  useEffect(() => {
-    userModifiedCategory.current = false
     if (!description) {
       setSuggestedCategory(null)
       setCategory("")
@@ -72,7 +63,6 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
           if (!userModifiedCategory.current) {
             setCategory(category)
           }
-          setCategories(addCategory(category))
         }
       } catch (error) {
         logger.error("Failed to suggest category", error)
@@ -87,7 +77,7 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     return () => {
       active = false
     }
-  }, [description])
+  }, [description, toast])
 
   const handleSave = () => {
     const numericAmount = Number(amount)
@@ -105,7 +95,6 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
       category,
       isRecurring,
     })
-    setCategories(addCategory(category))
     if (suggestedCategory && category !== suggestedCategory) {
       recordCategoryFeedback(description, category)
     }
@@ -201,16 +190,8 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
                 setCategory(e.target.value)
                 userModifiedCategory.current = true
               }}
-              list="category-options"
-              className="col-span-3 capitalize"
+              className="col-span-3"
             />
-            {categories.length > 0 && (
-              <datalist id="category-options">
-                {categories.map((cat) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
-            )}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="recurring" className="text-right">
@@ -233,3 +214,4 @@ export function AddTransactionDialog({ onSave }: AddTransactionDialogProps) {
     </Dialog>
   )
 }
+
