@@ -54,6 +54,12 @@ describe("validateTransactions", () => {
     expect(tx.isRecurring).toBe(true);
   });
 
+  it("omits isRecurring when absent", () => {
+    const rows = [{ ...baseRow, amount: "10.00" }];
+    const [tx] = validateTransactions(rows, ["Misc"]);
+    expect(tx).not.toHaveProperty("isRecurring");
+  });
+
   it("parses isRecurring string values", () => {
     const rows = [
       { ...baseRow, amount: "10.00", isRecurring: "true" },

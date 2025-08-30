@@ -107,7 +107,7 @@ export function validateTransactions(
     }
     const parsedAmount = Number(amountString);
 
-    return {
+    const tx: Transaction = {
       id: crypto.randomUUID(),
       date: data.date,
       description: data.description,
@@ -116,13 +116,16 @@ export function validateTransactions(
       category: data.category,
       // Default to USD until currency is provided in import sources
       currency: "USD",
-      isRecurring:
-        data.isRecurring === undefined
-          ? undefined
-          : typeof data.isRecurring === "string"
-            ? data.isRecurring === "true"
-            : data.isRecurring,
     };
+
+    if (data.isRecurring !== undefined) {
+      tx.isRecurring =
+        typeof data.isRecurring === "string"
+          ? data.isRecurring === "true"
+          : data.isRecurring;
+    }
+
+    return tx;
   });
 }
 
