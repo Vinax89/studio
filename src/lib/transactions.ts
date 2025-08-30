@@ -139,21 +139,24 @@ export function validateTransactions(
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   const colRef = collection(db, "transactions");
   const chunks = chunkTransactions(transactions);
+  const commitPromises: Promise<void>[] = [];
+
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
+    commitPromises.push(batch.commit());
+  }
 
-    try {
-      await batch.commit();
-    } catch (err) {
-      throw new Error(
-        `Failed to save transactions batch: ${
-          err instanceof Error ? err.message : String(err)
-        }`
-      );
-    }
+  try {
+    await Promise.all(commitPromises);
+  } catch (err) {
+    throw new Error(
+      `Failed to save transactions batch: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
   }
 }
 
