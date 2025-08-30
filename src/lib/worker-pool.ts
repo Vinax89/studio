@@ -112,11 +112,19 @@ export class WorkerPool<T = unknown, R = unknown> {
    */
   async destroy(): Promise<void> {
     this.destroyed = true
-    await Promise.all(this.workers.map(worker => worker.terminate()))
+
+    for (const [, task] of this.tasks) {
+      task.reject(new Error("Worker pool destroyed"))
+    }
+    this.tasks.clear()
+
     for (const task of this.queue) {
       task.reject(new Error("Worker pool destroyed"))
     }
     this.queue.length = 0
+
+    await Promise.all(this.workers.map(worker => worker.terminate()))
+
     this.idle.length = 0
   }
 }

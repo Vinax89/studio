@@ -12,6 +12,8 @@ jest.mock("node:worker_threads", () => {
           this.emit("error", new Error("boom"))
         } else if (data === "exit") {
           this.emit("exit", 0)
+        } else if (data === "hang") {
+          // Intentionally do nothing to simulate a long-running task
         } else {
           this.emit("message", (data as number) * 2)
         }
@@ -75,6 +77,18 @@ describe("WorkerPool", () => {
 
     await expect(first).rejects.toThrow("Worker pool destroyed")
     await expect(second).rejects.toThrow("Worker pool destroyed")
+
+    await destroyPromise
+  })
+
+  it("rejects active tasks when destroyed", async () => {
+    const pool = new WorkerPool<number | string, number>("fake", 1)
+
+    const active = pool.run("hang")
+
+    const destroyPromise = pool.destroy()
+
+    await expect(active).rejects.toThrow("Worker pool destroyed")
 
     await destroyPromise
   })
