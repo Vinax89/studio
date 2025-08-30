@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { readBodyWithLimit } from "@/lib/http"
 
 /**
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   const { transactions } = parsed.data
 
   try {
-    // TODO: Persist transactions to the database.
+    await saveTransactions(transactions)
     return NextResponse.json({ received: transactions.length })
   } catch {
     return NextResponse.json(
