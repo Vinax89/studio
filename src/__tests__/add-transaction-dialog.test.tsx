@@ -1,8 +1,9 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
+let suggestCategoryMock: jest.Mock;
 const onSave = jest.fn();
 const toastMock = jest.fn();
 
@@ -52,10 +53,23 @@ jest.mock('@/components/ui/switch', () => ({
     />
   ),
 }));
+jest.mock('@/ai/flows/suggest-category', () => ({
+  suggestCategory: (...args: unknown[]) => suggestCategoryMock(...args),
+}));
+
+const originalEnv = process.env.NODE_ENV;
 
 beforeEach(() => {
   onSave.mockClear();
   toastMock.mockClear();
+  suggestCategoryMock = jest.fn().mockResolvedValue({ category: 'Food' });
+  process.env.NODE_ENV = 'development';
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  process.env.NODE_ENV = originalEnv;
+  jest.useRealTimers();
 });
 
 function openAndFill(amount: string) {
@@ -75,4 +89,20 @@ describe('AddTransactionDialog', () => {
       expect(toastMock).toHaveBeenCalled();
     }
   );
+
+  it('fires only one suggestion request when typing rapidly', async () => {
+    render(<AddTransactionDialog onSave={onSave} />);
+    const input = screen.getByLabelText(/description/i);
+    fireEvent.change(input, { target: { value: 'A' } });
+    fireEvent.change(input, { target: { value: 'AB' } });
+    fireEvent.change(input, { target: { value: 'ABC' } });
+
+    expect(suggestCategoryMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+    });
+
+    await waitFor(() => expect(suggestCategoryMock).toHaveBeenCalledTimes(1));
+  });
 });
