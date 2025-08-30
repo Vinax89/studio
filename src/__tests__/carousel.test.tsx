@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Carousel } from '@/components/ui/carousel';
+import type { EmblaCarouselType } from 'embla-carousel-react';
 
 jest.mock('lucide-react', () => ({
   ArrowLeft: () => null,
@@ -9,7 +10,7 @@ jest.mock('lucide-react', () => ({
 
 const onMock = jest.fn();
 const offMock = jest.fn();
-let emblaApi: any;
+let emblaApi: EmblaCarouselType;
 
 function mockUseEmbla() {
   emblaApi = {
@@ -19,7 +20,7 @@ function mockUseEmbla() {
     canScrollNext: jest.fn().mockReturnValue(false),
     scrollPrev: jest.fn(),
     scrollNext: jest.fn(),
-  };
+  } as unknown as EmblaCarouselType;
   return [jest.fn(), emblaApi];
 }
 
