@@ -78,4 +78,12 @@ describe("WorkerPool", () => {
 
     await destroyPromise
   })
+
+  it("rejects new tasks after destruction", async () => {
+    const pool = new WorkerPool<number, number>("fake", 1)
+
+    await pool.destroy()
+
+    await expect(pool.run(3)).rejects.toThrow("Worker pool destroyed")
+  })
 })
