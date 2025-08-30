@@ -67,4 +67,32 @@ describe('currency code validation', () => {
     );
     expect(mockFetch).not.toHaveBeenCalled();
   });
+
+  it('clearFxRateCache cancels and removes pending requests', async () => {
+    const mockFetch = jest
+      .fn()
+      .mockImplementationOnce((_url, { signal }) =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => reject(new Error('aborted')));
+        }),
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ rates: { EUR: 0.9 } }),
+      });
+    (globalThis as { fetch: typeof fetch }).fetch =
+      mockFetch as unknown as typeof fetch;
+
+    const pending = getFxRate('usd', 'eur');
+
+    clearFxRateCache();
+
+    await expect(pending).rejects.toThrow(
+      'FX rate request from USD to EUR timed out after 5s',
+    );
+
+    const rate = await getFxRate('usd', 'eur');
+    expect(rate).toBe(0.9);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
 });

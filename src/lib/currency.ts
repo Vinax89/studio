@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 const fxRateCache = new Map<string, { rate: number; ts: number }>();
-const fxRateRequests = new Map<string, Promise<number>>();
+const fxRateRequests = new Map<
+  string,
+  { promise: Promise<number>; controller: AbortController }
+>();
 const FX_RATE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
@@ -28,7 +31,7 @@ export async function getFxRate(from: string, to: string): Promise<number> {
 
   const inFlight = fxRateRequests.get(cacheKey);
   if (inFlight) {
-    return inFlight;
+    return inFlight.promise;
   }
 
   const controller = new AbortController();
@@ -68,7 +71,7 @@ export async function getFxRate(from: string, to: string): Promise<number> {
     fxRateRequests.delete(cacheKey);
   });
 
-  fxRateRequests.set(cacheKey, promise);
+  fxRateRequests.set(cacheKey, { promise, controller });
   return promise;
 }
 
@@ -87,4 +90,6 @@ export function formatCurrency(amount: number, currency: string, locale = 'en-US
 
 export function clearFxRateCache(): void {
   fxRateCache.clear();
+  fxRateRequests.forEach(({ controller }) => controller.abort());
+  fxRateRequests.clear();
 }
