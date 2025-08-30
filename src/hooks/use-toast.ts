@@ -7,6 +7,7 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { getRandomId } from "@/lib/random-id"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 5000
@@ -16,10 +17,6 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-}
-
-function genId() {
-  return crypto.randomUUID()
 }
 
 type Action =
@@ -136,7 +133,7 @@ function dismissToast(toastId?: string) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  const id = genId()
+  const id = getRandomId()
 
   const update = (props: ToasterToast) =>
     dispatch({
