@@ -17,12 +17,28 @@ interface RegionCostBreakdown {
 
 async function fetchRpp(year: number, apiKey: string) {
   const url = `https://apps.bea.gov/api/data/?UserID=${apiKey}&method=GetData&dataset=RegionalPriceParities&TableName=RPP&LineCode=1&GeoFIPS=STATE&Year=${year}&ResultFormat=JSON`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5_000);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) {
+      throw new Error(`Request failed: ${res.status}`);
+    }
+    const data = await res.json();
+    const rows = data?.BEAAPI?.Results?.Data;
+    if (
+      !Array.isArray(rows) ||
+      !rows.every(
+        (r: any) =>
+          typeof r.GeoName === 'string' && typeof r.DataValue === 'string'
+      )
+    ) {
+      throw new Error('Unexpected response format');
+    }
+    return rows as RawRow[];
+  } finally {
+    clearTimeout(timeout);
   }
-  const data = await res.json();
-  return data.BEAAPI.Results.Data as RawRow[];
 }
 
 async function main() {
