@@ -20,4 +20,4 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!;
 export const FUNCTIONS_REGION = process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1';
-export const FUNCTIONS_ORIGIN = process.env.NEXT_PUBLIC_FUNCTIONS_ORIGIN ?? `https://${FUNCTIONS_REGION}-${projectId}.cloudfunctions.net`;
+export const FUNCTIONS_ORIGIN = process.env.NEXT_PUBLIC_FUNCTIONS_ORIGIN ?? '/api';
