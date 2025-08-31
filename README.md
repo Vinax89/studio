@@ -39,7 +39,7 @@ The housekeeping service removes outdated files from Cloud Storage to manage cos
 ### Scheduled deployment
 - Deploy the service with `firebase deploy --only run.housekeeping`.
 - A Cloud Scheduler job triggers the service nightly at 03:00 UTC.
-- Include an `X-CRON-SECRET` header in the job using the `CRON_SECRET` value to authenticate requests.
+- Set a `CRON_SECRET` environment variable and configure the Cloud Scheduler job to send an `X-CRON-SECRET` header with the same value to authenticate requests and prevent unauthorized triggers.
 - Update the schedule in the Firebase console if a different cadence is required.
 - The endpoint enforces a rate limit and rejects rapid repeated calls with HTTP 429.
 
