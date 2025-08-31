@@ -31,6 +31,10 @@ async function requireUser(req: any): Promise<string> {
 function toUSD(n: number) { return Math.round(n * 100) / 100; }
 
 export const taxYearSummary = onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    res.set('Allow', 'POST').status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
   try {
     const uid = await requireUser(req);
     const year = Number(req.body?.year || req.query?.year || new Date().getUTCFullYear());
@@ -78,6 +82,10 @@ export const taxYearSummary = onRequest(async (req, res) => {
 });
 
 export const taxYearCsv = onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    res.set('Allow', 'POST').status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
   try {
     const uid = await requireUser(req);
     const year = Number(req.body?.year || req.query?.year || new Date().getUTCFullYear());

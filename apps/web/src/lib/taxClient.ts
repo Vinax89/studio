@@ -14,9 +14,13 @@ export async function apiTaxSummary(year: number) {
 }
 
 export async function downloadTaxCsv(year: number) {
-  const res = await fetch(`${FUNCTIONS_ORIGIN}/taxYearCsv?year=${year}`, {
+  const res = await fetch(`${FUNCTIONS_ORIGIN}/taxYearCsv`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${await idToken()}` },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${await idToken()}`
+    },
+    body: JSON.stringify({ year }),
   });
   if (!res.ok) throw new Error(await res.text());
   const blob = await res.blob();
