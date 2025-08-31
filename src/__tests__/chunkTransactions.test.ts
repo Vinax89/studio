@@ -6,4 +6,12 @@ describe("chunkTransactions", () => {
       /chunkSize must be greater than 0/
     );
   });
+
+  it("splits large arrays into default-size chunks", () => {
+    const arr = Array.from({ length: 1500 }, (_, i) => i);
+    const chunks = chunkTransactions(arr);
+    expect(chunks).toHaveLength(3);
+    chunks.forEach((chunk) => expect(chunk).toHaveLength(500));
+    expect(chunks.flat()).toEqual(arr);
+  });
 });
