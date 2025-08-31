@@ -6,7 +6,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { defineSecret } from 'firebase-functions/params';
 import * as logger from 'firebase-functions/logger';
 import * as admin from 'firebase-admin';
-import crypto from 'node:crypto';
+import crypto from 'crypto';
 import { KeyManagementServiceClient } from '@google-cloud/kms';
 import {
   Configuration,

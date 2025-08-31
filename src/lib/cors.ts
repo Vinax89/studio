@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { AllowedOrigin, allowedOrigins } from "./allowed-origins";
+import type { AllowedOrigin } from "./allowed-origins";
+import { allowedOrigins } from "./allowed-origins";
 
 function isAllowed(origin: string, allowed: AllowedOrigin[]): boolean {
   return allowed.some((o) =>
