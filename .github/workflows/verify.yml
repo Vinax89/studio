@@ -13,6 +13,8 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
+      - name: Install web
+        run: npm --prefix apps/web ci
       - name: Placeholder check
         run: node scripts/check-placeholders.mjs
       - name: Type check web
