@@ -1,10 +1,10 @@
 # Security Headers
 
-This project defines security headers in `next.config.ts` for all routes. Any additional routes or middleware must continue to apply these headers.
+This project defines security headers in middleware for all routes. Any additional routes or middleware must continue to apply these headers.
 
 ## Required Headers
 
-- **Content-Security-Policy**: `default-src 'self'; script-src 'self' 'nonce-<nonce>'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https: wss:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`
+- **Content-Security-Policy**: `default-src 'self'; script-src 'self' 'nonce-<nonce>' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`
 - **X-Frame-Options**: `DENY`
 - **X-Content-Type-Options**: `nosniff`
 - **Referrer-Policy**: `strict-origin-when-cross-origin`
