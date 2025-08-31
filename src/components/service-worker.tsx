@@ -16,6 +16,8 @@ export function ServiceWorker() {
   const abortController = useRef<AbortController | null>(null)
 
   useEffect(() => {
+    let isUnmounted = false
+
     const syncQueued = async () => {
       const queuedResult = await getQueuedTransactions()
       if (!queuedResult.ok) {
@@ -63,11 +65,13 @@ export function ServiceWorker() {
         }
         retryCount.current = 0
         notified.current = false
+        abortController.current = null
       } catch (error) {
         if (controller.signal.aborted && !timedOut) return
 
         retryCount.current += 1
-        const delay = Math.min(1000 * 2 ** (retryCount.current - 1), 30000)
+        const baseDelay = Math.min(1000 * 2 ** (retryCount.current - 1), 30000)
+        const delay = baseDelay * (1 + Math.random())
 
         if (retryCount.current >= 5 && !notified.current) {
           toast({
@@ -80,7 +84,9 @@ export function ServiceWorker() {
 
         logger.error("Failed to sync queued transactions", error)
         if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
-        retryTimeoutId.current = setTimeout(syncQueued, delay)
+        if (!isUnmounted) {
+          retryTimeoutId.current = setTimeout(syncQueued, delay)
+        }
       } finally {
         clearTimeout(timeoutId)
       }
@@ -123,6 +129,7 @@ export function ServiceWorker() {
     registerAndListen()
 
     return () => {
+      isUnmounted = true
       window.removeEventListener("online", handleOnline)
       if (debounceId.current) clearTimeout(debounceId.current)
       if (retryTimeoutId.current) clearTimeout(retryTimeoutId.current)
