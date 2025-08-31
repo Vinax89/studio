@@ -19,6 +19,19 @@ const configuration = new Configuration({
 const plaid = new PlaidApi(configuration);
 const db = admin.firestore();
 
+function withCors(handler: (req: any, res: any) => Promise<void> | void) {
+  return async (req: any, res: any) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    if (req.method === 'OPTIONS') {
+      res.status(204).send('');
+      return;
+    }
+    await handler(req, res);
+  };
+}
+
 function extractToken(req: any): string {
   const hdr = req.headers.authorization || '';
   if (!hdr.startsWith('Bearer ')) throw new Error('Unauthorized');
@@ -31,7 +44,7 @@ async function currentUid(req: any): Promise<string> {
   return decoded.uid;
 }
 
-export const createLinkToken = onRequest(async (req, res) => {
+export const createLinkToken = onRequest(withCors(async (req, res) => {
   try {
     const uid = await currentUid(req);
     const resp = await plaid.linkTokenCreate({
@@ -45,9 +58,9 @@ export const createLinkToken = onRequest(async (req, res) => {
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
-});
+}));
 
-export const exchangePublicToken = onRequest(async (req, res) => {
+export const exchangePublicToken = onRequest(withCors(async (req, res) => {
   try {
     const uid = await currentUid(req);
     const { public_token } = req.body || {};
@@ -63,9 +76,9 @@ export const exchangePublicToken = onRequest(async (req, res) => {
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
-});
+}));
 
-export const syncTransactions = onRequest(async (req, res) => {
+export const syncTransactions = onRequest(withCors(async (req, res) => {
   try {
     const uid = await currentUid(req);
     const instSnap = await db.collection('institutions').where('user_id', '==', uid).get();
@@ -92,8 +105,8 @@ export const syncTransactions = onRequest(async (req, res) => {
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
-});
+}));
 
-export const plaidWebhook = onRequest(async (_req, res) => {
+export const plaidWebhook = onRequest(withCors(async (_req, res) => {
   res.json({ ok: true });
-});
+}));
