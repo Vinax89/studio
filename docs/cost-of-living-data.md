@@ -7,7 +7,7 @@ This project derives metropolitan cost-of-living multipliers from the [Bureau of
 Run the update script annually after BEA releases new RPP figures:
 
 ```bash
-npx ts-node scripts/update-cost-of-living.ts
+pnpm dlx ts-node scripts/update-cost-of-living.ts
 ```
 
 The script downloads the latest BEA data and regenerates `src/data/costOfLivingYYYY.ts` with RPP multipliers for every U.S. metropolitan statistical area.

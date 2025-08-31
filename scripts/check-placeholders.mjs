@@ -17,7 +17,6 @@ const args = [
   '--',
   '.',
   ':!node_modules',
-  ':!package-lock.json',
   ':!pnpm-lock.yaml',
   ':!yarn.lock',
   ':!scripts/check-placeholders.mjs'
