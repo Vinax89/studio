@@ -23,6 +23,10 @@ let auth: ReturnType<typeof getAuth> | undefined;
 let db: ReturnType<typeof getFirestore> | undefined;
 let categoriesCollection: ReturnType<typeof collection> | undefined;
 
+export const FUNCTIONS_ORIGIN =
+  process.env.NEXT_PUBLIC_FUNCTIONS_ORIGIN ??
+  `https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net`;
+
 
 export function initFirebase() {
   if (app) {

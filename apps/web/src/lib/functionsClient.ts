@@ -1,6 +1,6 @@
 'use client';
 
-import { auth, FUNCTIONS_ORIGIN } from '@/app/src/lib/firebaseClient';
+import { auth, FUNCTIONS_ORIGIN } from '@/lib/firebase';
 
 async function idToken(): Promise<string> {
   const u = auth.currentUser;

@@ -1,8 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/app/src/lib/firebaseClient';
-import { apiTaxSummary, downloadTaxCsv } from '@/app/src/lib/taxClient';
+import { auth } from '@/lib/firebase';
+import { apiTaxSummary, downloadTaxCsv } from '../../lib/taxClient';
 
 function currentYear() { return new Date().getFullYear(); }
 function fmt(n: number) { try { return n.toLocaleString(undefined, { style:'currency', currency:'USD' }); } catch { return `$${n.toFixed(2)}`; } }
