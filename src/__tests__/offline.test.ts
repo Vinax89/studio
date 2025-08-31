@@ -28,6 +28,14 @@ jest.mock("idb", () => {
   }
 })
 
+jest.mock("../lib/offline", () => {
+  const actual = jest.requireActual("../lib/offline")
+  return {
+    ...actual,
+    getQueuedTransactions: jest.fn(actual.getQueuedTransactions),
+  }
+})
+
 import {
   queueTransaction,
   getQueuedTransactions,
@@ -107,9 +115,10 @@ describe("offline fallbacks", () => {
 describe("ServiceWorker", () => {
   it("handles queued transaction retrieval errors gracefully", async () => {
     jest.useFakeTimers()
-    const getQueuedSpy = jest
-      .spyOn(offline, "getQueuedTransactions")
-      .mockResolvedValueOnce({ ok: false, error: new Error("failed") })
+    const getQueuedSpy = (offline.getQueuedTransactions as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      error: new Error("failed"),
+    })
 
     const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 

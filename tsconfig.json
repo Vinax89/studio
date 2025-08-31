@@ -9,9 +9,9 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["apps/web/src/*"]
+      "@/*": ["src/*"]
     },
     "skipLibCheck": true
   },
-  "include": ["apps/web", "packages"]
+  "include": ["src", "packages"]
 }
