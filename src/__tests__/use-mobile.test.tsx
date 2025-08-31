@@ -8,7 +8,7 @@ describe("useIsMobile", () => {
   beforeEach(() => {
     listeners = [];
     window.innerWidth = MOBILE_BREAKPOINT + 100;
-    window.matchMedia = jest.fn().mockImplementation(() => ({
+    window.matchMedia = vi.fn().mockImplementation(() => ({
       matches: window.innerWidth < MOBILE_BREAKPOINT,
       media: "",
       addEventListener: (_event: string, cb: (e: { matches: boolean }) => void) => {

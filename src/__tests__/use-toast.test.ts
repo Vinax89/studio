@@ -3,11 +3,11 @@ import { useToast, toast } from "../hooks/use-toast"
 
 describe("dismissToast", () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   it("schedules removal after dismiss", () => {
@@ -22,7 +22,7 @@ describe("dismissToast", () => {
     expect(result.current.toasts[0].open).toBe(false)
 
     act(() => {
-      jest.runAllTimers()
+      vi.runAllTimers()
     })
 
     expect(result.current.toasts).toHaveLength(0)

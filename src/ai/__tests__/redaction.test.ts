@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import { sanitizeMiddleware } from '../sanitize-middleware'
 import { DATA_URI_REGEX } from '@/lib/data-uri'

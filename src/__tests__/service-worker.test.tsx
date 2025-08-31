@@ -1,18 +1,20 @@
 import { render, act } from "@testing-library/react"
 import { ServiceWorker } from "../components/service-worker"
+import type { Mock } from 'vitest'
+import React from "react"
 
-jest.mock("../lib/offline", () => ({
-  getQueuedTransactions: jest
+vi.mock("../lib/offline", () => ({
+  getQueuedTransactions: vi
     .fn()
     .mockResolvedValue({ ok: true, value: [{ id: 1 }] }),
-  clearQueuedTransactions: jest
+  clearQueuedTransactions: vi
     .fn()
     .mockResolvedValue({ ok: true, value: undefined }),
 }))
 
-jest.mock("../lib/firebase", () => ({
-  auth: { currentUser: { getIdToken: jest.fn().mockResolvedValue("token") } },
-  initFirebase: jest.fn(),
+vi.mock("../lib/firebase", () => ({
+  auth: { currentUser: { getIdToken: vi.fn().mockResolvedValue("token") } },
+  initFirebase: vi.fn(),
 }))
 import { initFirebase } from "../lib/firebase"
 
@@ -26,21 +28,21 @@ beforeAll(() => {
   initFirebase()
 })
 
-jest.mock("../hooks/use-toast", () => ({ toast: jest.fn() }))
+vi.mock("../hooks/use-toast", () => ({ toast: vi.fn() }))
 
 describe("ServiceWorker aborts in-flight sync", () => {
   beforeEach(() => {
-    jest.useFakeTimers()
-    ;(fetch as jest.Mock).mockReset()
+    vi.useFakeTimers()
+    ;(fetch as Mock).mockReset()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   it("aborts fetch on unmount", async () => {
     let signal: AbortSignal | undefined
-    ;(fetch as jest.Mock).mockImplementation(
+    ;(fetch as Mock).mockImplementation(
       (_url: string, options: { signal: AbortSignal }) => {
         signal = options.signal
         return new Promise(() => {})
@@ -55,7 +57,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
     const { unmount } = render(<ServiceWorker />)
 
     await act(async () => {
-      jest.runOnlyPendingTimers()
+      vi.runOnlyPendingTimers()
     })
 
     expect(signal).toBeDefined()
@@ -67,7 +69,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
 
   it("aborts previous fetch when new sync starts", async () => {
     const signals: AbortSignal[] = []
-    ;(fetch as jest.Mock).mockImplementation(
+    ;(fetch as Mock).mockImplementation(
       (_url: string, options: { signal: AbortSignal }) => {
         signals.push(options.signal)
         return new Promise(() => {})
@@ -82,7 +84,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
     render(<ServiceWorker />)
 
     await act(async () => {
-      jest.runOnlyPendingTimers()
+      vi.runOnlyPendingTimers()
     })
 
     expect(signals[0].aborted).toBe(false)
@@ -94,7 +96,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
     expect(signals[0].aborted).toBe(true)
 
     await act(async () => {
-      jest.runOnlyPendingTimers()
+      vi.runOnlyPendingTimers()
     })
 
     expect(signals[1]).toBeDefined()
@@ -105,7 +107,7 @@ describe("ServiceWorker aborts in-flight sync", () => {
 describe("Service worker registration", () => {
   it("registers with module type", async () => {
     Object.defineProperty(navigator, "serviceWorker", {
-      value: { register: jest.fn().mockResolvedValue(undefined) },
+      value: { register: vi.fn().mockResolvedValue(undefined) },
       configurable: true,
     })
     Object.defineProperty(navigator, "onLine", {
@@ -130,9 +132,9 @@ describe("Service worker registration", () => {
   })
 
   it("updates existing registration when controller is missing", async () => {
-    const register = jest.fn().mockResolvedValue(undefined)
-    const update = jest.fn().mockResolvedValue(undefined)
-    const getRegistration = jest.fn().mockResolvedValue({ update })
+    const register = vi.fn().mockResolvedValue(undefined)
+    const update = vi.fn().mockResolvedValue(undefined)
+    const getRegistration = vi.fn().mockResolvedValue({ update })
     Object.defineProperty(navigator, "serviceWorker", {
       value: {
         register,

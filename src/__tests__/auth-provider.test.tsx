@@ -1,24 +1,24 @@
 
-/** @jest-environment jsdom */
+/** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '../components/auth/auth-provider';
 import { ClientProviders } from '@/components/layout/client-providers';
 
 let mockPathname = '/';
-const pushMock = jest.fn();
+const pushMock = vi.fn();
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
   usePathname: () => mockPathname,
 }));
 
-jest.mock('@/lib/firebase', () => ({
+vi.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: null,
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
-  initFirebase: jest.fn(),
+  initFirebase: vi.fn(),
 }));
 import { auth as authStub, initFirebase } from '@/lib/firebase';
 
@@ -34,15 +34,15 @@ beforeAll(() => {
 
 type User = { uid: string } | null;
 let mockUser: User = null;
-const onAuthStateChanged = jest.fn(
+const onAuthStateChanged = vi.fn(
   (_auth: unknown, cb: (u: User) => void) => {
     cb(mockUser);
     return () => {};
   }
 );
 
-jest.mock('firebase/auth', () => ({
-  ...jest.requireActual('firebase/auth'),
+vi.mock('firebase/auth', () => ({
+  ...vi.requireActual('firebase/auth'),
   onAuthStateChanged: (
     ...args: Parameters<typeof onAuthStateChanged>
   ) => onAuthStateChanged(...args),
@@ -54,7 +54,7 @@ function DisplayUser() {
 }
 
 // Mock the ServiceWorker component as it's not relevant to this test
-jest.mock('@/components/service-worker', () => ({
+vi.mock('@/components/service-worker', () => ({
   ServiceWorker: () => null,
 }));
 

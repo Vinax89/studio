@@ -60,4 +60,4 @@ export function getDb(): ReturnType<typeof getFirestore> {
   return db!;
 }
 
-export { app, auth, db, categoriesCollection, getDb };
+export { app, auth, db, categoriesCollection };

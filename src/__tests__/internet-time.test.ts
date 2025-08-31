@@ -3,25 +3,26 @@ import {
   getCurrentTime,
   __resetInternetTimeOffset,
 } from "@/lib/internet-time";
+import type { Mock } from 'vitest'
 
 describe("internet time", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     __resetInternetTimeOffset();
-    (globalThis as { fetch: jest.Mock }).fetch = jest.fn();
+    (globalThis as { fetch: Mock }).fetch = vi.fn();
     delete process.env.DEFAULT_TZ;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("calculates offset and adjusts current time", async () => {
     const deviceNow = new Date("2024-01-01T00:00:00Z").getTime();
-    jest.setSystemTime(deviceNow);
+    vi.setSystemTime(deviceNow);
     const networkTime = new Date(deviceNow + 5000).toISOString();
-    (fetch as jest.Mock).mockResolvedValue({
+    (fetch as Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ datetime: networkTime }),
     });
@@ -29,7 +30,7 @@ describe("internet time", () => {
     const fetched = await fetchInternetTime("Etc/UTC");
     expect(fetched.toISOString()).toBe(networkTime);
 
-    jest.setSystemTime(deviceNow + 1000);
+    vi.setSystemTime(deviceNow + 1000);
     const current = await getCurrentTime("Etc/UTC");
     expect(current.getTime()).toBe(deviceNow + 1000 + 5000);
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -37,8 +38,8 @@ describe("internet time", () => {
 
   it("falls back to device time when fetch fails", async () => {
     const deviceNow = 123456;
-    jest.setSystemTime(deviceNow);
-    (fetch as jest.Mock).mockRejectedValue(new Error("fail"));
+    vi.setSystemTime(deviceNow);
+    (fetch as Mock).mockRejectedValue(new Error("fail"));
 
     const current = await getCurrentTime("Etc/UTC");
     expect(current.getTime()).toBe(deviceNow);
@@ -48,30 +49,30 @@ describe("internet time", () => {
   it("uses environment timezone by default", async () => {
     process.env.DEFAULT_TZ = "Etc/UTC";
     const deviceNow = 0;
-    jest.setSystemTime(deviceNow);
-    (fetch as jest.Mock).mockResolvedValue({
+    vi.setSystemTime(deviceNow);
+    (fetch as Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ datetime: new Date(deviceNow).toISOString() }),
     });
 
     await getCurrentTime();
-    expect((fetch as jest.Mock).mock.calls[0][0]).toContain("/Etc/UTC");
+    expect((fetch as Mock).mock.calls[0][0]).toContain("/Etc/UTC");
   });
 
   it("allows overriding timezone", async () => {
     const deviceNow = 0;
-    jest.setSystemTime(deviceNow);
-    (fetch as jest.Mock).mockResolvedValue({
+    vi.setSystemTime(deviceNow);
+    (fetch as Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ datetime: new Date(deviceNow).toISOString() }),
     });
 
     await getCurrentTime("Asia/Tokyo");
-    expect((fetch as jest.Mock).mock.calls[0][0]).toContain("/Asia/Tokyo");
+    expect((fetch as Mock).mock.calls[0][0]).toContain("/Asia/Tokyo");
   });
 
   it("times out after 5s", async () => {
-    (fetch as jest.Mock).mockImplementation(
+    (fetch as Mock).mockImplementation(
       (_url: string, opts: { signal: AbortSignal }) =>
         new Promise((_resolve, reject) => {
           opts.signal.addEventListener("abort", () => {
@@ -83,12 +84,12 @@ describe("internet time", () => {
     );
 
     const promise = fetchInternetTime("Etc/UTC");
-    jest.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(5000);
     await expect(promise).rejects.toThrow("timed out");
   });
 
   it("throws detailed error for non-200 responses", async () => {
-    (fetch as jest.Mock).mockResolvedValue({
+    (fetch as Mock).mockResolvedValue({
       ok: false,
       status: 500,
       statusText: "Internal Error",

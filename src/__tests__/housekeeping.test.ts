@@ -17,21 +17,21 @@ interface DataStore {
 
 type CollectionName = keyof DataStore;
 
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(() => ({})),
-  getApps: jest.fn(() => []),
-  getApp: jest.fn(() => ({})),
+vi.mock('firebase/app', () => ({
+  initializeApp: vi.fn(() => ({})),
+  getApps: vi.fn(() => []),
+  getApp: vi.fn(() => ({})),
 }));
 
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({})),
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({})),
 }));
 
-jest.mock('../lib/internet-time', () => ({
-  getCurrentTime: jest.fn(async () => new Date(0)),
+vi.mock('../lib/internet-time', () => ({
+  getCurrentTime: vi.fn(async () => new Date(0)),
 }));
 
-jest.mock('firebase/firestore', () => {
+vi.mock('firebase/firestore', () => {
   const dataStore: DataStore = {
     transactions: new Map(),
     transactions_archive: new Map(),
@@ -61,7 +61,7 @@ jest.mock('firebase/firestore', () => {
     ...constraints: QueryConstraint[]
   ) => ({ ...colRef, constraints });
 
-  const getDocs = jest.fn(
+  const getDocs = vi.fn(
     async (q: { name: CollectionName; constraints?: QueryConstraint[] }) => {
       const colName = q.name;
       let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
@@ -116,7 +116,7 @@ jest.mock('firebase/firestore', () => {
     }
   );
 
-  const writeBatch = jest.fn(() => {
+  const writeBatch = vi.fn(() => {
     const ops: Array<{
       type: 'set' | 'delete';
       docRef: { name: CollectionName; id: string };
@@ -129,7 +129,7 @@ jest.mock('firebase/firestore', () => {
       delete: (docRef: { name: CollectionName; id: string }) => {
         ops.push({ type: 'delete', docRef });
       },
-      commit: jest.fn(async () => {
+      commit: vi.fn(async () => {
         for (const op of ops) {
           if (op.type === 'set' && op.data) {
             dataStore[op.docRef.name].set(op.docRef.id, op.data);
@@ -143,7 +143,7 @@ jest.mock('firebase/firestore', () => {
     return batch;
   });
 
-  const addDoc = jest.fn(
+  const addDoc = vi.fn(
     async (colRef: { name: CollectionName }, data: Record<string, unknown>) => {
       const id = Math.random().toString(36).slice(2);
       dataStore[colRef.name].set(id, data);
@@ -152,7 +152,7 @@ jest.mock('firebase/firestore', () => {
   );
 
   return {
-    getFirestore: jest.fn(() => ({})),
+    getFirestore: vi.fn(() => ({})),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     collection: (_db: unknown, name: CollectionName) => ({ name }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -182,7 +182,7 @@ beforeEach(() => {
   for (const col of Object.values(store)) {
     col.clear();
   }
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('housekeeping services', () => {
@@ -358,16 +358,16 @@ describe('housekeeping services', () => {
 
 describe('runWithRetry', () => {
   test('retries with exponential backoff and logs errors', async () => {
-    jest.useFakeTimers();
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
 
-    const op = jest
+    const op = vi
       .fn()
       .mockRejectedValueOnce(new Error('fail1'))
       .mockRejectedValueOnce(new Error('fail2'))
       .mockResolvedValue('ok');
 
-    const loggerSpy = jest
+    const loggerSpy = vi
       .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
@@ -383,7 +383,7 @@ describe('runWithRetry', () => {
       expect.any(Error)
     );
 
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     await Promise.resolve();
 
     expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 2000);
@@ -393,7 +393,7 @@ describe('runWithRetry', () => {
       expect.any(Error)
     );
 
-    await jest.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(2000);
 
     await expect(promise).resolves.toBe('ok');
     expect(op).toHaveBeenCalledTimes(3);
@@ -401,16 +401,16 @@ describe('runWithRetry', () => {
 
     setTimeoutSpy.mockRestore();
     loggerSpy.mockRestore();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('logs final failure before throwing', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
-    const op = jest.fn().mockImplementation(async () => {
+    const op = vi.fn().mockImplementation(async () => {
       throw new Error('fail');
     });
-    const loggerSpy = jest
+    const loggerSpy = vi
       .spyOn(logger, 'error')
       .mockImplementation(() => {});
 
@@ -425,7 +425,7 @@ describe('runWithRetry', () => {
     );
 
     const expectation = expect(promise).rejects.toThrow('fail');
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     await expectation;
     expect(loggerSpy).toHaveBeenNthCalledWith(
       2,
@@ -435,17 +435,17 @@ describe('runWithRetry', () => {
     expect(loggerSpy).toHaveBeenCalledTimes(2);
 
     loggerSpy.mockRestore();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('applies jitter and respects max delay', async () => {
-    jest.useFakeTimers();
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
-    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
 
-    const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
-    const op = jest
+    const op = vi
       .fn()
       .mockRejectedValueOnce(new Error('fail1'))
       .mockResolvedValue('ok');
@@ -455,23 +455,23 @@ describe('runWithRetry', () => {
     await Promise.resolve();
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1050);
 
-    await jest.advanceTimersByTimeAsync(1050);
+    await vi.advanceTimersByTimeAsync(1050);
     await expect(promise).resolves.toBe('ok');
 
     randomSpy.mockRestore();
     setTimeoutSpy.mockRestore();
     loggerSpy.mockRestore();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('throws immediately for non-retryable errors', async () => {
-    jest.useFakeTimers();
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
 
-    const op = jest.fn().mockRejectedValue(new Error('fail'));
-    const isRetryable = jest.fn(() => false);
+    const op = vi.fn().mockRejectedValue(new Error('fail'));
+    const isRetryable = vi.fn(() => false);
 
-    const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
     await expect(
       runWithRetry(op, 3, 1000, 2000, 100, isRetryable)
@@ -482,7 +482,7 @@ describe('runWithRetry', () => {
 
     setTimeoutSpy.mockRestore();
     loggerSpy.mockRestore();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });
 

@@ -22,7 +22,6 @@
       ]
     },
     "types": [
-      "jest",
       "node"
     ],
     "allowJs": true,

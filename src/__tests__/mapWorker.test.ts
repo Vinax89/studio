@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import { Worker } from "node:worker_threads"
 import fs from "node:fs"

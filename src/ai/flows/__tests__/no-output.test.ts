@@ -9,15 +9,15 @@ interface FlowConfig<I, O> {
 type FlowHandler<I, O> = (input: I) => Promise<O>;
 
 function setupNoOutputMocks() {
-  const redactMock = jest.fn(<I>(input: I) => input);
-  const definePromptMock = jest.fn().mockReturnValue(async (input: unknown) => {
+  const redactMock = vi.fn(<I>(input: I) => input);
+  const definePromptMock = vi.fn().mockReturnValue(async (input: unknown) => {
     redactMock(input);
     return { output: undefined };
   });
-  const defineFlowMock = jest.fn(
+  const defineFlowMock = vi.fn(
     <I, O>(_config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => handler
   );
-  jest.doMock('@/ai/genkit', () => ({
+  vi.doMock('@/ai/genkit', () => ({
     ai: {
       definePrompt: definePromptMock,
       defineFlow: defineFlowMock,
@@ -29,7 +29,7 @@ function setupNoOutputMocks() {
 
 describe('calculateCashflowFlow', () => {
   it('throws an error when prompt returns no output', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupNoOutputMocks();
     const input = {
       annualIncome: 50000,
@@ -44,7 +44,7 @@ describe('calculateCashflowFlow', () => {
 
 describe('suggestDebtStrategyFlow', () => {
   it('throws an error when prompt returns no output', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupNoOutputMocks();
     const input = { debts: [] };
     const { suggestDebtStrategy } = await import('@/ai/flows/suggest-debt-strategy');
@@ -55,7 +55,7 @@ describe('suggestDebtStrategyFlow', () => {
 
 describe('suggestCategoryFlow', () => {
   it('throws an error when prompt returns no output', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupNoOutputMocks();
     const input = { description: 'Coffee shop latte' };
     const { suggestCategory } = await import('@/ai/flows/suggest-category');

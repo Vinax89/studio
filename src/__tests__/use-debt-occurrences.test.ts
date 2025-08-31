@@ -120,7 +120,7 @@ describe("useDebtOccurrences", () => {
       dueDate: "2024-01-01",
       recurrence: "weekly",
     };
-    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
     const { occurrences } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),
@@ -145,7 +145,7 @@ describe("useDebtOccurrences", () => {
       dueDate: "2024-01-01",
       recurrence: "weekly",
     };
-    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
     const { occurrences, truncated } = renderUseDebtOccurrences(
       [debt],
       new Date("2024-01-01"),

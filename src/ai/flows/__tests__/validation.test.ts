@@ -12,21 +12,21 @@ interface FlowConfig<I = unknown, O = unknown> {
 type FlowHandler<I = unknown, O = unknown> = (input: I) => O | Promise<O>;
 
 function setupSuccessMocks<O>(output: O) {
-  const redactMock = jest.fn(<I>(input: I) => input);
-  const definePromptMock = jest
+  const redactMock = vi.fn(<I>(input: I) => input);
+  const definePromptMock = vi
     .fn()
     .mockReturnValue(async (input: unknown) => {
       redactMock(input);
       return { output };
     });
-  const defineFlowMock = jest.fn(<I>(config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => {
+  const defineFlowMock = vi.fn(<I>(config: FlowConfig<I, O>, handler: FlowHandler<I, O>) => {
     return async (input: unknown): Promise<O> => {
       const parsedInput = config.inputSchema.parse(input);
       const result = await handler(parsedInput);
       return config.outputSchema.parse(result);
     };
   });
-  jest.doMock('@/ai/genkit', () => ({
+  vi.doMock('@/ai/genkit', () => ({
     ai: { definePrompt: definePromptMock, defineFlow: defineFlowMock, redact: redactMock },
   }));
   return { definePromptMock, defineFlowMock, redactMock };
@@ -34,7 +34,7 @@ function setupSuccessMocks<O>(output: O) {
 
 describe('calculateCashflow validation', () => {
   it('rejects negative annual income', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupSuccessMocks({ grossMonthlyIncome: 0, netMonthlyIncome: 0, analysis: '' });
     const input = { annualIncome: -1, estimatedAnnualTaxes: 0, totalMonthlyDeductions: 0 };
     const { calculateCashflow } = await import('@/ai/flows/calculate-cashflow');
@@ -45,7 +45,7 @@ describe('calculateCashflow validation', () => {
 
 describe('taxEstimation validation', () => {
   it('rejects negative income', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     await expect(
       estimateTax({ income: -1, deductions: 0, location: 'NY', filingStatus: 'single' })
@@ -53,7 +53,7 @@ describe('taxEstimation validation', () => {
   });
 
   it('calculates tax using 2025 brackets', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { estimateTax } = await import('@/ai/flows/tax-estimation');
     const result = await estimateTax({
       income: 80000,
@@ -68,7 +68,7 @@ describe('taxEstimation validation', () => {
 
 describe('suggestDebtStrategy validation', () => {
   it('rejects interest rate over 100', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupSuccessMocks({
       recommendedStrategy: 'snowball',
       strategyReasoning: '',
@@ -95,7 +95,7 @@ describe('suggestDebtStrategy validation', () => {
   });
 
   it('rejects payoff order priority less than 1', async () => {
-    jest.resetModules();
+    vi.resetModules();
     const { redactMock } = setupSuccessMocks({
       recommendedStrategy: 'snowball',
       strategyReasoning: '',

@@ -1,6 +1,6 @@
 import { saveTransactions } from "../lib/transactions";
 
-jest.mock("../lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
+vi.mock("../lib/firebase", () => ({ db: {}, initFirebase: vi.fn() }));
 import { initFirebase } from "../lib/firebase";
 
 beforeAll(() => {
@@ -13,13 +13,13 @@ beforeAll(() => {
   initFirebase();
 });
 
-const mockSet = jest.fn();
-const mockCommit = jest.fn();
-const mockWriteBatch = jest.fn(() => ({ set: mockSet, commit: mockCommit }));
-const mockDoc = jest.fn(() => ({}));
-const mockCollection = jest.fn(() => ({}));
+const mockSet = vi.fn();
+const mockCommit = vi.fn();
+const mockWriteBatch = vi.fn(() => ({ set: mockSet, commit: mockCommit }));
+const mockDoc = vi.fn(() => ({}));
+const mockCollection = vi.fn(() => ({}));
 
-jest.mock("firebase/firestore", () => ({
+vi.mock("firebase/firestore", () => ({
   writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
   doc: (...args: unknown[]) => mockDoc(...args),
   collection: (...args: unknown[]) => mockCollection(...args),
@@ -50,7 +50,7 @@ const transactions = [
 
 describe("saveTransactions", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCommit.mockResolvedValue(undefined);
   });
 
