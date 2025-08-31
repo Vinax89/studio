@@ -118,6 +118,7 @@ describe("ServiceWorker", () => {
     const getQueuedMock = offline.getQueuedTransactions as jest.MockedFunction<
       typeof offline.getQueuedTransactions
     >
+    getQueuedMock.mockClear()
     getQueuedMock.mockResolvedValueOnce({
       ok: false,
       error: new Error("failed"),
