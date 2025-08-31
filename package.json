@@ -1,4 +1,3 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -9,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest",
+    "test": "vitest run",
     "pree2e": "node scripts/check-playwright-deps.js",
     "e2e": "npx playwright test",
     "prepare": "husky"
@@ -67,7 +66,6 @@
     "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
-    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -79,11 +77,11 @@
     "eslint-config-next": "^15.5.2",
     "genkit-cli": "^1.14.1",
     "husky": "^9.1.7",
-    "jest": "^30.1.0",
-    "jest-environment-jsdom": "^30.1.1",
+    "jsdom": "^26.1.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "ts-jest": "^29.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
   }
 }
