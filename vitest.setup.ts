@@ -1,18 +1,17 @@
-import '@testing-library/jest-dom'
-import { jest } from '@jest/globals'
+import '@testing-library/jest-dom/vitest'
+import { vi } from 'vitest'
 import { TextEncoder, TextDecoder } from 'node:util'
 
 // Stub all icons from lucide-react to empty components
-jest.mock(
+vi.mock(
   'lucide-react',
   () => new Proxy({}, { get: () => () => null })
 )
 
 Object.assign(globalThis as any, { TextEncoder, TextDecoder })
 
-
 // Provide a minimal fetch polyfill for tests that expect it
-;(global as any).fetch = jest.fn(() =>
+;(global as any).fetch = vi.fn(() =>
   Promise.resolve({
     json: async () => ({}),
   })
@@ -32,15 +31,15 @@ if (typeof (global as any).Headers === 'undefined') {
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation((query) => ({
+    value: vi.fn().mockImplementation((query) => ({
       matches: false,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   })
 }
@@ -52,3 +51,8 @@ process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test'
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test'
+
+// Provide Jest compatibility for existing tests
+// eslint-disable-next-line no-var
+var jest = vi
+globalThis.jest = vi
