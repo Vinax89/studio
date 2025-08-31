@@ -6,6 +6,7 @@ jest.mock("@/lib/firebase", () => ({
   db: {},
   categoriesCollection: {},
   initFirebase: jest.fn(),
+  getDb: jest.fn(() => ({})),
 }));
 import { initFirebase } from "@/lib/firebase";
 

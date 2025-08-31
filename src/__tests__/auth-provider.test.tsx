@@ -18,7 +18,9 @@ jest.mock('@/lib/firebase', () => ({
     currentUser: null,
     app: { options: { apiKey: 'test' }, name: '[DEFAULT]' },
   },
+  db: {},
   initFirebase: jest.fn(),
+  getDb: jest.fn(() => ({})),
 }));
 import { auth as authStub, initFirebase } from '@/lib/firebase';
 

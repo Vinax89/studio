@@ -12,7 +12,11 @@ jest.mock("@/lib/internet-time", () => ({
   getCurrentTime: jest.fn(),
 }));
 
-jest.mock("@/lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
+jest.mock("@/lib/firebase", () => ({
+  db: {},
+  initFirebase: jest.fn(),
+  getDb: jest.fn(() => ({})),
+}));
 import { initFirebase } from "@/lib/firebase";
 
 const secret = "test-secret";
