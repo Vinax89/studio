@@ -23,9 +23,18 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
         <meta
           httpEquiv="Content-Security-Policy"
-          content={`script-src 'self' 'nonce-${nonce}' 'strict-dynamic';`}
+          content={[
+            "default-src 'self';",
+            `script-src 'self' 'nonce-${nonce}' 'strict-dynamic';`,
+            "style-src 'self' 'unsafe-inline';",
+            "img-src 'self';",
+            "connect-src 'self';",
+            "font-src 'self';",
+            "object-src 'none';",
+          ].join(' ')}
         />
       </head>
       <body
