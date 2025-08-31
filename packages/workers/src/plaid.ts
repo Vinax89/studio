@@ -31,7 +31,19 @@ async function currentUid(req: any): Promise<string> {
   return decoded.uid;
 }
 
+function handleCors(req: any, res: any): boolean {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Authorization,Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.status(204).end();
+    return true;
+  }
+  return false;
+}
+
 export const createLinkToken = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const resp = await plaid.linkTokenCreate({
@@ -48,6 +60,7 @@ export const createLinkToken = onRequest(async (req, res) => {
 });
 
 export const exchangePublicToken = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const { public_token } = req.body || {};
@@ -66,6 +79,7 @@ export const exchangePublicToken = onRequest(async (req, res) => {
 });
 
 export const syncTransactions = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const instSnap = await db.collection('institutions').where('user_id', '==', uid).get();
@@ -94,6 +108,7 @@ export const syncTransactions = onRequest(async (req, res) => {
   }
 });
 
-export const plaidWebhook = onRequest(async (_req, res) => {
+export const plaidWebhook = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   res.json({ ok: true });
 });
