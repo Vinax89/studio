@@ -58,12 +58,16 @@ async function decrypt(ciphertextB64: string): Promise<string> {
 }
 
 function txFingerprint(accountId: string, amount: number, merchant: string | undefined, dateISO: string) {
-  return crypto.createHash('sha1').update(`${accountId}|${amount.toFixed(2)}|${merchant ?? ''}|${dateISO}`).digest('hex');
+  return crypto
+    .createHash('sha256')
+    .update(`${accountId}|${amount.toFixed(2)}|${merchant ?? ''}|${dateISO}`)
+    .digest('hex');
 }
 
 export const createLinkToken = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV] }, async (req, res) => {
   try {
-    if (handlePreflight(req, res)) return; setCors(res, req.headers?.origin);
+    if (handlePreflight(req, res)) return;
+    setCors(res, req.headers?.origin);
     const uid = await verifyAuth(req);
     const client = plaidClient();
     const resp = await client.linkTokenCreate({
@@ -71,48 +75,77 @@ export const createLinkToken = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECR
       client_name: 'NurseFinAI',
       products: [Products.Transactions],
       country_codes: [CountryCode.Us],
-      language: 'en'
+      language: 'en',
     });
     res.json({ link_token: resp.data.link_token });
-  } catch (e: any) { logger.error('createLinkToken error', e); res.status(400).json({ error: e.message }); }
+  } catch (e: any) {
+    logger.error('createLinkToken error', { message: (e as Error).message });
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 export const exchangePublicToken = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, KMS_KEY] }, async (req, res) => {
   try {
-    if (handlePreflight(req, res)) return; setCors(res, req.headers?.origin);
+    if (handlePreflight(req, res)) return;
+    setCors(res, req.headers?.origin);
     const uid = await verifyAuth(req);
-    const publicToken = req.body?.public_token as string; if (!publicToken) throw new Error('public_token required');
+    const publicToken = req.body?.public_token as string;
+    if (!publicToken) throw new Error('public_token required');
 
     const client = plaidClient();
     const exch = await client.itemPublicTokenExchange({ public_token: publicToken });
-    const accessToken = exch.data.access_token; const itemId = exch.data.item_id;
+    const accessToken = exch.data.access_token;
+    const itemId = exch.data.item_id;
 
     const cipher = await encrypt(accessToken);
     const instRef = db.collection('institutions').doc(itemId);
-    await instRef.set({ user_id: uid, plaid_access_token: cipher, status: 'active', webhook_ver: 'v2', created_at: admin.firestore.FieldValue.serverTimestamp(), cursor: null });
+    await instRef.set({
+      user_id: uid,
+      plaid_access_token: cipher,
+      status: 'active',
+      webhook_ver: 'v2',
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      cursor: null,
+    });
 
     const accs = await client.accountsGet({ access_token: accessToken });
     const batch = db.batch();
     for (const a of accs.data.accounts) {
-      batch.set(db.collection('accounts').doc(a.account_id), {
-        user_id: uid, item_id: itemId, name: a.name, official_name: a.official_name ?? null, mask: a.mask ?? null,
-        type: a.type, subtype: a.subtype ?? null, currency: a.balances.iso_currency_code ?? 'USD',
-        current_balance: a.balances.current ?? null, available_balance: a.balances.available ?? null,
-        last_sync_at: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+      batch.set(
+        db.collection('accounts').doc(a.account_id),
+        {
+          user_id: uid,
+          item_id: itemId,
+          name: a.name,
+          official_name: a.official_name ?? null,
+          mask: a.mask ?? null,
+          type: a.type,
+          subtype: a.subtype ?? null,
+          currency: a.balances.iso_currency_code ?? 'USD',
+          current_balance: a.balances.current ?? null,
+          available_balance: a.balances.available ?? null,
+          last_sync_at: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
     }
     await batch.commit();
 
     await runSync(uid, itemId, accessToken);
     res.json({ item_id: itemId, accounts: accs.data.accounts.length });
-  } catch (e: any) { logger.error('exchangePublicToken error', e); res.status(400).json({ error: e.message }); }
+  } catch (e: any) {
+    logger.error('exchangePublicToken error', { message: (e as Error).message });
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 export const syncItemNow = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, KMS_KEY] }, async (req, res) => {
   try {
-    if (handlePreflight(req, res)) return; setCors(res, req.headers?.origin);
+    if (handlePreflight(req, res)) return;
+    setCors(res, req.headers?.origin);
     const uid = await verifyAuth(req);
-    const itemId = (req.query.item_id as string) || req.body?.item_id; if (!itemId) throw new Error('item_id required');
+    const itemId = (req.query.item_id as string) || req.body?.item_id;
+    if (!itemId) throw new Error('item_id required');
 
     const inst = await db.collection('institutions').doc(itemId).get();
     if (!inst.exists || inst.get('user_id') !== uid) throw new Error('not found');
@@ -120,7 +153,10 @@ export const syncItemNow = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET, 
     const token = await decrypt(inst.get('plaid_access_token'));
     await runSync(uid, itemId, token);
     res.json({ ok: true });
-  } catch (e: any) { logger.error('syncItemNow error', e); res.status(400).json({ error: e.message }); }
+  } catch (e: any) {
+    logger.error('syncItemNow error', { message: (e as Error).message });
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 export const plaidWebhook = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, KMS_KEY] }, async (req, res) => {
@@ -128,7 +164,7 @@ export const plaidWebhook = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET,
     // No CORS here; Plaid calls server-to-server
     const body = req.body || {}; const itemId = body.item_id as string | undefined;
     const type = body.webhook_type as string; const code = body.webhook_code as string;
-    logger.info('Plaid webhook', { type, code, itemId });
+    logger.info('Plaid webhook', { type, code });
 
     if (type === 'TRANSACTIONS' && code === 'SYNC_UPDATES_AVAILABLE' && itemId) {
       const inst = await db.collection('institutions').doc(itemId).get();
@@ -138,7 +174,10 @@ export const plaidWebhook = onRequest({ secrets: [PLAID_CLIENT_ID, PLAID_SECRET,
       }
     }
     res.status(200).send('ok');
-  } catch (e: any) { logger.error('webhook error', e); res.status(200).send('ok'); }
+  } catch (e: any) {
+    logger.error('webhook error', { message: (e as Error).message });
+    res.status(200).send('ok');
+  }
 });
 
 async function runSync(uid: string, itemId: string, accessToken: string) {
@@ -192,14 +231,17 @@ async function runSync(uid: string, itemId: string, accessToken: string) {
     addedCount += resp.data.added.length; modifiedCount += resp.data.modified.length; removedCount += resp.data.removed.length;
     cursor = resp.data.next_cursor; hasMore = !!resp.data.has_more;
   }
-  logger.info('sync complete', { itemId, addedCount, modifiedCount, removedCount });
+  logger.info('sync complete', { addedCount, modifiedCount, removedCount });
 }
 
-export const nightlySafetySync = onSchedule('0 5 * * *', async () => {
+export const nightlySafetySync = onSchedule(
+  { schedule: '0 5 * * *', secrets: [PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, KMS_KEY] },
+  async () => {
   const insts = await db.collection('institutions').where('status', '==', 'active').get();
   for (const docSnap of insts.docs) {
     const uid = docSnap.get('user_id');
     const token = await decrypt(docSnap.get('plaid_access_token'));
     await runSync(uid, docSnap.id, token);
   }
-});
+  },
+);
