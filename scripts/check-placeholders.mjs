@@ -16,15 +16,15 @@ for (const file of files) {
   const lines = content.split(/\r?\n/);
   lines.forEach((line, idx) => {
     if (ellipsisRegex.test(line)) {
-      offenders.push(`${file}:${idx + 1}: ${line.trim()}`);
+      offenders.push({ file, line: idx + 1 });
     }
   });
 }
 
 if (offenders.length) {
   console.error('Found standalone ellipsis placeholders:');
-  for (const o of offenders) {
-    console.error(` - ${o}`);
+  for (const { file, line } of offenders) {
+    console.error(' - %s:%d', file, line);
   }
   process.exit(1);
 }
