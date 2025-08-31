@@ -1,4 +1,5 @@
-import { openDB } from "./idb.js"
+// Use the locally bundled idb library instead of a CDN version
+import { openDB } from "/idb.js"
 
 const DB_NAME = "offline-db"
 const STORE_NAME = "transactions"
