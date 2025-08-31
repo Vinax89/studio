@@ -1,4 +1,5 @@
 export {
+  type User,
   type Transaction,
   type Goal,
   type ChartPoint,
