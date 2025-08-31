@@ -1,20 +1,20 @@
 This is a NextJS starter in Firebase Studio.
-This project uses npm as the canonical package manager. Use npm for all dependency management tasks.
+This project uses pnpm as the canonical package manager. Use pnpm for all dependency management tasks.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
-- `npm run dev` – start the development server.
-- On Cloud Workstations, run `PORT=6000 npm run dev` to match the reserved domain.
-- `npm run lint` – run ESLint for code quality.
-- `npm test` – run unit tests with Jest.
-- `npm run e2e` – run Playwright end-to-end tests. Run `npx playwright install-deps` first to install required system dependencies.
-- Run `npm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
+- `pnpm dev` – start the development server.
+- On Cloud Workstations, run `PORT=6000 pnpm dev` to match the reserved domain.
+- `pnpm lint` – run ESLint for code quality.
+- `pnpm test` – run unit tests with Jest.
+- `pnpm e2e` – run Playwright end-to-end tests. Run `pnpm exec playwright install-deps` first to install required system dependencies.
+- Run `pnpm install` to install Husky pre-commit hooks that run tests and reject commits containing standalone '...' lines.
 - `node scripts/update-cost-of-living.ts` – refresh cost of living dataset from BEA.
 
 ## Package manager
 
-This project uses **npm** exclusively. Install dependencies with `npm ci` and
-commit changes to `package-lock.json`. Yarn and pnpm are not supported—the
+This project uses **pnpm** exclusively. Install dependencies with `pnpm install --frozen-lockfile` and
+commit changes to `pnpm-lock.yaml`. Yarn and npm are not supported—the
 `preinstall` hook fails if another package manager is detected. The repository's
 `.npmrc` enables `engine-strict=true` to enforce the Node version specified in
 `package.json`.
@@ -32,9 +32,9 @@ Values outside these patterns are ignored to prevent unsafe CSS injection.
 The housekeeping service removes outdated files from Cloud Storage to manage costs and data retention.
 
 ### Running locally
-1. Install dependencies with `npm install`.
+1. Install dependencies with `pnpm install`.
 2. Provide the environment variables listed below.
-3. Start the service with `npm run housekeeping` or `node scripts/housekeeping.ts`.
+3. Start the service with `pnpm run housekeeping` or `node scripts/housekeeping.ts`.
 
 ### Scheduled deployment
 - Deploy the service with `firebase deploy --only run.housekeeping`.

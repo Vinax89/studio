@@ -8,8 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci
-      - name: Check package-lock.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install
+      - name: Check pnpm-lock.yaml
         run: |
-          git status --porcelain package-lock.json
-          test -z "$(git status --porcelain package-lock.json)"
+          git status --porcelain pnpm-lock.yaml
+          test -z "$(git status --porcelain pnpm-lock.yaml)"

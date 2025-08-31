@@ -3,15 +3,19 @@
   "name": "nextn",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "preinstall": "node scripts/ensure-npm.js",
+    "preinstall": "node scripts/ensure-pnpm.js",
     "dev": "next dev -p ${PORT:-9000}",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "pree2e": "node scripts/check-playwright-deps.js",
-    "e2e": "npx playwright test",
+    "e2e": "pnpm exec playwright test",
     "prepare": "husky"
   },
   "dependencies": {

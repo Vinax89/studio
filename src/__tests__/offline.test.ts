@@ -131,7 +131,7 @@ describe("ServiceWorker", () => {
     const fetchMock = jest.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch
 
-    const { ServiceWorker } = require("../components/service-worker")
+    const { ServiceWorker } = await import("../components/service-worker")
     render(React.createElement(ServiceWorker))
 
     await act(async () => {
