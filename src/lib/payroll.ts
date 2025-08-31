@@ -92,7 +92,9 @@ export const calculateOvertimeDates = (shifts: Shift[]): Date[] => {
 
   const overtimeDates: Date[] = [];
   for (const weekStartStr in weeklyShifts) {
-    const week = weeklyShifts[weekStartStr].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const week = (weeklyShifts[weekStartStr] ?? []).sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    );
 
     let weeklyHours = 0;
     for (const shift of week) {
@@ -181,8 +183,10 @@ export const getShiftsInPayPeriod = (
   payPeriod: DateRange | undefined
 ): Shift[] => {
   if (!payPeriod || !payPeriod.from || !payPeriod.to) return [];
+  const from = payPeriod.from;
+  const to = payPeriod.to;
   return shifts
-    .filter(shift => shift.date >= payPeriod.from && shift.date <= payPeriod.to)
+    .filter(shift => shift.date >= from && shift.date <= to)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
-import { randomUUID } from "node:crypto";
+import { randomUUID } from "crypto";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
@@ -138,12 +138,13 @@ export function validateTransactions(
  * @remarks Writes to Firestore and performs network I/O.
  */
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
-  const colRef = collection(db, "transactions");
+  const dbRef = db!;
+  const colRef = collection(dbRef, "transactions");
   const chunks = chunkTransactions(transactions);
   const commitPromises: Promise<void>[] = [];
 
   for (const chunk of chunks) {
-    const batch = writeBatch(db);
+    const batch = writeBatch(dbRef);
     chunk.forEach((tx) => {
       batch.set(doc(colRef, tx.id), tx);
     });
@@ -172,7 +173,7 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
  */
 async function fetchCategories(): Promise<string[]> {
   try {
-    const snapshot = await getDocs(collection(db, "categories"));
+    const snapshot = await getDocs(collection(db!, "categories"));
     return snapshot.docs.map((doc) => doc.id);
   } catch (err) {
     throw new Error(

@@ -13,7 +13,7 @@ export function useDebts() {
     const unsub = onSnapshot(
       debtsCollection,
       snap => {
-        const items = snap.docs.map(d => d.data());
+        const items = snap.docs.map(d => ({ ...d.data(), id: d.id }));
         setDebts(items);
         setError(null);
       },

@@ -64,7 +64,7 @@ export const mockDebts: Debt[] = [
         currentAmount: 500,
         interestRate: 0,
         minimumPayment: 500, 
-        dueDate: new Date().toISOString().split('T')[0], 
+        dueDate: new Date().toISOString().split('T')[0]!,
         recurrence: "none", 
         autopay: false, 
         color: "#a5b4fc" 
