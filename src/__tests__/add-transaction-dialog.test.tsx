@@ -1,18 +1,18 @@
-/** @jest-environment jsdom */
+/** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
-const onSave = jest.fn();
-const toastMock = jest.fn();
-const recordCategoryFeedbackMock = jest.fn();
-const loggerErrorMock = jest.fn();
-const suggestCategoryMock = jest.fn();
+const onSave = vi.fn();
+const toastMock = vi.fn();
+const recordCategoryFeedbackMock = vi.fn();
+const loggerErrorMock = vi.fn();
+const suggestCategoryMock = vi.fn();
 
-jest.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastMock }),
 }));
-jest.mock('@/components/ui/dialog', () => {
+vi.mock('@/components/ui/dialog', () => {
   const Mock = ({ children }: React.PropsWithChildren) => <div>{children}</div>;
   return {
     Dialog: Mock,
@@ -24,7 +24,7 @@ jest.mock('@/components/ui/dialog', () => {
     DialogTitle: Mock,
   };
 });
-jest.mock('@/components/ui/select', () => {
+vi.mock('@/components/ui/select', () => {
   const Mock = ({ children }: React.PropsWithChildren) => <div>{children}</div>;
   return {
     Select: Mock,
@@ -39,7 +39,7 @@ jest.mock('@/components/ui/select', () => {
     SelectValue: Mock,
   };
 });
-jest.mock('@/components/ui/switch', () => ({
+vi.mock('@/components/ui/switch', () => ({
   Switch: ({
     onCheckedChange,
     ...props
@@ -54,14 +54,14 @@ jest.mock('@/components/ui/switch', () => ({
     />
   ),
 }));
-jest.mock('@/lib/category-feedback', () => ({
+vi.mock('@/lib/category-feedback', () => ({
   recordCategoryFeedback: (...args: unknown[]) =>
     recordCategoryFeedbackMock(...args),
 }));
-jest.mock('@/lib/logger', () => ({
+vi.mock('@/lib/logger', () => ({
   logger: { error: (...args: unknown[]) => loggerErrorMock(...args) },
 }));
-jest.mock('@/ai/flows/suggest-category', () => ({
+vi.mock('@/ai/flows/suggest-category', () => ({
   suggestCategory: (...args: unknown[]) => suggestCategoryMock(...args),
 }));
 

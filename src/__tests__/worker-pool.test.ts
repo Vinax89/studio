@@ -1,10 +1,10 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
 import { EventEmitter } from "events"
 
-jest.mock("node:worker_threads", () => {
+vi.mock("node:worker_threads", () => {
   return {
     Worker: class MockWorker extends EventEmitter {
       postMessage(data: unknown) {

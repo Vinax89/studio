@@ -1,17 +1,18 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
-jest.mock("@/lib/transactions", () => {
-  const actual = jest.requireActual("@/lib/transactions")
+vi.mock("@/lib/transactions", () => {
+  const actual = vi.requireActual("@/lib/transactions")
   return {
     ...actual,
-    saveTransactions: jest.fn().mockResolvedValue(undefined),
+    saveTransactions: vi.fn().mockResolvedValue(undefined),
   }
 })
 
 import { POST as transactionsSync } from "@/app/api/transactions/sync/route"
 import { saveTransactions } from "@/lib/transactions"
+import type { Mock } from 'vitest'
 
 const baseTx = {
   id: "1",
@@ -25,7 +26,7 @@ const baseTx = {
 
 describe("/api/transactions/sync persistence", () => {
   beforeEach(() => {
-    (saveTransactions as jest.Mock).mockClear()
+    (saveTransactions as Mock).mockClear()
   })
 
   it("saves transactions via saveTransactions", async () => {
@@ -45,7 +46,7 @@ describe("/api/transactions/sync persistence", () => {
   })
 
   it("propagates persistence errors", async () => {
-    (saveTransactions as jest.Mock).mockRejectedValueOnce(
+    (saveTransactions as Mock).mockRejectedValueOnce(
       Object.assign(new Error("db failed"), { status: 503 }),
     )
 

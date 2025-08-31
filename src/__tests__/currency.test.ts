@@ -2,12 +2,12 @@ import { getFxRate, convertCurrency, clearFxRateCache } from '@/lib/currency';
 
 describe('currency code validation', () => {
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     clearFxRateCache();
   });
 
   it('getFxRate returns rate for valid codes', async () => {
-    const mockFetch = jest.fn().mockResolvedValue({
+    const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ rates: { EUR: 0.85 } }),
     });
@@ -23,7 +23,7 @@ describe('currency code validation', () => {
   });
 
   it('getFxRate throws on invalid code', async () => {
-    const mockFetch = jest.fn();
+    const mockFetch = vi.fn();
     (globalThis as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
 
     await expect(getFxRate('US', 'EUR')).rejects.toThrow('Invalid currency code');
@@ -31,7 +31,7 @@ describe('currency code validation', () => {
   });
 
   it('convertCurrency returns converted amount for valid codes', async () => {
-    const mockFetch = jest.fn().mockResolvedValue({
+    const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ rates: { EUR: 0.5 } }),
     });
@@ -44,7 +44,7 @@ describe('currency code validation', () => {
   });
 
   it('getFxRate uses cached value when available', async () => {
-    const mockFetch = jest.fn().mockResolvedValue({
+    const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ rates: { EUR: 0.9 } }),
     });
@@ -59,7 +59,7 @@ describe('currency code validation', () => {
   });
 
   it('convertCurrency throws for invalid codes', async () => {
-    const mockFetch = jest.fn();
+    const mockFetch = vi.fn();
     (globalThis as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
 
     await expect(convertCurrency(10, 'u$', 'eur')).rejects.toThrow(

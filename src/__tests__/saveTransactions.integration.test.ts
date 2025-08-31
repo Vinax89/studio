@@ -1,7 +1,7 @@
 import { saveTransactions } from "../lib/transactions";
 import type { Transaction } from "../lib/types";
 
-jest.mock("../lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
+vi.mock("../lib/firebase", () => ({ db: {}, initFirebase: vi.fn() }));
 import { initFirebase } from "../lib/firebase";
 
 beforeAll(() => {
@@ -38,7 +38,7 @@ function mockWriteBatch() {
   };
 }
 
-jest.mock("firebase/firestore", () => ({
+vi.mock("firebase/firestore", () => ({
   collection: mockCollection,
   doc: mockDoc,
   writeBatch: mockWriteBatch,

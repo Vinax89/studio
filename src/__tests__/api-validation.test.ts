@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import { POST as bankImport } from "@/app/api/bank/import/route"
 import { POST as transactionsSync } from "@/app/api/transactions/sync/route"

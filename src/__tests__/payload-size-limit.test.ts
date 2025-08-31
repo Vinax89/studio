@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import { Readable } from "stream"
 import { POST as bankImport } from "@/app/api/bank/import/route"

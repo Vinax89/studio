@@ -1,4 +1,4 @@
-jest.mock("idb", () => {
+vi.mock("idb", () => {
   const store: unknown[] = []
   const createCursor = (index: number) => ({
     async delete() {
@@ -9,7 +9,7 @@ jest.mock("idb", () => {
     },
   })
   return {
-    openDB: jest.fn(async () => ({
+    openDB: vi.fn(async () => ({
       add: async (_store: string, value: unknown) => {
         store.push(value)
       },
@@ -28,16 +28,16 @@ jest.mock("idb", () => {
   }
 })
 
-jest.mock("../lib/firebase", () => ({
-  auth: { currentUser: { getIdToken: jest.fn().mockResolvedValue("token") } },
-  initFirebase: jest.fn(),
+vi.mock("../lib/firebase", () => ({
+  auth: { currentUser: { getIdToken: vi.fn().mockResolvedValue("token") } },
+  initFirebase: vi.fn(),
 }))
 
-jest.mock("../lib/offline", () => {
-  const actual = jest.requireActual("../lib/offline")
+vi.mock("../lib/offline", () => {
+  const actual = vi.requireActual("../lib/offline")
   return {
     ...actual,
-    getQueuedTransactions: jest.fn(actual.getQueuedTransactions),
+    getQueuedTransactions: vi.fn(actual.getQueuedTransactions),
   }
 })
 
@@ -50,6 +50,7 @@ import { render, act } from "@testing-library/react"
 import * as offline from "../lib/offline"
 import React from "react"
 import { logger } from "../lib/logger"
+import type { Mock } from 'vitest'
 
 const globalAny = globalThis as {
   indexedDB?: unknown
@@ -118,30 +119,30 @@ describe("offline fallbacks", () => {
 
 describe("ServiceWorker", () => {
   it("handles queued transaction retrieval errors gracefully", async () => {
-    jest.useFakeTimers()
-    const getQueuedMock = offline.getQueuedTransactions as jest.Mock
+    vi.useFakeTimers()
+    const getQueuedMock = offline.getQueuedTransactions as Mock
     getQueuedMock.mockClear()
     getQueuedMock.mockResolvedValueOnce({
       ok: false,
       error: new Error("failed"),
     })
 
-    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {})
 
-    const fetchMock = jest.fn()
+    const fetchMock = vi.fn()
     globalAny.fetch = fetchMock as unknown as typeof fetch
 
     const { ServiceWorker } = await import("../components/service-worker")
     render(React.createElement(ServiceWorker))
 
     await act(async () => {
-      jest.runOnlyPendingTimers()
+      vi.runOnlyPendingTimers()
     })
 
     expect(getQueuedMock).toHaveBeenCalled()
     expect(fetchMock).not.toHaveBeenCalled()
 
-    jest.useRealTimers()
+    vi.useRealTimers()
     delete globalAny.fetch
     errorSpy.mockRestore()
   })

@@ -2,10 +2,10 @@ import { addCategory, getCategories, removeCategory, clearCategories } from "@/l
 import { setDoc, deleteDoc } from "firebase/firestore";
 import { logger } from "@/lib/logger";
 
-jest.mock("@/lib/firebase", () => ({
+vi.mock("@/lib/firebase", () => ({
   db: {},
   categoriesCollection: {},
-  initFirebase: jest.fn(),
+  initFirebase: vi.fn(),
 }));
 import { initFirebase } from "@/lib/firebase";
 
@@ -19,22 +19,22 @@ beforeAll(() => {
   initFirebase();
 });
 
-jest.mock("firebase/firestore", () => ({
-  doc: jest.fn(() => ({})),
-  setDoc: jest.fn(() => Promise.resolve()),
-  deleteDoc: jest.fn(() => Promise.resolve()),
-  getDocs: jest.fn(async () => ({ forEach: () => {} })),
-  writeBatch: jest.fn(() => ({ delete: jest.fn(), commit: jest.fn() })),
+vi.mock("firebase/firestore", () => ({
+  doc: vi.fn(() => ({})),
+  setDoc: vi.fn(() => Promise.resolve()),
+  deleteDoc: vi.fn(() => Promise.resolve()),
+  getDocs: vi.fn(async () => ({ forEach: () => {} })),
+  writeBatch: vi.fn(() => ({ delete: vi.fn(), commit: vi.fn() })),
 }));
 
 describe("categoryService", () => {
   beforeEach(() => {
     clearCategories();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("rejects categories with illegal Firestore characters", () => {
-    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
     addCategory("Food/Drink");
     expect(getCategories()).toEqual([]);
     expect(setDoc).not.toHaveBeenCalled();
@@ -43,7 +43,7 @@ describe("categoryService", () => {
   });
 
   it("ignores removal of invalid category names", () => {
-    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
     addCategory("Groceries");
     removeCategory("Bad[Cat]");
     expect(getCategories()).toEqual(["Groceries"]);

@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import { NextResponse } from 'next/server'
 import { getAllowedOrigins } from '@/lib/allowed-origins'

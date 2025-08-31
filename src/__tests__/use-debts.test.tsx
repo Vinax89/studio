@@ -7,29 +7,29 @@ import type {
 } from "firebase/firestore";
 
 // Mock logger to silence output
-jest.mock("@/lib/logger", () => ({ logger: { error: jest.fn() } }));
+vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn() } }));
 // Mock debts index module
-jest.mock("@/lib/debts", () => ({
+vi.mock("@/lib/debts", () => ({
   debtsCollection: {},
   debtDoc: (id: string) => ({ id })
 }));
 
-const onSnapshotMock = jest.fn();
-const deleteDocMock = jest.fn();
+const onSnapshotMock = vi.fn();
+const deleteDocMock = vi.fn();
 
-jest.mock("firebase/firestore", () => ({
+vi.mock("firebase/firestore", () => ({
   onSnapshot: (
     ...args: Parameters<typeof firestoreOnSnapshot>
   ): ReturnType<typeof firestoreOnSnapshot> =>
     onSnapshotMock(...args),
-  setDoc: jest.fn(),
+  setDoc: vi.fn(),
   deleteDoc: (
     ...args: Parameters<typeof firestoreDeleteDoc>
   ): ReturnType<typeof firestoreDeleteDoc> =>
     deleteDocMock(...args),
-  updateDoc: jest.fn(),
-  arrayUnion: jest.fn(),
-  arrayRemove: jest.fn(),
+  updateDoc: vi.fn(),
+  arrayUnion: vi.fn(),
+  arrayRemove: vi.fn(),
 }));
 
 describe("useDebts", () => {

@@ -1,4 +1,4 @@
-jest.mock('@/ai/genkit', () => ({ ai: { definePrompt: jest.fn(), defineFlow: jest.fn() } }));
+vi.mock('@/ai/genkit', () => ({ ai: { definePrompt: vi.fn(), defineFlow: vi.fn() } }));
 
 import { SpendingForecastInputSchema, SpendingForecastOutputSchema } from '../spendingForecast';
 
