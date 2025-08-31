@@ -6,13 +6,8 @@ process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
 
 import { logger } from "../lib/logger";
-const dataStore: Record<string, Map<string, unknown>> = {
-  transactions: new Map(),
-  transactions_archive: new Map(),
-  debts: new Map(),
-  goals: new Map(),
-  backups: new Map(),
-};
+
+type FirestoreStore = Record<string, Map<string, unknown>>;
 
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(() => ({})),
@@ -33,6 +28,15 @@ jest.mock('firebase/firestore', () => {
     type: string;
     [key: string]: unknown;
   }
+
+  const dataStore: FirestoreStore = {
+    transactions: new Map(),
+    transactions_archive: new Map(),
+    debts: new Map(),
+    goals: new Map(),
+    backups: new Map(),
+  };
+
   const where = (field: string, op: string, value: unknown): QueryConstraint => ({
     type: 'where',
     field,
@@ -46,12 +50,12 @@ jest.mock('firebase/firestore', () => {
     doc,
   });
   const query = (
-    colRef: { name: keyof typeof dataStore },
+    colRef: { name: keyof FirestoreStore },
     ...constraints: QueryConstraint[]
   ) => ({ ...colRef, constraints });
 
   const getDocs = jest.fn(
-    async (q: { name: keyof typeof dataStore; constraints?: QueryConstraint[] }) => {
+    async (q: { name: keyof FirestoreStore; constraints?: QueryConstraint[] }) => {
       const colName = q.name;
       let docs = Array.from(dataStore[colName].entries()).map(([id, data]) => ({
         id,
@@ -108,14 +112,14 @@ jest.mock('firebase/firestore', () => {
   const writeBatch = jest.fn(() => {
     const ops: Array<{
       type: 'set' | 'delete';
-      docRef: { name: keyof typeof dataStore; id: string };
+      docRef: { name: keyof FirestoreStore; id: string };
       data?: Record<string, unknown>;
     }> = [];
     const batch = {
-      set: (docRef: { name: keyof typeof dataStore; id: string }, data: Record<string, unknown>) => {
+      set: (docRef: { name: keyof FirestoreStore; id: string }, data: Record<string, unknown>) => {
         ops.push({ type: 'set', docRef, data });
       },
-      delete: (docRef: { name: keyof typeof dataStore; id: string }) => {
+      delete: (docRef: { name: keyof FirestoreStore; id: string }) => {
         ops.push({ type: 'delete', docRef });
       },
       commit: jest.fn(async () => {
@@ -133,7 +137,7 @@ jest.mock('firebase/firestore', () => {
   });
 
   const addDoc = jest.fn(
-    async (colRef: { name: keyof typeof dataStore }, data: Record<string, unknown>) => {
+    async (colRef: { name: keyof FirestoreStore }, data: Record<string, unknown>) => {
       const id = Math.random().toString(36).slice(2);
       dataStore[colRef.name].set(id, data);
       return { id };
@@ -143,9 +147,9 @@ jest.mock('firebase/firestore', () => {
   return {
     getFirestore: jest.fn(() => ({})),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    collection: (_db: unknown, name: keyof typeof dataStore) => ({ name }),
+    collection: (_db: unknown, name: keyof FirestoreStore) => ({ name }),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    doc: (_db: unknown, name: keyof typeof dataStore, id: string) => ({ name, id }),
+    doc: (_db: unknown, name: keyof FirestoreStore, id: string) => ({ name, id }),
     getDocs,
     addDoc,
     query,
@@ -165,7 +169,7 @@ import {
   runWithRetry,
 } from '../services/housekeeping';
 import * as firestore from 'firebase/firestore';
-const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
+const store = (firestore as unknown as { __dataStore: FirestoreStore }).__dataStore;
 
 beforeEach(() => {
   for (const col of Object.values(store)) {
