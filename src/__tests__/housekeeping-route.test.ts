@@ -85,6 +85,7 @@ describe("/api/cron/housekeeping", () => {
     process.env.CRON_SECRET = secret;
     await resetRateLimit();
     (runHousekeeping as jest.Mock).mockClear();
+    (runHousekeeping as jest.Mock).mockResolvedValue(undefined);
     (getCurrentTime as jest.Mock).mockResolvedValue(new Date(61_000));
   });
 
@@ -122,6 +123,17 @@ describe("/api/cron/housekeeping", () => {
     const [res1, res2] = await Promise.all([GET(req), GET(req)]);
     const statuses = [res1.status, res2.status].sort();
     expect(statuses).toEqual([200, 429]);
+    expect(runHousekeeping).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns 500 when housekeeping throws", async () => {
+    (runHousekeeping as jest.Mock).mockRejectedValueOnce(new Error("boom"));
+    const req = new Request("http://localhost", {
+      headers: { "X-CRON-SECRET": secret },
+    });
+
+    const res = await GET(req);
+    expect(res.status).toBe(500);
     expect(runHousekeeping).toHaveBeenCalledTimes(1);
   });
 });
