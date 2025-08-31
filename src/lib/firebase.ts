@@ -19,7 +19,7 @@ const firebaseConfigSchema = z.object({
 });
 
 let app: ReturnType<typeof initializeApp> | undefined;
-let auth: ReturnType<typeof getAuth> | undefined;
+let auth!: ReturnType<typeof getAuth>;
 let db: ReturnType<typeof getFirestore> | undefined;
 let categoriesCollection: ReturnType<typeof collection> | undefined;
 
@@ -46,10 +46,15 @@ export function initFirebase() {
     appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
   };
   
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  auth = getAuth(app);
-  db = getFirestore(app);
-  categoriesCollection = collection(db, "categories");
+  try {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    categoriesCollection = collection(db, "categories");
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+    throw new Error("Failed to initialize Firebase");
+  }
   return { app, auth, db, categoriesCollection };
 }
 
@@ -60,4 +65,4 @@ export function getDb(): ReturnType<typeof getFirestore> {
   return db!;
 }
 
-export { app, auth, db, categoriesCollection, getDb };
+export { app, auth, db, categoriesCollection };
