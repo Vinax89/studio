@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyFirebaseToken } from "@/lib/server-auth"
-import { TransactionPayloadSchema } from "@/lib/transactions"
+import { TransactionPayloadSchema, saveTransactions } from "@/lib/transactions"
 import { PayloadTooLargeError, readBodyWithLimit } from "@/lib/http"
 import { handleCors, withCors } from "@/lib/cors"
 
@@ -68,6 +68,7 @@ export async function POST(req: Request) {
   const { provider, transactions } = parsed.data
 
   try {
+    await saveTransactions(transactions)
     return withCors(
       req,
       NextResponse.json({
@@ -75,13 +76,15 @@ export async function POST(req: Request) {
         imported: transactions.length,
       }),
     )
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error"
+    const status =
+      typeof err === "object" && err && "status" in err
+        ? (err as { status?: number }).status || 500
+        : 500
     return withCors(
       req,
-      NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      ),
+      NextResponse.json({ error: message }, { status }),
     )
   }
 }
