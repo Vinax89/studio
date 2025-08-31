@@ -12,8 +12,6 @@ import { auth, initFirebase } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { z } from "zod";
 
-initFirebase();
-
 interface AuthContextType {
   user: User | null;
 }
@@ -23,6 +21,8 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  initFirebase();
+
   // Attempts to restore a previously signed-in user directly from
   // Firebase's localStorage entry. The SDK stores authenticated users under
   // a key that includes the app's API key and name, allowing us to read it
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Keep the `user` state in sync with Firebase auth changes. This runs once
   // on mount and updates whenever the user's sign-in state changes.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
       setUser(currentUser);
     });
 
