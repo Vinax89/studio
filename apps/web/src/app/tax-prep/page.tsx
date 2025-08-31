@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/app/src/lib/firebaseClient';
 import { apiTaxSummary, downloadTaxCsv } from '@/app/src/lib/taxClient';
+import type { TaxSummary } from '@/app/src/lib/taxClient';
 
 function currentYear() { return new Date().getFullYear(); }
 function fmt(n: number) { try { return n.toLocaleString(undefined, { style:'currency', currency:'USD' }); } catch { return `$${n.toFixed(2)}`; } }
@@ -10,7 +11,7 @@ function fmt(n: number) { try { return n.toLocaleString(undefined, { style:'curr
 export default function TaxPrepPage() {
   const [uid, setUid] = useState<string|null>(null);
   const [year, setYear] = useState<number>(currentYear());
-  const [summary, setSummary] = useState<any|null>(null);
+  const [summary, setSummary] = useState<TaxSummary|null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string|undefined>();
 
@@ -60,7 +61,7 @@ export default function TaxPrepPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50"><tr><th className="text-left p-2">Date</th><th className="text-left p-2">Merchant</th><th className="text-left p-2">Category</th><th className="text-right p-2">Amount</th><th className="text-left p-2">Receipt</th></tr></thead>
               <tbody>
-                {summary.sample.map((r:any)=> (
+                {summary.sample.map((r)=> (
                   <tr key={r.id} className="border-t">
                     <td className="p-2 whitespace-nowrap">{r.date}</td>
                     <td className="p-2">{r.merchant}</td>
