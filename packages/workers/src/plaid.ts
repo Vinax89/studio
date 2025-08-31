@@ -19,6 +19,17 @@ const configuration = new Configuration({
 const plaid = new PlaidApi(configuration);
 const db = admin.firestore();
 
+function handleCors(req: any, res: any): boolean {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return true;
+  }
+  return false;
+}
+
 function extractToken(req: any): string {
   const hdr = req.headers.authorization || '';
   if (!hdr.startsWith('Bearer ')) throw new Error('Unauthorized');
@@ -32,6 +43,7 @@ async function currentUid(req: any): Promise<string> {
 }
 
 export const createLinkToken = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const resp = await plaid.linkTokenCreate({
@@ -48,6 +60,7 @@ export const createLinkToken = onRequest(async (req, res) => {
 });
 
 export const exchangePublicToken = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const { public_token } = req.body || {};
@@ -66,13 +79,14 @@ export const exchangePublicToken = onRequest(async (req, res) => {
 });
 
 export const syncTransactions = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     const uid = await currentUid(req);
     const instSnap = await db.collection('institutions').where('user_id', '==', uid).get();
     let count = 0;
     for (const inst of instSnap.docs) {
       const access_token = inst.data().access_token;
-      let cursor: string | undefined = undefined;
+      let cursor: string | undefined;
       while (true) {
         const resp = await plaid.transactionsSync({ access_token, cursor });
         for (const tx of resp.data.added) {
@@ -80,6 +94,7 @@ export const syncTransactions = onRequest(async (req, res) => {
             user_id: uid,
             name: tx.name,
             amount: tx.amount,
+            iso_date: tx.date,
             posted_at: admin.firestore.Timestamp.fromDate(new Date(tx.date)),
           }, { merge: true });
           count++;
@@ -94,6 +109,7 @@ export const syncTransactions = onRequest(async (req, res) => {
   }
 });
 
-export const plaidWebhook = onRequest(async (_req, res) => {
+export const plaidWebhook = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
   res.json({ ok: true });
 });
