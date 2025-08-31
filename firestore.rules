@@ -9,8 +9,9 @@ service cloud.firestore {
     match /{c}/{id} where c in [
       'institutions','accounts','transactions','receipts','paystubs','rules','budgets','summaries','goals','tax_profiles'
     ] {
-      allow read, write: if owner(resource.data.user_id);
+      allow read: if owner(resource.data.user_id);
       allow create: if authed() && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if resource.data.user_id == request.auth.uid && request.resource.data.user_id == request.auth.uid;
     }
   }
 }
