@@ -54,5 +54,5 @@ process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test'
 
 // Provide Jest compatibility for existing tests
 // eslint-disable-next-line no-var
-var jest = vi
-globalThis.jest = vi
+var jest = Object.assign(vi, { requireActual: vi.importActual })
+globalThis.jest = jest

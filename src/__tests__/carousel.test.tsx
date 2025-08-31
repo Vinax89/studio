@@ -1,16 +1,17 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Carousel } from '@/components/ui/carousel';
+import { vi, type Mock } from 'vitest';
 
-const onMock = jest.fn();
-const offMock = jest.fn();
+const onMock = vi.fn();
+const offMock = vi.fn();
 type MockEmblaApi = {
-  on: jest.Mock;
-  off: jest.Mock;
-  canScrollPrev: jest.Mock;
-  canScrollNext: jest.Mock;
-  scrollPrev: jest.Mock;
-  scrollNext: jest.Mock;
+  on: Mock;
+  off: Mock;
+  canScrollPrev: Mock;
+  canScrollNext: Mock;
+  scrollPrev: Mock;
+  scrollNext: Mock;
 };
 let emblaApi: MockEmblaApi;
 
@@ -18,15 +19,15 @@ function mockUseEmbla() {
   emblaApi = {
     on: onMock,
     off: offMock,
-    canScrollPrev: jest.fn().mockReturnValue(false),
-    canScrollNext: jest.fn().mockReturnValue(false),
-    scrollPrev: jest.fn(),
-    scrollNext: jest.fn(),
+    canScrollPrev: vi.fn().mockReturnValue(false),
+    canScrollNext: vi.fn().mockReturnValue(false),
+    scrollPrev: vi.fn(),
+    scrollNext: vi.fn(),
   };
-  return [jest.fn(), emblaApi];
+  return [vi.fn(), emblaApi];
 }
 
-jest.mock('embla-carousel-react', () => ({
+vi.mock('embla-carousel-react', () => ({
   __esModule: true,
   default: mockUseEmbla,
   useEmblaCarousel: mockUseEmbla,
@@ -34,7 +35,7 @@ jest.mock('embla-carousel-react', () => ({
 
 describe('Carousel', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('removes event listeners on unmount', () => {
