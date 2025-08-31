@@ -6,13 +6,7 @@ process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 'test';
 process.env.NEXT_PUBLIC_FIREBASE_APP_ID = 'test';
 
 import { logger } from "../lib/logger";
-const dataStore: Record<string, Map<string, unknown>> = {
-  transactions: new Map(),
-  transactions_archive: new Map(),
-  debts: new Map(),
-  goals: new Map(),
-  backups: new Map(),
-};
+var dataStore: Record<string, Map<string, unknown>>;
 
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(() => ({})),
@@ -29,6 +23,14 @@ jest.mock('../lib/internet-time', () => ({
 }));
 
 jest.mock('firebase/firestore', () => {
+  dataStore = {
+    transactions: new Map(),
+    transactions_archive: new Map(),
+    debts: new Map(),
+    goals: new Map(),
+    backups: new Map(),
+  };
+
   interface QueryConstraint {
     type: string;
     [key: string]: unknown;
@@ -165,7 +167,9 @@ import {
   runWithRetry,
 } from '../services/housekeeping';
 import * as firestore from 'firebase/firestore';
-const store = (firestore as unknown as { __dataStore: typeof dataStore }).__dataStore;
+const store = (
+  firestore as unknown as { __dataStore: Record<string, Map<string, unknown>> }
+).__dataStore;
 
 beforeEach(() => {
   for (const col of Object.values(store)) {

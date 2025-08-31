@@ -9,7 +9,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["apps/web/src/*"]
+      "@/*": ["src/*", "apps/web/src/*"]
     },
     "skipLibCheck": true
   },
