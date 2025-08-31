@@ -1,5 +1,5 @@
 This is a NextJS starter in Firebase Studio.
-This project uses pnpm as the canonical package manager. Use pnpm for all dependency management tasks.
+Requires Node.js 20 (see `.nvmrc` and `.node-version`) and uses pnpm as the canonical package manager. Use pnpm for all dependency management tasks.
 To get started, take a look at src/app/page.tsx.
 
 ## Development
