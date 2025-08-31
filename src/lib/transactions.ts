@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { collection, doc, writeBatch, getDocs } from "firebase/firestore";
-import { randomUUID } from "node:crypto";
 import { db, initFirebase } from "./firebase";
 import type { Transaction } from "./types";
 import { currencyCodeSchema } from "./currency";
 
 initFirebase();
+
+function randomUUID(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return Math.random().toString(36).slice(2);
+}
 
 export const TransactionPayloadSchema = z.object({
   id: z.string(),
