@@ -19,7 +19,8 @@ const args = [
   ':!node_modules',
   ':!package-lock.json',
   ':!pnpm-lock.yaml',
-  ':!yarn.lock'
+  ':!yarn.lock',
+  ':!scripts/check-placeholders.mjs'
 ];
 
 const result = spawnSync('git', args, {cwd: repoRoot, encoding: 'utf8'});
