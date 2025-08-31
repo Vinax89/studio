@@ -3,16 +3,17 @@
  */
 import { runHousekeeping } from "@/lib/housekeeping";
 import { getCurrentTime } from "@/lib/internet-time";
+import { vi, type Mock } from "vitest";
 
-jest.mock("@/lib/housekeeping", () => ({
-  runHousekeeping: jest.fn().mockResolvedValue(undefined),
+vi.mock("@/lib/housekeeping", () => ({
+  runHousekeeping: vi.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("@/lib/internet-time", () => ({
-  getCurrentTime: jest.fn(),
+vi.mock("@/lib/internet-time", () => ({
+  getCurrentTime: vi.fn(),
 }));
 
-jest.mock("@/lib/firebase", () => ({ db: {}, initFirebase: jest.fn() }));
+vi.mock("@/lib/firebase", () => ({ db: {}, initFirebase: vi.fn() }));
 import { initFirebase } from "@/lib/firebase";
 
 const secret = "test-secret";
@@ -33,7 +34,7 @@ beforeAll(async () => {
   resetRateLimit = mod.resetRateLimit;
 });
 
-jest.mock("firebase/firestore", () => {
+vi.mock("firebase/firestore", () => {
   const store: { lastRun?: number } = {};
   interface Tx {
     get: () => Promise<{
@@ -45,7 +46,7 @@ jest.mock("firebase/firestore", () => {
   return {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     doc: (_db: unknown, _col: string, _id: string) => ({}),
-    runTransaction: jest.fn(
+    runTransaction: vi.fn(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       async (_db: unknown, updateFn: (tx: Tx) => Promise<unknown>) => {
         // eslint-disable-next-line no-constant-condition
@@ -73,7 +74,7 @@ jest.mock("firebase/firestore", () => {
         }
       }
     ),
-    setDoc: jest.fn(async (_ref: unknown, data: { lastRun: number }) => {
+    setDoc: vi.fn(async (_ref: unknown, data: { lastRun: number }) => {
       store.lastRun = data.lastRun;
     }),
     __store: store,
@@ -84,8 +85,8 @@ describe("/api/cron/housekeeping", () => {
   beforeEach(async () => {
     process.env.CRON_SECRET = secret;
     await resetRateLimit();
-    (runHousekeeping as jest.Mock).mockClear();
-    (getCurrentTime as jest.Mock).mockResolvedValue(new Date(61_000));
+    (runHousekeeping as Mock).mockClear();
+    (getCurrentTime as Mock).mockResolvedValue(new Date(61_000));
   });
 
   it("returns 401 when secret is missing or invalid", async () => {
