@@ -1,4 +1,4 @@
-npm test
+pnpm test
 if git diff --cached --name-only | xargs grep -nE '^\\.{3}$'; then
   echo "Error: file contains standalone '...'" >&2
   exit 1
